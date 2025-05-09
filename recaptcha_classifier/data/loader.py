@@ -12,9 +12,9 @@ class PairsLoader:
     it can be looped over to get the pairs as tuples (img_path, lbl_path).
     """
     def __init__(self,
-                 images_dir: str,
-                 labels_dir: str,
-                 classes: List[str]) -> None:
+                 classes: List[str],
+                 images_dir: str = "../../data/images",
+                 labels_dir: str = "../../data/labels") -> None:
         """
         Initializes the PairsLoader instance.
 
@@ -88,11 +88,9 @@ class PairsLoader:
 
 
 if __name__ == "__main__":
-    IMG_DIR = "../../data/images"
-    LABEL_DIR = "../../data/labels"
     classes = ["Chimney", "Crosswalk", "Stair"]
 
-    loader = PairsLoader(IMG_DIR, LABEL_DIR, classes)
+    loader = PairsLoader(classes)
     pairs = loader.find_pairs()
 
     #  for img_path, lbl_path in pairs:

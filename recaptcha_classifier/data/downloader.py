@@ -6,10 +6,20 @@ from pathlib import Path
 
 class KaggleDatasetDownloader:
     """
-    Simple class to handle downloading of Kaggle datasets.
+    Simple utility class for downloading and unzipping Kaggle datasets.
     This detects if dataset is already downloaded and skips the process if so.
+
+    It follows Single Responsibility Principle (SRP) as it only handles
+    dataset downloading operation, with no other responsibilities.
+    It is implemented by using a variant of the Template Method pattern,
+    with the high-level steps of the algorithm defined in the download()
+    method. Specific steps, for example displaying progress and unpacking
+    are implemented in private methods.
     """
-    def __init__(self, url: str, dest: str = "../../data") -> None:
+    def __init__(self,
+                 url: str = ("https://www.kaggle.com/api/v1/datasets/"
+                             "download/mikhailma/test-dataset"),
+                 dest: str = "../../data") -> None:
         """
         Initializes the downloader instance.
 
@@ -17,9 +27,9 @@ class KaggleDatasetDownloader:
             url (str): URL of the Kaggle dataset to download.
             dest (str): Destination directory to save the dataset.
         """
-        self._url = url
-        self._dest = Path(dest)
-        self._zip_path = self._dest / "dataset.zip"
+        self._url: str = url
+        self._dest: Path = Path(dest)
+        self._zip_path: Path = self._dest / "dataset.zip"
 
     def download(self) -> None:
         """
@@ -81,7 +91,4 @@ class KaggleDatasetDownloader:
 
 
 if __name__ == "__main__":
-    DATASET_URL = ("https://www.kaggle.com/api/v1/datasets/"
-                   "download/mikhailma/test-dataset")
-    DEST_DIR = "../../data"
-    KaggleDatasetDownloader(DATASET_URL, DEST_DIR).download()
+    KaggleDatasetDownloader().download()
