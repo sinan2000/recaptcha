@@ -3,10 +3,11 @@ from typing import List, Tuple
 
 class BoundingBoxScaler:
     """
-    Adapter Pattern:
     This class handles the complexity of adjusting bounding box coordinates
     when resizing images. It acts as an adapter between the raw YOLO bounding
     box format and the resized target image format.
+
+    Design Pattern: Adapter
     """
 
     def __init__(self,
