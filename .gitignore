@@ -6,4 +6,4 @@ venv/
 .env
 
 private/
-data/raw/
+/data/
