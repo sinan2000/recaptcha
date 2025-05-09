@@ -10,11 +10,11 @@ verify_ssl = true
 
 [packages]
 numpy = "*"
-opencv-python = "*"
+pillow = "*"
 pre-commit = "*"
-torch = {index = "pytorch-cu128", version = "2.7.0+cu128"}
-torchvision = {index = "pytorch-cu128", version = "0.22.0+cu128"}
-torchaudio = {index = "pytorch-cu128", version = "2.7.0+cu128"}
+torch = {index = "pytorch-cu128", version = "2.7.0+cu128", markers = "sys_platform == 'win32'"}
+torchvision = {index = "pytorch-cu128", version = "0.22.0+cu128", markers = "sys_platform == 'win32'"}
+torchaudio = {index = "pytorch-cu128", version = "2.7.0+cu128", markers = "sys_platform == 'win32'"}
 
 [dev-packages]
 
