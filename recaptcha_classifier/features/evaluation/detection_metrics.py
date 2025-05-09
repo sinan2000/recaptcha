@@ -1,0 +1,151 @@
+import torch
+from torchmetrics.detection.mean_ap import MeanAveragePrecision
+
+
+def yolo_to_corners(x_center: float,
+                    y_center: float,
+                    width: float,
+                    height: float,
+                    img_w: int,
+                    img_h: int) -> list[float]:
+    """
+    Converts a bounding box from (normalized) YOLO format to coordinates
+
+    Source:
+    https://stackoverflow.com/questions/56115874/how-to-convert-bounding-box-x1-y1-x2-y2-to-yolo-style-x-y-w-h
+
+    YOLO format:
+        - x_center, y_center: center of the box (normalized between 0 and 1)
+        - width, height: size of the box (normalized between 0 and 1)
+
+    This function scales the coordinates to the actual image size and returns:
+        - [x1, y1, x2, y2] = top-left and bottom-right corners of the box
+        (in pixels)
+
+    Args:
+        x_center (float): Normalized x-coordinate of the box center.
+        y_center (float): Normalized y-coordinate of the box center.
+        width (float): Normalized width of the box.
+        height (float): Normalized height of the box.
+        img_w (int): Width of the image in pixels.
+        img_h (int): Height of the image in pixels.
+
+    Returns:
+        List[float]: Box in corner format [x1, y1, x2, y2] in pixel
+        coordinates.
+    """
+
+    # Scale to pixel coordinates (from normalized state)
+    x_center = x_center * img_w
+    y_center = y_center * img_h
+    width = width * img_w
+    height = height * img_h
+
+    x1 = x_center - width / 2
+    y1 = y_center - height / 2
+    x2 = x_center + width / 2
+    y2 = y_center + height / 2
+
+    return [x1, y1, x2, y2]
+
+
+def compute_iou(box1: list[float],
+                box2: list[float]) -> float:
+    """
+    Computes the Intersection over Union (IoU) value, to evaluate
+    bounding box accuracy for object detection. Both box lists are in
+    the following coordinate format [x1, y1, x2, y2].
+
+    Source: https://www.v7labs.com/blog/intersection-over-union-guide
+
+    Args:
+        box1 (list[float]): Predicted box coordinates
+        box2 (list[float]): Ground Truth box coordinates
+
+
+    Returns:
+        float: IoU value between 0 and 1, where 1 means perfect overlap
+        and 0 means no overlap.
+
+    """
+    # Left side of the overlap
+    xA = max(box1[0], box2[0])
+    # Top side of the overlap
+    yA = max(box1[1], box2[1])
+    # Right side of the overlap
+    xB = min(box1[2], box2[2])
+    # Lower side of the overlap
+    yB = min(box1[3], box2[3])
+
+    # Intersection measures
+    inter_width = max(0, xB - xA)
+    inter_height = max(0, yB - yA)
+    inter_area = inter_width * inter_height
+
+    box1_area = max(0, box1[2] - box1[0]) * max(0, box1[3] - box1[1])
+    box2_area = max(0, box2[2] - box2[0]) * max(0, box2[3] - box2[1])
+
+    union_area = box1_area + box2_area - inter_area + 1e-6
+
+    return inter_area / union_area
+
+
+def evaluate_map(predictions: list[dict],
+                 targets: list[dict]) -> dict[str, float]:
+    """
+    Computes mean average precision (mAP) using torchmetrics.
+
+    Source:
+    https://lightning.ai/docs/torchmetrics/stable/detection/mean_average_precision.html
+
+    Args:
+        predictions (list[dict]): Each dict must have:
+            - 'boxes' (Tensor[N, 4]): predicted boxes in [x1, y1, x2, y2]
+            - 'scores' (Tensor[N]): confidence scores
+            - 'labels' (Tensor[N]): predicted class labels
+        targets (List[Dict]): Each dict must have:
+            - 'boxes' (Tensor[M, 4]): ground truth boxes
+            - 'labels' (Tensor[M]): ground truth class labels
+
+    Returns:
+        dict[str, float]: Dictionary with mAP and related metrics
+    """
+    metric = MeanAveragePrecision()
+    metric.update(preds=predictions, target=targets)
+    result = metric.compute()
+
+    # Convert torch.Tensors to float for readability
+    return {k: v.item() if isinstance(v, torch.Tensor)
+            else v for k, v in result.items()}
+
+
+# Example usage (will be removed for final draft)
+yolo_pred = [0, 0.5, 0.5, 0.4, 0.4]
+yolo_gt = [0, 0.5, 0.5, 0.5, 0.5]
+img_w, img_h = 224, 224
+
+pred_box = yolo_to_corners(*yolo_pred[1:], img_w, img_h)
+gt_box = yolo_to_corners(*yolo_gt[1:], img_w, img_h)
+
+print("Predicted box (corner format):", pred_box)
+print("Ground truth box (corner format):", gt_box)
+
+# --- Compute IoU ---
+iou = compute_iou(pred_box, gt_box)
+print(f"IoU: {iou:.4f}")
+
+# --- Compute mAP ---
+preds = [{
+    "boxes": torch.tensor([pred_box]),
+    "scores": torch.tensor([0.85]),
+    "labels": torch.tensor([yolo_pred[0]])
+}]
+targets = [{
+    "boxes": torch.tensor([gt_box]),
+    "labels": torch.tensor([yolo_gt[0]])
+}]
+
+map_result = evaluate_map(preds, targets)
+print("\nmAP Results:")
+for k, v in map_result.items():
+    print(f"  {k}: {v:.4f}")

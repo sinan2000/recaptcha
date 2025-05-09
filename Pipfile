@@ -7,6 +7,11 @@ name = "pypi"
 numpy = "*"
 opencv-python = "*"
 pre-commit = "*"
+torch = "*"
+torchvision = "*"
+torchaudio = "*"
+matplotlib = "*"
+torchmetrics = {extras = ["detection"], version = "*"}
 
 [dev-packages]
 
