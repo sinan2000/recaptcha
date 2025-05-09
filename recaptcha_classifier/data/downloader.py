@@ -17,27 +17,27 @@ class KaggleDatasetDownloader:
             url (str): URL of the Kaggle dataset to download.
             dest (str): Destination directory to save the dataset.
         """
-        self.url = url
-        self.dest = Path(dest)
-        self.zip_path = self.dest / "dataset.zip"
+        self._url = url
+        self._dest = Path(dest)
+        self._zip_path = self._dest / "dataset.zip"
 
     def download(self) -> None:
         """
         Checks if dataset is already downloaded.
         If not, downloads and then unzips it.
         """
-        if self.dest.exists() and any(self.dest.iterdir()):
+        if self._dest.exists() and any(self._dest.iterdir()):
             print("Dataset already exists, skipping download.")
             return
 
-        self.dest.mkdir(parents=True, exist_ok=True)
+        self._dest.mkdir(parents=True, exist_ok=True)
 
-        print(f"Downloading {self.url} to {self.dest}...")
-        response = requests.get(self.url, stream=True)
+        print(f"Downloading {self._url} to {self._dest}...")
+        response = requests.get(self._url, stream=True)
 
         if response.status_code == 200:
             total_size = int(response.headers.get('Content-Length', 0))
-            with open(self.zip_path, "wb") as f:
+            with open(self._zip_path, "wb") as f:
                 downloaded_size = 0
                 for chunk in response.iter_content(chunk_size=8192):
                     f.write(chunk)
@@ -60,15 +60,15 @@ class KaggleDatasetDownloader:
         the structure of our selected Kaggle dataset for simplicity.
         """
         print("Extracting downloaded dataset")
-        with zipfile.ZipFile(self.zip_path, 'r') as zip_ref:
-            zip_ref.extractall(self.dest)
+        with zipfile.ZipFile(self._zip_path, 'r') as zip_ref:
+            zip_ref.extractall(self._dest)
 
-        root = next(p for p in self.dest.iterdir() if p.is_dir())
+        root = next(p for p in self._dest.iterdir() if p.is_dir())
         for sub in ("images", "labels"):
-            (root / sub).rename(self.dest / sub)
+            (root / sub).rename(self._dest / sub)
 
         root.rmdir()
-        self.zip_path.unlink()
+        self._zip_path.unlink()
         print("Extraction and cleanup completed successfully.")
 
     @staticmethod
