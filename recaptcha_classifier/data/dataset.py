@@ -1,9 +1,8 @@
-from pathlib import Path
-from typing import List, Tuple, Optional, Any
+from typing import List, Optional
 from torch.utils.data import Dataset
-
 from .preprocessor import Preprocessor
 from .augment import AugmentationPipeline
+from .types import LoaderPair, HandlerItem
 
 
 class DatasetHandler(Dataset):
@@ -18,7 +17,7 @@ class DatasetHandler(Dataset):
     https://docs.pytorch.org/tutorials/beginner/basics/data_tutorial.html
     """
     def __init__(self,
-                 pairs: List[Tuple[Path, Path]],
+                 pairs: List[LoaderPair],
                  preprocessor: Preprocessor,
                  augmentator: Optional[AugmentationPipeline] = None,
                  class_map: Optional[dict] = None
@@ -36,7 +35,7 @@ class DatasetHandler(Dataset):
 
     def __getitem__(self,
                     idx: int
-                    ) -> Tuple[Any, List[Tuple], int]:
+                    ) -> HandlerItem:
         """
         Returns the item at the given index, ready for training.
 
@@ -44,19 +43,28 @@ class DatasetHandler(Dataset):
             idx (int): Index of the item to retrieve.
 
         Returns:
-            Tuple[Any, List[Tuple], int]: A tuple containing the
+            HandlerItem: A tuple containing the
             preprocessed image in tensor format, the YOLO bound
             box annotations and the label.
         """
         img_path, lbl_path = self._pairs[idx]
 
         # Load image and label
+        img = self._prep.load_image(img_path)
+        bb = self._prep.load_labels(lbl_path)
 
-        # Augmentation if passed (for training)
+        # Apply augmentation if passed
+        if self._aug:
+            img, bb = self._aug.apply_transforms(img, bb)
 
-        # Bounding Box Scaling if augmentation happens
-
-        # Preprocess image and label
+        # Convert image to tensor
+        tensor = self._prep.to_tensor(img)
 
         # Convert label to class index
+        c_name = lbl_path.parent.name
+        if c_name not in self._class_map:
+            raise KeyError(f"Class name '{c_name}' not found in classes.")
+        c_id = self._class_map[c_name]
+
         # Return image tensor, bounding box and class index
+        return (tensor, bb, c_id)
