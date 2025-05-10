@@ -5,6 +5,8 @@ from typing import List, Dict, Tuple
 class DatasetSplitter:
     """
     Shuffles and splits data into train/validation/test sets.
+    It respects the ratios provided by the user and distributions of the
+    classes, so that the splits are stratified.
 
     Follows Single Responsibility Principle, only focusing
     on handling the data splliting logic.
@@ -25,37 +27,42 @@ class DatasetSplitter:
         self._seed = seed
         self._validate_ratios()
 
-    def split(self, items: List) -> Dict[str, List]:
+    def split(self,
+              pairs_by_class: Dict[str, List[Tuple]]
+              ) -> Dict[str, Dict[str, List[Tuple]]]:
         """
-        Splits the given list of items into train, validation, and test sets.
+        Splits each class into train, validation, and test sets.
+        It shuffles the data if specified and returns a dictionary
+        containing the splits by class.
 
         Args:
             items (List): List of items to be split.
 
         Returns:
-            Dict[str, List]: Dictionary containing train, validation,
-            and test sets.
+            Dict[str, Dict[str, List[Tuple]]]: Nested dictionary containing
+            splits for each class.
         """
-        if self._shuffle:
-            items = self._shuffle_items(items)
+        splits = {'train': {}, 'val': {}, 'test': {}}
 
-        N = len(items)
-        train_N, val_N, _ = self._get_split_sizes(N)
+        for cls, pairs in pairs_by_class.items():
+            if self._shuffle:
+                pairs = self._shuffle_items(pairs)
 
-        train_set = items[:train_N]
-        val_set = items[train_N:train_N + val_N]
-        test_set = items[train_N + val_N:]
+            N = len(pairs)
+            train_N, val_N = self._get_split_sizes(N)
 
-        return {
-            'train': train_set,
-            'val': val_set,
-            'test': test_set
-        }
+            splits['train'][cls] = pairs[:train_N]
+            splits['val'][cls] = pairs[train_N:train_N + val_N]
+            splits['test'][cls] = pairs[train_N + val_N:]
+
+        return splits
 
     def _validate_ratios(self) -> None:
         """
         Makes sure the ratios sum to 1 and all are positive.
         """
+        if len(self._ratios) != 3:
+            raise ValueError("Ratios must be a tuple of three floats.")
         if sum(self._ratios) != 1:
             raise ValueError("Ratios must sum to 1.")
         if any(ratio < 0 for ratio in self._ratios):
@@ -77,18 +84,16 @@ class DatasetSplitter:
         rand.shuffle(new_items)
         return new_items
 
-    def _get_split_sizes(self, n: int) -> Tuple[int, int, int]:
+    def _get_split_sizes(self, n: int) -> Tuple[int, int]:
         """
-        Returns the sizes of the train, validation, and test sets.
+        Returns the sizes of the train and validation sets.
 
         Args:
             n (int): Total number of items.
 
         Returns:
-            Tuple[int, int, int]: Sizes of train, validation,
-            and test sets.
+            Tuple[int, int]: Sizes of train and validation sets.
         """
         train_size = int(n * self._ratios[0])
         val_size = int(n * self._ratios[1])
-        test_size = n - train_size - val_size
-        return train_size, val_size, test_size
+        return train_size, val_size
