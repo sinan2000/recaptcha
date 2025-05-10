@@ -11,6 +11,7 @@ from .augment import (
     HorizontalFlip,
     RandomRotation
 )
+from .dataloader_factory import DataLoaderFactory
 
 
 class PreprocessingWrapper:
@@ -47,19 +48,17 @@ class PreprocessingWrapper:
         self._downloader = KaggleDatasetDownloader()
         self._loader = PairsLoader(classes)
         self._splitter = DatasetSplitter(ratios, seed=seed)
-        #  self._plotter = SplitPlotter(we need to pass the splits)
+        #  self._plotter = SplitPlotter
         self._show_plots = show_plots
         self._preproc = Preprocessor()
         self._augment = self._build_augmentator()
-        """
-        self._creator = DataLoaderCreator(
+        self._creator = DataLoaderFactory(
             preprocessor=self._preproc,
             augmentator=self._augment,
             batch_size=batch_size,
             num_workers=num_workers,
             balance=balance
         )
-        """
 
     def _build_augmentator(self) -> AugmentationPipeline:
         """
