@@ -1,6 +1,5 @@
-from typing import List, Tuple
-
-BoundingBoxList = List[Tuple[float, float, float, float]]
+from typing import Tuple
+from .types import BoundingBoxList
 
 
 class BoundingBoxScaler:

@@ -4,15 +4,18 @@ from .splitter import DatasetSplitter
 from .plotter import SplitPlotter
 from .preprocessor import Preprocessor
 from .augment import (
-    DatasetItem,
     AugmentationPipeline,
     HorizontalFlip,
     RandomRotation
 )
-from .bbox_scaler import BoundingBoxScaler, BoundingBoxList
+from .bbox_scaler import BoundingBoxScaler
 from .dataset import DatasetHandler
 from .dataloader_factory import DataLoaderFactory
 from .wrapper import PreprocessingWrapper
+from .types import (
+    BoundingBoxList,
+    DatasetItem
+)
 
 __all__ = [
     "KaggleDatasetDownloader",
@@ -20,13 +23,13 @@ __all__ = [
     "DatasetSplitter",
     "SplitPlotter",
     "Preprocessor",
-    "DatasetItem",
     "AugmentationPipeline",
     "HorizontalFlip",
     "RandomRotation",
     "BoundingBoxScaler",
-    "BoundingBoxList",
     "DatasetHandler",
     "DataLoaderFactory",
-    "PreprocessingWrapper"
+    "PreprocessingWrapper",
+    "BoundingBoxList",
+    "DatasetItem"
 ]

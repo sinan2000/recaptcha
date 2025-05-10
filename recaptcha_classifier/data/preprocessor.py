@@ -1,29 +1,19 @@
 from pathlib import Path
-from typing import List, Tuple
+from typing import Tuple
 from PIL import Image
 import numpy as np
 import torch
+from .types import BoundingBoxList
 
 
 class Preprocessor:
     """
-    Responsible for all image-label preprocessing steps:
-    1. Load images from disk
-    2. Parse YOLO label files
-    3. Resize images (we keep same square aspect ratio*, therefore no
-    need to modify YOLO labels in our case)
-    4. Normalize pixel values to [0, 1]
+    Handles core tasks for handling the data, such as loading, resizing,
+    and converting images to tensors. It also parses the YOLO-formated
+    label files to extract bounding box annotations.
 
-    We previously confirmed that all images in our dataset are square,
-    of 120x120 pixels. Moreover, as they have such small size, and we
-    totally have around 500 images, we decided to use pillow instead of
-    its faster alternative, openCV, for the sake of simplicity.
-
-    Follows Single Responsibility Principle (SRP), as only data loading &
-    transformation is handled.
-    Uses Template Method Pattern, because process_pair() defines the
-    skeleton of the algorithm, with detailed steps implemented in protected
-    private methods.
+    It follows the Single Responsibility Principle (SRP) as it separates
+    each task, so there is no risk of side effects.
     """
     def __init__(self, target_size: Tuple[int, int] = (224, 224)) -> None:
         """
@@ -35,32 +25,9 @@ class Preprocessor:
         """
         self._target_size: Tuple[int, int] = target_size
 
-    def process_pairs(self,
-                      img_path: Path,
-                      lbl_path: Path) -> Tuple[torch.Tensor, List[float]]:
+    def load_image(self, img_path: Path) -> Image.Image:
         """
-        Public method to load and then preprocess an image, also parsing
-        its corresponding YOLO label file.
-
-        Args:
-            img_path (Path): Path to the image file.
-            lbl_path (Path): Path to the label file.
-
-        Returns:
-            - image tensor of shape (3, H, W) with normalized pixel values
-            between 0 and 1
-            - list of annotatation bounding boxes in YOLO format
-            (x_center, y_center, width, height)
-        """
-        img = self._load_image(img_path)
-        img = self._resize(img)
-        tensor = self._to_tensor(img)
-        bbox = self._load_labels(lbl_path)
-        return tensor, bbox
-
-    def _load_image(self, img_path: Path) -> Image.Image:
-        """
-        Private helper method to open an image and convert it to RGB.
+        Loads an image from given path and converts it to RGB.
 
         Args:
             img_path (Path): Path to the image file.
@@ -70,45 +37,18 @@ class Preprocessor:
         """
         return Image.open(img_path).convert("RGB")
 
-    def _resize(self, img: Image.Image) -> Image.Image:
+    def load_labels(self, lbl_path: Path) -> BoundingBoxList:
         """
-        Private helper method to resize an image to the target size.
-
-        Args:
-            img (Image.Image): Image to be resized.
-
-        Returns:
-            Image.Image: Resized image.
-        """
-        return img.resize(self._target_size, Image.LANCZOS)
-
-    def _to_tensor(self, img: Image.Image) -> torch.Tensor:
-        """
-        Private helper to convert received PIL image into a PyTorch tensor.
-        It also normalizes the pixel values to [0, 1].
-
-        Args:
-            img (Image.Image): Image to be converted.
-
-        Returns:
-            torch.Tensor: Converted image tensor with pixel values in [0, 1].
-        """
-        arr = np.array(img, dtype=np.float32) / 255.0
-        arr = np.transpose(arr, (2, 0, 1))
-        return torch.from_numpy(arr)
-
-    def _load_labels(self, lbl_path: Path) -> List[float]:
-        """
-        Private helper method to parse one YOLO label file.
+        Parses the list of YOLO format labels from the file at the given path.
 
         Args:
             lbl_path (Path): Path to the label file.
 
         Returns:
-            List[float]: List of bounding boxes in YOLO format
+            BoundingBoxList: List of bounding boxes in YOLO format
             (x_center, y_center, width, height).
         """
-        bounding_boxes: List[float] = []
+        bounding_boxes = []
         with open(lbl_path, "r") as f:
             for line in f:
                 parts = line.strip().split()
@@ -118,3 +58,29 @@ class Preprocessor:
                 bounding_boxes.append((x_center, y_center, width, height))
 
         return bounding_boxes
+
+    def resize(self, img: Image.Image) -> Image.Image:
+        """
+        Resizes the image to the target size.
+
+        Args:
+            img (Image.Image): Image to be resized.
+
+        Returns:
+            Image.Image: Resized image.
+        """
+        return img.resize(self._target_size, Image.LANCZOS)
+
+    def to_tensor(self, img: Image.Image) -> torch.Tensor:
+        """
+        Converts given image into a normalized PyTorch tensor.
+
+        Args:
+            img (Image.Image): Image to be converted.
+
+        Returns:
+            torch.Tensor: Normalized image tensor
+        """
+        arr = np.array(img, dtype=np.float32) / 255.0
+        arr = np.transpose(arr, (2, 0, 1))
+        return torch.from_numpy(arr)

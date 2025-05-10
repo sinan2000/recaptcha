@@ -1,10 +1,9 @@
 import random
 from abc import ABC, abstractmethod
 from PIL import Image
-from typing import List, Tuple
-from bbox_scaler import BoundingBoxScaler, BoundingBoxList
-
-DatasetItem = Tuple[Image.Image, BoundingBoxList]
+from typing import List
+from bbox_scaler import BoundingBoxScaler
+from .types import DatasetItem, BoundingBoxList
 
 
 class Augmentation(ABC):
