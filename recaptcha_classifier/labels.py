@@ -63,3 +63,15 @@ class ModelClasses(Enum):
 
         raise ValueError(f"Class with ID '{id} does not exist. Please define "
                          "it into the labels.py file")
+
+    @classmethod
+    def dataset_classnames(cls) -> list:
+        """
+        Returns a list of class names, only with first letter capitalized.
+        We use it for the pair loader, as that is the format of the folders
+        downloaded from the dataset.
+
+        Returns:
+            list: List of class names.
+        """
+        return [name.capitalize() for name in cls.__members__.keys()]
