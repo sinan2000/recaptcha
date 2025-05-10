@@ -2,7 +2,7 @@ import random
 from abc import ABC, abstractmethod
 from PIL import Image
 from typing import List
-from bbox_scaler import BoundingBoxScaler
+from .bbox_scaler import BoundingBoxScaler
 from .types import DatasetItem, BoundingBoxList
 
 

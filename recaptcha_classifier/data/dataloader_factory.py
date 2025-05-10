@@ -1,19 +1,18 @@
-from typing import Dict, Optional, Any  # List, Tuple,
+from typing import Dict, Optional
 from torch.utils.data import DataLoader
-# import torch
-# from .dataset import DatasetHandler
+from .dataset import DatasetHandler
 from .preprocessor import Preprocessor
 from .augment import AugmentationPipeline
+from .types import SplitDict, PairChunk
 
 
 class DataLoaderFactory:
     """
     The class responsible for creating the DataLoader objects that will be
     passed to the training and validation loops.
-
-    It uses the Factory design pattern, because...
     """
     def __init__(self,
+                 class_map: dict,
                  preprocessor: Preprocessor,
                  augmentator: Optional[AugmentationPipeline] = None,
                  batch_size: int = 32,
@@ -23,6 +22,7 @@ class DataLoaderFactory:
         Initializes the DataLoaderFactory with the given parameters.
 
         Args:
+            class_map (dict): A dictionary mapping class names to indices.
             preprocessor (Preprocessor): The preprocessor to use.
             augmentator (Optional[AugmentationPipeline]): The augmentator used
             batch_size (int): Batch size for DataLoader.
@@ -34,12 +34,38 @@ class DataLoaderFactory:
         self._batch_size = batch_size
         self._num_workers = num_workers
         self._balance = balance
+        self._class_map = class_map
 
     def create_loaders(self,
-                       splits: Dict[str, Any]) -> Dict[str, DataLoader]:
-        # loaders: Dict[str, DataLoader] = {}
-        pass
-        # for split, pairs in splits.items():
-        # we will implement here the loader creation
-        # however, we need to check all interfaces arguments to match
-        # in order to integrate the whole pipeline first
+                       splits: SplitDict) -> Dict[str, DataLoader]:
+        loaders: Dict[str, DataLoader] = {}
+
+        for split_name, cls_dict in splits.items():
+            # flatten nested dict of pairs
+            flat_pairs: PairChunk = [pair
+                                     # traversing over classes
+                                     for pairs in cls_dict.values()
+                                     # traversing over pairs
+                                     for pair in pairs
+                                     ]
+
+            # augmentatr only for training set
+            augmentator = self._aug if split_name == 'train' else None
+
+            dataset = DatasetHandler(
+                pairs=flat_pairs,
+                preprocessor=self._preprocessor,
+                augmentator=augmentator,
+                class_map=self._class_map
+            )
+
+            loader = DataLoader(
+                dataset,
+                batch_size=self._batch_size,
+                shuffle=(split_name == 'train'),
+                num_workers=self._num_workers
+            )
+
+            loaders[split_name] = loader
+
+        return loaders

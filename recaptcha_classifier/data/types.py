@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import List, Tuple, Dict
 from PIL import Image
 from pathlib import Path
 from torch import Tensor
@@ -10,3 +10,9 @@ DatasetItem = Tuple[Image.Image, BoundingBoxList]
 LoaderPair = Tuple[Path, Path]
 
 HandlerItem = Tuple[Tensor, BoundingBoxList, int]
+
+PairChunk = List[LoaderPair]
+
+ClassList = Dict[str, PairChunk]
+
+SplitDict = Dict[str, ClassList]

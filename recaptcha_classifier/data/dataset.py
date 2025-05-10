@@ -20,7 +20,7 @@ class DatasetHandler(Dataset):
                  pairs: List[LoaderPair],
                  preprocessor: Preprocessor,
                  augmentator: Optional[AugmentationPipeline] = None,
-                 class_map: Optional[dict] = None
+                 class_map: dict = None
                  ) -> None:
         """
         Initializes the DatasetHandler with the given parameters.
@@ -62,9 +62,9 @@ class DatasetHandler(Dataset):
 
         # Convert label to class index
         c_name = lbl_path.parent.name
-        if c_name not in self._class_map:
+        if c_name.upper() not in self._class_map:
             raise KeyError(f"Class name '{c_name}' not found in classes.")
-        c_id = self._class_map[c_name]
+        c_id = self._class_map[c_name.upper()]
 
         # Return image tensor, bounding box and class index
         return (tensor, bb, c_id)

@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from .downloader import KaggleDatasetDownloader
 from .loader import PairsLoader
 from .splitter import DatasetSplitter
-# from .plotter import SplitPlotter
+from .plotter import SplitPlotter
 from .preprocessor import Preprocessor
 from .augment import (
     AugmentationPipeline,
@@ -25,13 +25,14 @@ class PreprocessingWrapper:
     4. Creating the Pytorch format DataLoaders for each split
     """
     def __init__(self,
-                 classes: List[str] = ["Chimney", "Crosswalk", "Stair"],
+                 classes: List[str],
+                 class_map: Dict[str, int],
                  ratios: Tuple[float, float, float] = (0.7, 0.2, 0.1),
                  seed: int = 23,  # our group number
                  batch_size: int = 32,
                  num_workers: int = 4,
                  balance: bool = False,
-                 show_plots: bool = False) -> None:
+                 show_plots: bool = True) -> None:
         """
         Initializes the PreprocessingWrapper with the given parameters.
 
@@ -48,11 +49,11 @@ class PreprocessingWrapper:
         self._downloader = KaggleDatasetDownloader()
         self._loader = PairsLoader(classes)
         self._splitter = DatasetSplitter(ratios, seed=seed)
-        #  self._plotter = SplitPlotter
         self._show_plots = show_plots
         self._preproc = Preprocessor()
         self._augment = self._build_augmentator()
         self._creator = DataLoaderFactory(
+            class_map=class_map,
             preprocessor=self._preproc,
             augmentator=self._augment,
             batch_size=batch_size,
@@ -86,18 +87,17 @@ class PreprocessingWrapper:
         self._downloader.download()
 
         # 2. Loads pairs from disk, in dictionary for each class
-        # pairs_by_class = self._loader.find_pairs()
+        pairs_by_class = self._loader.find_pairs()
 
         # 3a. Splits the data into train, val, and test sets
-        # splits = self._splitter.split(pairs_by_class)
+        splits = self._splitter.split(pairs_by_class)
 
         # 3b. Plots the dataset distribution, only if show_plots is True
         if self._show_plots:
-            # plotter = self._plotter(splits)
-            # plotter.print_counts()
-            # plotter.plot()
-            pass
+            plotter = SplitPlotter(splits)
+            plotter.print_counts()
+            plotter.plot_splits()
 
         # 4. Create DataLoaders for each split
-        loaders = ['train', 'empty']  # self._creator.create(splits)
+        loaders = self._creator.create_loaders(splits)
         return loaders
