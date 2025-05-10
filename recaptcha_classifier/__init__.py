@@ -6,6 +6,7 @@ from .data import (
     AugmentationPipeline,
     HorizontalFlip,
     RandomRotation,
+    SplitPlotter
 )
 
 __all__ = [
@@ -15,5 +16,6 @@ __all__ = [
     "DatasetSplitter",
     "AugmentationPipeline",
     "HorizontalFlip",
-    "RandomRotation"
+    "RandomRotation",
+    "SplitPlotter"
 ]

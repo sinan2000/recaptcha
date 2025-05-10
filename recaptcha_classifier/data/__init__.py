@@ -3,6 +3,7 @@ from .loader import PairsLoader
 from .preprocessor import Preprocessor
 from .splitter import DatasetSplitter
 from .augment import AugmentationPipeline, HorizontalFlip, RandomRotation
+from .plotter import SplitPlotter
 
 __all__ = [
     "KaggleDatasetDownloader",
@@ -11,5 +12,6 @@ __all__ = [
     "DatasetSplitter",
     "AugmentationPipeline",
     "HorizontalFlip",
-    "RandomRotation"
+    "RandomRotation",
+    "SplitPlotter"
 ]

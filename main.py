@@ -1,5 +1,6 @@
 # This is a sample Python script.
 
+
 def hello_world():
     return "Hello, World!"
 
@@ -13,21 +14,21 @@ Commented to pass main unit test
 from recaptcha_classifier import (
     KaggleDatasetDownloader,
     PairsLoader,
-    Preprocessor,
-    DatasetSplitter
+    DatasetSplitter,
+    SplitPlotter,
+    Preprocessor
 )
+
+SHOW_PLOTS = True
 
 if __name__ == '__main__':
     KaggleDatasetDownloader().download()
     pairs = PairsLoader().find_pairs()
+    dataset = DatasetSplitter().split(pairs)
 
-    dataset = []
-    preprocessor = Preprocessor()
-    for img_path, lbl_path in pairs:
-        dataset.append(preprocessor.process_pairs(img_path, lbl_path))
+    if SHOW_PLOTS:
+        plotter = SplitPlotter(dataset)
+        plotter.print_counts()
 
-    splits = DatasetSplitter().split(pairs)
-
-    print(f"Test set size: {len(splits['test'])}")
-
+        plotter.plot_splits()
 """
