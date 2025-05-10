@@ -19,7 +19,7 @@ class KaggleDatasetDownloader:
     def __init__(self,
                  url: str = ("https://www.kaggle.com/api/v1/datasets/"
                              "download/mikhailma/test-dataset"),
-                 dest: str = "../../data") -> None:
+                 dest: str = "data") -> None:
         """
         Initializes the downloader instance.
 
@@ -88,7 +88,3 @@ class KaggleDatasetDownloader:
         filled_length = int(bar_length * percent // 100)
         bar = '█' * filled_length + '-' * (bar_length - filled_length)
         print(f"\r|{bar}| {percent:.2f}%", end='')
-
-
-if __name__ == "__main__":
-    KaggleDatasetDownloader().download()

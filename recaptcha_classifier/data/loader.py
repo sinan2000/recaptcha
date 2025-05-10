@@ -12,9 +12,9 @@ class PairsLoader:
     it can be looped over to get the pairs as tuples (img_path, lbl_path).
     """
     def __init__(self,
-                 classes: List[str],
-                 images_dir: str = "../../data/images",
-                 labels_dir: str = "../../data/labels") -> None:
+                 classes: List[str] = ["Chimney", "Crosswalk", "Stair"],
+                 images_dir: str = "data/images",
+                 labels_dir: str = "data/labels") -> None:
         """
         Initializes the PairsLoader instance.
 
@@ -85,13 +85,3 @@ class PairsLoader:
             time.sleep(0.2)  # again, nice to have
 
         print(f"Total pairs loaded: {len(self._pairs)}")
-
-
-if __name__ == "__main__":
-    classes = ["Chimney", "Crosswalk", "Stair"]
-
-    loader = PairsLoader(classes)
-    pairs = loader.find_pairs()
-
-    #  for img_path, lbl_path in pairs:
-    #      print(f"Image: {img_path}, Label: {lbl_path}")
