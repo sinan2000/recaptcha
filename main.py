@@ -1,6 +1,5 @@
 # This is a sample Python script.
 
-
 def hello_world():
     return "Hello, World!"
 
@@ -19,7 +18,7 @@ from recaptcha_classifier import (
     Preprocessor
 )
 
-SHOW_PLOTS = True
+SHOW_PLOTS = False
 
 if __name__ == '__main__':
     KaggleDatasetDownloader().download()
@@ -31,4 +30,6 @@ if __name__ == '__main__':
         plotter.print_counts()
 
         plotter.plot_splits()
+
+    print(dataset['train'])
 """
