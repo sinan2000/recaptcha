@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader
 
 
 class TestLoaderFactory(unittest.TestCase):
-    @patch("recaptcha_classifier.data.loader_factory.DatasetHandler")
+    @patch("recaptcha_classifier.data.loader_factory.ImageDataset")
     def test_create_loaders(self, dataset_mock):
         class_map = {"class1": 0, "class2": 1}
         preprocessor = Preprocessor()

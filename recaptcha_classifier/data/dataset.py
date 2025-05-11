@@ -5,7 +5,7 @@ from .augment import AugmentationPipeline
 from .types import FilePair, DataItem
 
 
-class DatasetHandler(Dataset):
+class ImageDataset(Dataset):
     """
     A class to handle the pairs of (image, label) for the dataset.
     It makes them ready for training, by applying augmentation
@@ -20,10 +20,10 @@ class DatasetHandler(Dataset):
                  pairs: List[FilePair],
                  preprocessor: Preprocessor,
                  augmentator: Optional[AugmentationPipeline] = None,
-                 class_map: dict = None
+                 class_map: dict = {}
                  ) -> None:
         """
-        Initializes the DatasetHandler with the given parameters.
+        Initializes the ImageDataset with the given parameters.
         """
         self._pairs = pairs
         self._prep = preprocessor
@@ -53,6 +53,9 @@ class DatasetHandler(Dataset):
         img = self._prep.load_image(img_path)
         bb = self._prep.load_labels(lbl_path)
 
+        if not bb:
+            raise ValueError(f"Bounding box list is empty for {lbl_path}")
+
         # Apply augmentation if passed
         if self._aug:
             img, bb = self._aug.apply_transforms(img, bb)
@@ -62,9 +65,9 @@ class DatasetHandler(Dataset):
 
         # Convert label to class index
         c_name = lbl_path.parent.name
-        if c_name.upper() not in self._class_map:
+        if c_name not in self._class_map:
             raise KeyError(f"Class name '{c_name}' not found in classes.")
-        c_id = self._class_map[c_name.upper()]
+        c_id = self._class_map[c_name]
 
         # Return image tensor, bounding box and class index
         return (tensor, bb, c_id)

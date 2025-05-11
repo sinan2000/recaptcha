@@ -1,6 +1,6 @@
 from typing import Dict, Optional
 from torch.utils.data import DataLoader
-from .dataset import DatasetHandler
+from .dataset import ImageDataset
 from .preprocessor import Preprocessor
 from .augment import AugmentationPipeline
 from .types import DatasetSplitDict, FilePairList
@@ -54,7 +54,7 @@ class LoaderFactory:
             # augmentatr only for training set
             augmentator = self._aug if split_name == 'train' else None
 
-            dataset = DatasetHandler(
+            dataset = ImageDataset(
                 pairs=flat_pairs,
                 preprocessor=self._preprocessor,
                 augmentator=augmentator,

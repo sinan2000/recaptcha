@@ -3,6 +3,8 @@ from .downloader import DatasetDownloader
 from .pair_loader import ImageLabelLoader
 from .splitter import DataSplitter
 from .visualizer import Visualizer
+from .loader_factory import LoaderFactory
+from .dataset import ImageDataset
 from .preprocessor import Preprocessor
 from .augment import (
     AugmentationPipeline,
@@ -10,8 +12,6 @@ from .augment import (
     RandomRotation
 )
 from .bbox_scaler import BoundingBoxScaler
-from .dataset import DatasetHandler
-from .loader_factory import LoaderFactory
 
 from .collate_batch import collate_batch
 
@@ -33,12 +33,12 @@ __all__ = [
     "DataSplitter",
     "Visualizer",
     "LoaderFactory",
+    "ImageDataset",
     "Preprocessor",
     "AugmentationPipeline",
     "HorizontalFlip",
     "RandomRotation",
     "BoundingBoxScaler",
-    "DatasetHandler",
     # Methods
     "collate_batch",
     # Types

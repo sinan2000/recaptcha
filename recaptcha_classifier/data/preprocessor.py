@@ -28,6 +28,7 @@ class Preprocessor:
     def load_image(self, img_path: Path) -> Image.Image:
         """
         Loads an image from given path and converts it to RGB.
+        Also resizes the image to the target size.
 
         Args:
             img_path (Path): Path to the image file.
@@ -35,7 +36,8 @@ class Preprocessor:
         Returns:
             Image.Image: Loaded image in RGB format.
         """
-        return Image.open(img_path).convert("RGB")
+        loaded = Image.open(img_path).convert("RGB")
+        return self._resize(loaded)
 
     def load_labels(self, lbl_path: Path) -> BBoxList:
         """
@@ -59,7 +61,7 @@ class Preprocessor:
 
         return bounding_boxes
 
-    def resize(self, img: Image.Image) -> Image.Image:
+    def _resize(self, img: Image.Image) -> Image.Image:
         """
         Resizes the image to the target size.
 
