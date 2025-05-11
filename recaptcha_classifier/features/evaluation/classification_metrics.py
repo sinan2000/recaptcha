@@ -57,35 +57,3 @@ def evaluate_classification(y_pred: Tensor,
         'F1-score': f1_val.item(),
         'Confusion Matrix': cm
     }
-
-
-# Example usage (will be removed for final draft)
-
-# Simulated model logits for 6 samples and 3 classes
-y_pred_logits = torch.tensor([
-    [2.0, 0.5, 0.3],   # → class 0
-    [0.2, 1.8, 0.1],   # → class 1
-    [0.1, 0.4, 2.0],   # → class 2
-    [1.0, 1.2, 0.3],   # → class 1
-    [2.2, 0.3, 0.1],   # → class 0
-    [0.5, 0.4, 1.5]    # → class 2
-])
-
-# Ground truth labels
-y_true = torch.tensor([0, 1, 2, 1, 0, 2])
-
-# Optional class names
-class_names = ["stair", "chimney", "crosswalk"]
-
-# Call the evaluation function
-results = evaluate_classification(
-    y_pred=y_pred_logits,
-    y_true=y_true,
-    num_classes=3,
-    average='macro',
-    cm_plot=True,
-    class_names=class_names,
-)
-
-# Print the returned metrics
-print("Returned metrics:", results)

@@ -117,35 +117,3 @@ def evaluate_map(predictions: list[dict],
     # Convert torch.Tensors to float for readability
     return {k: v.item() if isinstance(v, torch.Tensor)
             else v for k, v in result.items()}
-
-
-# Example usage (will be removed for final draft)
-yolo_pred = [0, 0.5, 0.5, 0.4, 0.4]
-yolo_gt = [0, 0.5, 0.5, 0.5, 0.5]
-img_w, img_h = 224, 224
-
-pred_box = yolo_to_corners(*yolo_pred[1:], img_w, img_h)
-gt_box = yolo_to_corners(*yolo_gt[1:], img_w, img_h)
-
-print("Predicted box (corner format):", pred_box)
-print("Ground truth box (corner format):", gt_box)
-
-# --- Compute IoU ---
-iou = compute_iou(pred_box, gt_box)
-print(f"IoU: {iou:.4f}")
-
-# --- Compute mAP ---
-preds = [{
-    "boxes": torch.tensor([pred_box]),
-    "scores": torch.tensor([0.85]),
-    "labels": torch.tensor([yolo_pred[0]])
-}]
-targets = [{
-    "boxes": torch.tensor([gt_box]),
-    "labels": torch.tensor([yolo_gt[0]])
-}]
-
-map_result = evaluate_map(preds, targets)
-print("\nmAP Results:")
-for k, v in map_result.items():
-    print(f"  {k}: {v:.4f}")
