@@ -1,7 +1,7 @@
-from .labels import ModelClasses
-from .data import PreprocessingWrapper
+from .detection_labels import DetectionLabels
+from .data import DataPreprocessingPipeline
 
 __all__ = [
-    "ModelClasses",
-    "PreprocessingWrapper"
+    "DetectionLabels",
+    "DataPreprocessingPipeline"
 ]

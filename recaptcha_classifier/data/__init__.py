@@ -11,7 +11,7 @@ from .augment import (
 from .bbox_scaler import BoundingBoxScaler
 from .dataset import DatasetHandler
 from .dataloader_factory import DataLoaderFactory
-from .wrapper import PreprocessingWrapper
+from .data_preprocessing_pipeline import DataPreprocessingPipeline
 
 from .collate_batch import collate_batch
 
@@ -38,7 +38,7 @@ __all__ = [
     "BoundingBoxScaler",
     "DatasetHandler",
     "DataLoaderFactory",
-    "PreprocessingWrapper",
+    "DataPreprocessingPipeline",
     # Methods
     "collate_batch",
     # Types

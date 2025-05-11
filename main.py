@@ -1,6 +1,6 @@
 # from recaptcha_classifier import (
-#    ModelClasses,
-#    PreprocessingWrapper
+#    DetectionLabels,
+#    DataPreprocessingPipeline
 # )
 
 
@@ -11,9 +11,7 @@ def hello_world():
 if __name__ == '__main__':
     hello_world()
     """
-    wrapper = PreprocessingWrapper(ModelClasses.dataset_classnames(),
-                                   class_map=ModelClasses.to_dict()
-                                   )  # somehow remove class_map param
+    wrapper = DataPreprocessingPipeline(DetectionLabels.to_class_map())
     loaders = wrapper.run()
     print("Data loaders created successfully.")
 

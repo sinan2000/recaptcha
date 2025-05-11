@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class ModelClasses(Enum):
+class DetectionLabels(Enum):
     """
     Enum for improving readability of the object classes.
     """
@@ -37,14 +37,14 @@ class ModelClasses(Enum):
         return list(cls)
 
     @classmethod
-    def to_dict(cls) -> dict:
+    def to_class_map(cls) -> dict:
         """
         Convert the enum to a dictionary.
 
         Returns:
             dict: Dictionary representation of the enum.
         """
-        return {cl.name: cl.value for cl in cls}
+        return {cl.name.capitalize(): cl.value for cl in cls}
 
     @classmethod
     def from_id(cls, id: int) -> str:
@@ -59,7 +59,7 @@ class ModelClasses(Enum):
         """
         for name, member in cls.__members__.items():
             if member.value == id:
-                return name
+                return name.capitalize()
 
         raise ValueError(f"Class with ID '{id} does not exist. Please define "
                          "it into the labels.py file")

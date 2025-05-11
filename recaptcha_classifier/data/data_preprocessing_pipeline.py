@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 from torch.utils.data import DataLoader
 
 from .downloader import KaggleDatasetDownloader
@@ -14,18 +14,25 @@ from .augment import (
 from .dataloader_factory import DataLoaderFactory
 
 
-class PreprocessingWrapper:
+class DataPreprocessingPipeline:
     """
-    Facade wrap responsible for all preprocessing steps.
+    High-level wrapper, implemented as an interface for the entire
+    data preprocessing pipeline.
+    It integrates all components in order to ensure dataset is
+    downloaded, split and prepared into PyTorch DataLoaders for training.
+
     It handles:
-    1. Downloading the dataset
-    2. Loading pairs from disk (data/ folder)
-    3a. splitting dataset into train/val/test
-    3b. plotting dataset distribution
-    4. Creating the Pytorch format DataLoaders for each split
+    1. Downloading the dataset if not already present locally.
+    2. Finds all pairs of images and YOLO annotations from the dataset
+    3. Splitting dataset into train/val/test
+    4. Plotting dataset distribution (optionally)
+    5. Creating the Pytorch format DataLoaders for each split
+
+    It is implemented using the Facade Pattern, as it is a simple
+    interface that handles all the complexity of the data preprocessing
+    pipeline and it includes all its components.
     """
     def __init__(self,
-                 classes: List[str],
                  class_map: Dict[str, int],
                  ratios: Tuple[float, float, float] = (0.7, 0.2, 0.1),
                  seed: int = 23,  # our group number
@@ -34,10 +41,10 @@ class PreprocessingWrapper:
                  balance: bool = False,
                  show_plots: bool = True) -> None:
         """
-        Initializes the PreprocessingWrapper with the given parameters.
+        Initializes the DataPreprocessingPipeline with the given parameters.
 
         Args:
-            classes (List[str]): List of class names.
+            class_map (Dict[str, int]): Mappng of class names to indices.
             ratios (Tuple[float, float, float]): Ratios for train,
             val, and test splits.
             seed (int): Random seed for reproducibility.
@@ -47,7 +54,7 @@ class PreprocessingWrapper:
             show_plots (bool): Whether to show plots.
         """
         self._downloader = KaggleDatasetDownloader()
-        self._loader = PairsLoader(classes)
+        self._loader = PairsLoader(list(class_map.keys()))
         self._splitter = DatasetSplitter(ratios, seed=seed)
         self._show_plots = show_plots
         self._preproc = Preprocessor()
@@ -83,21 +90,31 @@ class PreprocessingWrapper:
             Dict[str, DataLoader]: Dictionary containing DataLoaders for
             train, val, and test sets.
         """
+        print("Running data preprocessing pipeline...")
         # 1. Downloads the dataset if not already present locally
+        print("a. Checking local files...")
         self._downloader.download()
 
-        # 2. Loads pairs from disk, in dictionary for each class
+        # 2. Finds all pairs of images and YOLO annotations from the dataset
+        print("b. Searching for all the data...")
         pairs_by_class = self._loader.find_pairs()
 
         # 3a. Splits the data into train, val, and test sets
+        print("c. Splitting the data...")
         splits = self._splitter.split(pairs_by_class)
 
         # 3b. Plots the dataset distribution, only if show_plots is True
         if self._show_plots:
+            print("d. show_plots is True, plotting the dataset"
+                  "distribution...")
             plotter = SplitPlotter(splits)
             plotter.print_counts()
             plotter.plot_splits()
+        else:
+            print("d. show_plots is False, not plotting"
+                  " the dataset distribution...")
 
         # 4. Create DataLoaders for each split
+        print("e. Creating DataLoaders for each split...")
         loaders = self._creator.create_loaders(splits)
         return loaders
