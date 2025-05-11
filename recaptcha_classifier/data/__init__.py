@@ -13,7 +13,7 @@ from .dataset import DatasetHandler
 from .dataloader_factory import DataLoaderFactory
 from .wrapper import PreprocessingWrapper
 
-from .custom_collate import custom_collate
+from .collate_batch import collate_batch
 
 from .types import (
     FilePair,
@@ -40,7 +40,7 @@ __all__ = [
     "DataLoaderFactory",
     "PreprocessingWrapper",
     # Methods
-    "custom_collate",
+    "collate_batch",
     # Types
     "FilePair",
     "FilePairList",

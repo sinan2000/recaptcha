@@ -3,7 +3,7 @@ from .types import DataBatch, DataItem
 import torch
 
 
-def custom_collate(batch: List[DataItem]) -> DataBatch:
+def collate_batch(batch: List[DataItem]) -> DataBatch:
     """
     Custom collate function used in the PyTorch DataLoader to handle
     the non-uniform length of bounding box lists.

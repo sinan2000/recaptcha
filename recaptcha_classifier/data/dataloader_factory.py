@@ -4,7 +4,7 @@ from .dataset import DatasetHandler
 from .preprocessor import Preprocessor
 from .augment import AugmentationPipeline
 from .types import DatasetSplitDict, FilePairList
-from .custom_collate import custom_collate
+from .collate_batch import collate_batch
 
 
 class DataLoaderFactory:
@@ -65,7 +65,7 @@ class DataLoaderFactory:
                 batch_size=self._batch_size,
                 shuffle=(split_name == 'train'),
                 num_workers=self._num_workers,
-                collate_fn=custom_collate
+                collate_fn=collate_batch
             )
 
             loaders[split_name] = loader
