@@ -5,7 +5,7 @@ from .downloader import DatasetDownloader
 from .pair_loader import ImageLabelLoader
 from .splitter import DataSplitter
 from .visualizer import Visualizer
-from .preprocessor import Preprocessor
+from .preprocessor import ImagePrep
 from .augment import (
     AugmentationPipeline,
     HorizontalFlip,
@@ -57,7 +57,7 @@ class DataPreprocessingPipeline:
         self._loader = ImageLabelLoader(list(class_map.keys()))
         self._splitter = DataSplitter(ratios, seed=seed)
         self._show_plots = show_plots
-        self._preproc = Preprocessor()
+        self._preproc = ImagePrep()
         self._augment = self._build_augmentator()
         self._creator = LoaderFactory(
             class_map=class_map,

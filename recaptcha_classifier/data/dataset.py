@@ -1,6 +1,6 @@
 from typing import List, Optional
 from torch.utils.data import Dataset
-from .preprocessor import Preprocessor
+from .preprocessor import ImagePrep
 from .augment import AugmentationPipeline
 from .types import FilePair, DataItem
 
@@ -18,7 +18,7 @@ class ImageDataset(Dataset):
     """
     def __init__(self,
                  pairs: List[FilePair],
-                 preprocessor: Preprocessor,
+                 preprocessor: ImagePrep,
                  augmentator: Optional[AugmentationPipeline] = None,
                  class_map: dict = {}
                  ) -> None:

@@ -6,7 +6,7 @@ import torch
 from .types import BBoxList
 
 
-class Preprocessor:
+class ImagePrep:
     """
     Handles core tasks for handling the data, such as loading, resizing,
     and converting images to tensors. It also parses the YOLO-formated
@@ -17,7 +17,7 @@ class Preprocessor:
     """
     def __init__(self, target_size: Tuple[int, int] = (224, 224)) -> None:
         """
-        Initializes the Preprocessor instance.
+        Initializes the ImagePrep instance.
 
         Args:
             target_size (Tuple[int, int]): Desired size for images in (width,
@@ -27,8 +27,8 @@ class Preprocessor:
 
     def load_image(self, img_path: Path) -> Image.Image:
         """
-        Loads an image from given path and converts it to RGB.
-        Also resizes the image to the target size.
+        Loads an image from given path, converts it to RGB and resizes it
+        to the target size; it is then returned.
 
         Args:
             img_path (Path): Path to the image file.

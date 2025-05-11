@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 from torch.utils.data import DataLoader
 from .dataset import ImageDataset
-from .preprocessor import Preprocessor
+from .preprocessor import ImagePrep
 from .augment import AugmentationPipeline
 from .types import DatasetSplitDict, FilePairList
 from .collate_batch import collate_batch
@@ -14,7 +14,7 @@ class LoaderFactory:
     """
     def __init__(self,
                  class_map: dict,
-                 preprocessor: Preprocessor,
+                 preprocessor: ImagePrep,
                  augmentator: Optional[AugmentationPipeline] = None,
                  batch_size: int = 32,
                  num_workers: int = 4,
@@ -24,7 +24,7 @@ class LoaderFactory:
 
         Args:
             class_map (dict): A dictionary mapping class names to indices.
-            preprocessor (Preprocessor): The preprocessor to use.
+            preprocessor (ImagePrep): The preprocessor to use.
             augmentator (Optional[AugmentationPipeline]): The augmentator used
             batch_size (int): Batch size for DataLoader.
             num_workers (int): Number of workers for DataLoader.

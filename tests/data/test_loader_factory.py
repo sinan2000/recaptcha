@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 from recaptcha_classifier.data.loader_factory import LoaderFactory
-from recaptcha_classifier.data.preprocessor import Preprocessor
+from recaptcha_classifier.data.preprocessor import ImagePrep
 from recaptcha_classifier.data.augment import AugmentationPipeline
 from torch.utils.data import DataLoader
 
@@ -11,7 +11,7 @@ class TestLoaderFactory(unittest.TestCase):
     @patch("recaptcha_classifier.data.loader_factory.ImageDataset")
     def test_create_loaders(self, dataset_mock):
         class_map = {"class1": 0, "class2": 1}
-        preprocessor = Preprocessor()
+        preprocessor = ImagePrep()
         augmentator = AugmentationPipeline()
         factory = LoaderFactory(class_map, preprocessor, augmentator)
 

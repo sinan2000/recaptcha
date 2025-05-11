@@ -5,7 +5,7 @@ from .splitter import DataSplitter
 from .visualizer import Visualizer
 from .loader_factory import LoaderFactory
 from .dataset import ImageDataset
-from .preprocessor import Preprocessor
+from .preprocessor import ImagePrep
 from .augment import (
     AugmentationPipeline,
     HorizontalFlip,
@@ -34,7 +34,7 @@ __all__ = [
     "Visualizer",
     "LoaderFactory",
     "ImageDataset",
-    "Preprocessor",
+    "ImagePrep",
     "AugmentationPipeline",
     "HorizontalFlip",
     "RandomRotation",
