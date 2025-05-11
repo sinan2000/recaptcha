@@ -2,15 +2,14 @@ from typing import Tuple
 from .types import BBoxList
 
 
-class BoundingBoxScaler:
+class YOLOScaler:
     """
-    This class is responsible for scaling the bounding boxes
+    This class is responsible for scaling the YOLO format bounding boxes
     based on the transform applied to the image. It is only
     used inside the AugmentationPipeline class, to adjust
     the coordinates of the bounding boxes after applying
     transformations to the image.
     """
-
     @staticmethod
     def scale_for_flip(bboxes: BBoxList) -> BBoxList:
         """
@@ -81,10 +80,10 @@ class BoundingBoxScaler:
             y_min = min(c[1] for c in new_corners)
             y_max = max(c[1] for c in new_corners)
 
-            new_x = (x_min + x_max) / (2 * width)
-            new_y = (y_min + y_max) / (2 * height)
-            new_w = (x_max - x_min) / width
-            new_h = (y_max - y_min) / height
+            new_x = max(0, min(1, (x_min + x_max) / (2 * width)))
+            new_y = max(0, min(1, (y_min + y_max) / (2 * height)))
+            new_w = max(0, min(1, (x_max - x_min) / width))
+            new_h = max(0, min(1, (y_max - y_min) / height))
 
             n_ann.append((new_x, new_y, new_w, new_h))
 

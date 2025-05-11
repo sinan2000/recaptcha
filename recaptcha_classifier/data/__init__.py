@@ -11,7 +11,7 @@ from .augment import (
     HorizontalFlip,
     RandomRotation
 )
-from .bbox_scaler import BoundingBoxScaler
+from .scaler import YOLOScaler
 
 from .collate_batch import collate_batch
 
@@ -38,7 +38,7 @@ __all__ = [
     "AugmentationPipeline",
     "HorizontalFlip",
     "RandomRotation",
-    "BoundingBoxScaler",
+    "YOLOScaler",
     # Methods
     "collate_batch",
     # Types

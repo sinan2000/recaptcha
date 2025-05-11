@@ -2,7 +2,7 @@ import random
 from abc import ABC, abstractmethod
 from PIL import Image
 from typing import List
-from .bbox_scaler import BoundingBoxScaler
+from .scaler import YOLOScaler
 from .types import DataPair, BBoxList
 
 
@@ -74,7 +74,7 @@ class HorizontalFlip(Augmentation):
             return image, annotations
 
         flipped = image.transpose(Image.FLIP_LEFT_RIGHT)
-        new_annotations = BoundingBoxScaler.scale_for_flip(annotations)
+        new_annotations = YOLOScaler.scale_for_flip(annotations)
 
         return flipped, new_annotations
 
@@ -93,7 +93,7 @@ class RandomRotation(Augmentation):
         angle = random.uniform(-self._degrees, self._degrees)
 
         rotated = image.rotate(angle)
-        new_annotations = (BoundingBoxScaler
+        new_annotations = (YOLOScaler
                            .scale_for_rotation(annotations,
                                                angle,
                                                image.size)
