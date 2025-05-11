@@ -1,4 +1,5 @@
-from .downloader import KaggleDatasetDownloader
+from .pipeline import DataPreprocessingPipeline
+from .downloader import DatasetDownloader
 from .loader import PairsLoader
 from .splitter import DatasetSplitter
 from .plotter import SplitPlotter
@@ -11,7 +12,6 @@ from .augment import (
 from .bbox_scaler import BoundingBoxScaler
 from .dataset import DatasetHandler
 from .dataloader_factory import DataLoaderFactory
-from .data_preprocessing_pipeline import DataPreprocessingPipeline
 
 from .collate_batch import collate_batch
 
@@ -27,7 +27,8 @@ from .types import (
 
 __all__ = [
     # Classes
-    "KaggleDatasetDownloader",
+    "DataPreprocessingPipeline",
+    "DatasetDownloader",
     "PairsLoader",
     "DatasetSplitter",
     "SplitPlotter",
@@ -38,7 +39,6 @@ __all__ = [
     "BoundingBoxScaler",
     "DatasetHandler",
     "DataLoaderFactory",
-    "DataPreprocessingPipeline",
     # Methods
     "collate_batch",
     # Types

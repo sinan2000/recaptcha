@@ -1,7 +1,7 @@
 from typing import Dict, Tuple
 from torch.utils.data import DataLoader
 
-from .downloader import KaggleDatasetDownloader
+from .downloader import DatasetDownloader
 from .loader import PairsLoader
 from .splitter import DatasetSplitter
 from .plotter import SplitPlotter
@@ -53,7 +53,7 @@ class DataPreprocessingPipeline:
             balance (bool): Whether to balance the dataset.
             show_plots (bool): Whether to show plots.
         """
-        self._downloader = KaggleDatasetDownloader()
+        self._downloader = DatasetDownloader()
         self._loader = PairsLoader(list(class_map.keys()))
         self._splitter = DatasetSplitter(ratios, seed=seed)
         self._show_plots = show_plots
