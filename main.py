@@ -1,16 +1,10 @@
-# from recaptcha_classifier import (
-#    DetectionLabels,
-#    DataPreprocessingPipeline
-# )
-
-
-def hello_world():
-    return "Hello, World!"
+from recaptcha_classifier import (
+    DetectionLabels,
+    DataPreprocessingPipeline
+)
 
 
 if __name__ == '__main__':
-    hello_world()
-    """
     wrapper = DataPreprocessingPipeline(DetectionLabels.to_class_map())
     loaders = wrapper.run()
     print("Data loaders created successfully.")
@@ -24,6 +18,7 @@ if __name__ == '__main__':
 
             print(f"First bounding boxes: {bboxes[0]}")
 
+            # you can find labels in the DetectionLabels class
             print(f"First label (class index): {labels[0]}")
 
             # Check batch sizes
@@ -32,4 +27,3 @@ if __name__ == '__main__':
 
             print("-" * 40)
             break
-    """

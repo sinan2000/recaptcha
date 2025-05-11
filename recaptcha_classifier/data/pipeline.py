@@ -105,7 +105,7 @@ class DataPreprocessingPipeline:
 
         # 3b. Plots the dataset distribution, only if show_plots is True
         if self._show_plots:
-            print("d. show_plots is True, plotting the dataset"
+            print("d. show_plots is True, plotting the dataset "
                   "distribution...")
             Visualizer.print_counts(splits)
             Visualizer.plot_splits(splits)
