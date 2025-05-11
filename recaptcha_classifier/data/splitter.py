@@ -2,7 +2,7 @@ import random
 from typing import List, Dict, Tuple
 
 
-class DatasetSplitter:
+class DataSplitter:
     """
     Shuffles and splits data into train/validation/test sets.
     It respects the ratios provided by the user and distributions of the

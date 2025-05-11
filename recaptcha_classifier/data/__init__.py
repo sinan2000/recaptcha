@@ -1,7 +1,7 @@
 from .pipeline import DataPreprocessingPipeline
 from .downloader import DatasetDownloader
 from .pair_loader import ImageLabelLoader
-from .splitter import DatasetSplitter
+from .splitter import DataSplitter
 from .plotter import SplitPlotter
 from .preprocessor import Preprocessor
 from .augment import (
@@ -30,7 +30,7 @@ __all__ = [
     "DataPreprocessingPipeline",
     "DatasetDownloader",
     "ImageLabelLoader",
-    "DatasetSplitter",
+    "DataSplitter",
     "SplitPlotter",
     "Preprocessor",
     "AugmentationPipeline",

@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 
 from .downloader import DatasetDownloader
 from .pair_loader import ImageLabelLoader
-from .splitter import DatasetSplitter
+from .splitter import DataSplitter
 from .plotter import SplitPlotter
 from .preprocessor import Preprocessor
 from .augment import (
@@ -55,7 +55,7 @@ class DataPreprocessingPipeline:
         """
         self._downloader = DatasetDownloader()
         self._loader = ImageLabelLoader(list(class_map.keys()))
-        self._splitter = DatasetSplitter(ratios, seed=seed)
+        self._splitter = DataSplitter(ratios, seed=seed)
         self._show_plots = show_plots
         self._preproc = Preprocessor()
         self._augment = self._build_augmentator()
