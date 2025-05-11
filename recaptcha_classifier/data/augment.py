@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from PIL import Image
 from typing import List
 from .bbox_scaler import BoundingBoxScaler
-from .types import DatasetItem, BoundingBoxList
+from .types import DataPair, BBoxList
 
 
 class Augmentation(ABC):
@@ -11,7 +11,7 @@ class Augmentation(ABC):
     @abstractmethod
     def augment(self,
                 image: Image.Image,
-                annotations: List) -> DatasetItem:
+                annotations: List) -> DataPair:
         """
         Apply the transformation of the image and updates the bounding boxes
         if necessary.
@@ -21,7 +21,7 @@ class Augmentation(ABC):
             annotations (List): List of annotations associated with the image.
 
         Returns:
-            DatasetItem: The augmented image and the updated
+            DataPair: The augmented image and the updated
             annotations.
         """
         pass
@@ -43,18 +43,18 @@ class AugmentationPipeline:
 
     def apply_transforms(self,
                          image: Image.Image,
-                         annotations: BoundingBoxList) -> DatasetItem:
+                         annotations: BBoxList) -> DataPair:
         """
         Apply all transformations in the pipeline to the image and
         annotations.
 
         Args:
             image (Image.Image): The image to be augmented.
-            annotations (BoundingBoxList): List of annotations
+            annotations (BBoxList): List of annotations
             associated with the image.
 
         Returns:
-            DatasetItem: The augmented image and the updated
+            DataPair: The augmented image and the updated
             annotations.
         """
         for transform in self._transforms:
@@ -69,7 +69,7 @@ class HorizontalFlip(Augmentation):
 
     def augment(self,
                 image: Image.Image,
-                annotations: BoundingBoxList) -> DatasetItem:
+                annotations: BBoxList) -> DataPair:
         if random.random() > self._p:
             return image, annotations
 
@@ -89,7 +89,7 @@ class RandomRotation(Augmentation):
 
     def augment(self,
                 image: Image.Image,
-                annotations: BoundingBoxList) -> DatasetItem:
+                annotations: BBoxList) -> DataPair:
         angle = random.uniform(-self._degrees, self._degrees)
 
         rotated = image.rotate(angle)

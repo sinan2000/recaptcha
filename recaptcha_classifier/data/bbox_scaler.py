@@ -1,5 +1,5 @@
 from typing import Tuple
-from .types import BoundingBoxList
+from .types import BBoxList
 
 
 class BoundingBoxScaler:
@@ -12,34 +12,34 @@ class BoundingBoxScaler:
     """
 
     @staticmethod
-    def scale_for_flip(bboxes: BoundingBoxList) -> BoundingBoxList:
+    def scale_for_flip(bboxes: BBoxList) -> BBoxList:
         """
         Adjusts the bounding boxes for horizontal flip.
 
         Args:
-            bboxes (BoundingBoxList): List of bounding boxes in YOLO format
+            bboxes (BBoxList): List of bounding boxes in YOLO format
             (x_center, y_center, width, height).
 
         Returns:
-            BoundingBoxList: List of scaled bounding boxes.
+            BBoxList: List of scaled bounding boxes.
         """
         return [(1 - x, y, w, h) for (x, y, w, h) in bboxes]
 
     @staticmethod
-    def scale_for_rotation(bboxes: BoundingBoxList,
+    def scale_for_rotation(bboxes: BBoxList,
                            angle: float,
-                           size: Tuple[int, int]) -> BoundingBoxList:
+                           size: Tuple[int, int]) -> BBoxList:
         """
         Adjusts the bounding boxes for rotation.
 
         Args:
-            bboxes (BoundingBoxList): List of bounding boxes in YOLO format
+            bboxes (BBoxList): List of bounding boxes in YOLO format
             (x_center, y_center, width, height).
             angle (float): Angle of rotation.
             size (Tuple[int, int]): Size of the image. (width, height)
 
         Returns:
-            BoundingBoxList: List of scaled bounding boxes.
+            BBoxList: List of scaled bounding boxes.
         """
         import math
         width, height = size

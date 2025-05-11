@@ -12,13 +12,21 @@ from .bbox_scaler import BoundingBoxScaler
 from .dataset import DatasetHandler
 from .dataloader_factory import DataLoaderFactory
 from .wrapper import PreprocessingWrapper
-from .types import (
-    BoundingBoxList,
-    DatasetItem
-)
+
 from .custom_collate import custom_collate
 
+from .types import (
+    FilePair,
+    FilePairList,
+    DatasetSplitDict,
+    BBoxList,
+    DataPair,
+    DataItem,
+    DataBatch
+)
+
 __all__ = [
+    # Classes
     "KaggleDatasetDownloader",
     "PairsLoader",
     "DatasetSplitter",
@@ -31,7 +39,14 @@ __all__ = [
     "DatasetHandler",
     "DataLoaderFactory",
     "PreprocessingWrapper",
-    "BoundingBoxList",
-    "DatasetItem",
-    "custom_collate"
+    # Methods
+    "custom_collate",
+    # Types
+    "FilePair",
+    "FilePairList",
+    "DatasetSplitDict",
+    "BBoxList",
+    "DataPair",
+    "DataItem",
+    "DataBatch",
 ]

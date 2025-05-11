@@ -2,7 +2,7 @@ from typing import List, Optional
 from torch.utils.data import Dataset
 from .preprocessor import Preprocessor
 from .augment import AugmentationPipeline
-from .types import LoaderPair, HandlerItem
+from .types import FilePair, DataItem
 
 
 class DatasetHandler(Dataset):
@@ -17,7 +17,7 @@ class DatasetHandler(Dataset):
     https://docs.pytorch.org/tutorials/beginner/basics/data_tutorial.html
     """
     def __init__(self,
-                 pairs: List[LoaderPair],
+                 pairs: List[FilePair],
                  preprocessor: Preprocessor,
                  augmentator: Optional[AugmentationPipeline] = None,
                  class_map: dict = None
@@ -35,7 +35,7 @@ class DatasetHandler(Dataset):
 
     def __getitem__(self,
                     idx: int
-                    ) -> HandlerItem:
+                    ) -> DataItem:
         """
         Returns the item at the given index, ready for training.
 
@@ -43,7 +43,7 @@ class DatasetHandler(Dataset):
             idx (int): Index of the item to retrieve.
 
         Returns:
-            HandlerItem: A tuple containing the
+            DataItem: A tuple containing the
             preprocessed image in tensor format, the YOLO bound
             box annotations and the label.
         """

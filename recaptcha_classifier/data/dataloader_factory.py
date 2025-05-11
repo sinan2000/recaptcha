@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 from .dataset import DatasetHandler
 from .preprocessor import Preprocessor
 from .augment import AugmentationPipeline
-from .types import SplitDict, PairChunk
+from .types import DatasetSplitDict, FilePairList
 from .custom_collate import custom_collate
 
 
@@ -38,17 +38,17 @@ class DataLoaderFactory:
         self._class_map = class_map
 
     def create_loaders(self,
-                       splits: SplitDict) -> Dict[str, DataLoader]:
+                       splits: DatasetSplitDict) -> Dict[str, DataLoader]:
         loaders: Dict[str, DataLoader] = {}
 
         for split_name, cls_dict in splits.items():
             # flatten nested dict of pairs
-            flat_pairs: PairChunk = [pair
-                                     # traversing over classes
-                                     for pairs in cls_dict.values()
-                                     # traversing over pairs
-                                     for pair in pairs
-                                     ]
+            flat_pairs: FilePairList = [pair
+                                        # traversing over classes
+                                        for pairs in cls_dict.values()
+                                        # traversing over pairs
+                                        for pair in pairs
+                                        ]
 
             # augmentatr only for training set
             augmentator = self._aug if split_name == 'train' else None

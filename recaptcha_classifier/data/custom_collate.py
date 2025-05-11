@@ -1,22 +1,22 @@
 from typing import List
-from .types import Batch, HandlerItem
+from .types import DataBatch, DataItem
 import torch
 
 
-def custom_collate(batch: List[HandlerItem]) -> Batch:
+def custom_collate(batch: List[DataItem]) -> DataBatch:
     """
     Custom collate function used in the PyTorch DataLoader to handle
     the non-uniform length of bounding box lists.
 
     Args:
-        batch (List[HandlerItem]): A batch of training items; each item is
+        batch (List[DataItem]): A batch of training items; each item is
         a tuple of format (image tensor, bounding boxes, class index).
 
     Returns:
         Batch: A single tuple containing:
             - images_tensor (Tensor): Batched images of
             shape (batch_size, 3, H, W)
-            - bboxes (List[BoundingBoxList]): A list of
+            - bboxes (List[BBoxList]): A list of
             bounding boxes for each image
             - labels_tensor (Tensor): A tensor of shape
             containing the class indices.

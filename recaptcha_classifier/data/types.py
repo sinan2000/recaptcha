@@ -3,18 +3,33 @@ from PIL import Image
 from pathlib import Path
 from torch import Tensor
 
-BoundingBoxList = List[Tuple[float, float, float, float]]
+# A (image, label) pair containing their system paths/ locations
+FilePair = Tuple[Path, Path]
 
-DatasetItem = Tuple[Image.Image, BoundingBoxList]
+# A list of (image, label) pairs, for more items in the dataset
+FilePairList = List[FilePair]
 
-LoaderPair = Tuple[Path, Path]
+# A dictionary where the keys are class names and
+# the values are lists of (image, label) pairs, elements of that class
+ClassFileDict = Dict[str, FilePairList]
 
-HandlerItem = Tuple[Tensor, BoundingBoxList, int]
+# A nested dictionary where main keys are train/val/test
+# and the subkeys are class names
+DatasetSplitDict = Dict[str, ClassFileDict]
 
-PairChunk = List[LoaderPair]
+# YOLO bounding box format (x_center, y_center, width, height)
+BBox = Tuple[float, float, float, float]
 
-ClassList = Dict[str, PairChunk]
+# List of bounding boxes for one image from the dataset
+BBoxList = List[BBox]
 
-SplitDict = Dict[str, ClassList]
+# A dataset item, of (image, annotations), where both features
+# now loaded in memory, instead of Paths like in FilePair
+DataPair = Tuple[Image.Image, BBoxList]
 
-Batch = Tuple[Tensor, List[BoundingBoxList], Tensor]
+# A final dataset item, that now contains the image tensor,
+# the bounding boxes and the class id; ready for model training
+DataItem = Tuple[Tensor, BBoxList, int]
+
+# Output of the dataloader, a batch of data items
+DataBatch = Tuple[Tensor, List[BBoxList], Tensor]
