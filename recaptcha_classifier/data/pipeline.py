@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from .downloader import DatasetDownloader
 from .pair_loader import ImageLabelLoader
 from .splitter import DataSplitter
-from .plotter import SplitPlotter
+from .visualizer import Visualizer
 from .preprocessor import Preprocessor
 from .augment import (
     AugmentationPipeline,
@@ -107,9 +107,8 @@ class DataPreprocessingPipeline:
         if self._show_plots:
             print("d. show_plots is True, plotting the dataset"
                   "distribution...")
-            plotter = SplitPlotter(splits)
-            plotter.print_counts()
-            plotter.plot_splits()
+            Visualizer.print_counts(splits)
+            Visualizer.plot_splits(splits)
         else:
             print("d. show_plots is False, not plotting"
                   " the dataset distribution...")

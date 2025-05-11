@@ -1,45 +1,50 @@
 import matplotlib.pyplot as plt
-from typing import Dict, List, Tuple
-from pathlib import Path
+from .types import DatasetSplitDict
 
 
-class SplitPlotter:
+class Visualizer:
     """
-    Helper classes that handles the plotting of the dataset splits.
+    Helper class that handles the plotting of the dataset splits.
     It is responsible for auditing the dataset splits, by ensuring
     visualization of classes across the splits.
     """
-    def __init__(self,
-                 splits: Dict[str, Dict[str, List[Tuple[Path, Path]]]]
-                 ) -> None:
-        self._splits = splits
-
-    def print_counts(self) -> None:
+    @classmethod
+    def print_counts(cls, splits: DatasetSplitDict) -> None:
         """
         Prints the counts of samples in each class, for each split.
+
+        Args:
+            splits (DatasetSplitDict): the dataset splits
+                containing the pairs for each class.
         """
-        for split, cls_dict in self._splits.items():
+        for split, cls_dict in splits.items():
             print(f"{split.upper()}:")
             for cls, pairs in cls_dict.items():
                 print(f"  {cls:5s}: {len(pairs)}")
             print('\n')
 
-    def plot_splits(self,
-                    title: str = "Class Distribution in Dataset Splits"
-                    ) -> None:
+    @classmethod
+    def plot_splits(cls,
+                    splits: DatasetSplitDict,
+                    title: str = "Class Distribution in Splits") -> None:
         """
         Plots a bar chart showing the amount and percentage of samples
         present in each class, for each of the splits.
+
+        Args:
+            splits (DatasetSplitDict): the dataset splits
+                containing the pairs for each class.
+            title (str): the title of the plot.
         """
-        classes = list(self._splits['train'].keys())
+        classes = list(splits['train'].keys())
 
         x = range(len(classes))
         width = 0.3
 
         # list of counts for each class
-        counts_train = [len(self._splits['train'][cls]) for cls in classes]
-        counts_val = [len(self._splits['val'][cls]) for cls in classes]
-        counts_test = [len(self._splits['test'][cls]) for cls in classes]
+        counts_train = [len(splits['train'][cls]) for cls in classes]
+        counts_val = [len(splits['val'][cls]) for cls in classes]
+        counts_test = [len(splits['test'][cls]) for cls in classes]
 
         # total for each class, simply adding counts of each split
         totals = [t+v+te for t, v, te in
