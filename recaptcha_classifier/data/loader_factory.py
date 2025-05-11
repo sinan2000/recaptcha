@@ -7,10 +7,10 @@ from .types import DatasetSplitDict, FilePairList
 from .collate_batch import collate_batch
 
 
-class DataLoaderFactory:
+class LoaderFactory:
     """
-    The class responsible for creating the DataLoader objects that will be
-    passed to the training and validation loops.
+    The class responsible for creating the DataLoader objects for each split
+    of the dataset.
     """
     def __init__(self,
                  class_map: dict,
@@ -20,7 +20,7 @@ class DataLoaderFactory:
                  num_workers: int = 4,
                  balance: bool = False) -> None:
         """
-        Initializes the DataLoaderFactory with the given parameters.
+        Initializes the LoaderFactory with the given parameters.
 
         Args:
             class_map (dict): A dictionary mapping class names to indices.
@@ -34,8 +34,9 @@ class DataLoaderFactory:
         self._aug = augmentator
         self._batch_size = batch_size
         self._num_workers = num_workers
-        self._balance = balance
+        self._balance = balance  # do we use WeightedRandomSampler??
         self._class_map = class_map
+        #  OPTIONAL: self._loaders to cache response
 
     def create_loaders(self,
                        splits: DatasetSplitDict) -> Dict[str, DataLoader]:

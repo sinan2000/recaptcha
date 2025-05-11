@@ -11,7 +11,7 @@ from .augment import (
     HorizontalFlip,
     RandomRotation
 )
-from .dataloader_factory import DataLoaderFactory
+from .loader_factory import LoaderFactory
 
 
 class DataPreprocessingPipeline:
@@ -59,7 +59,7 @@ class DataPreprocessingPipeline:
         self._show_plots = show_plots
         self._preproc = Preprocessor()
         self._augment = self._build_augmentator()
-        self._creator = DataLoaderFactory(
+        self._creator = LoaderFactory(
             class_map=class_map,
             preprocessor=self._preproc,
             augmentator=self._augment,

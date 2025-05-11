@@ -11,7 +11,7 @@ from .augment import (
 )
 from .bbox_scaler import BoundingBoxScaler
 from .dataset import DatasetHandler
-from .dataloader_factory import DataLoaderFactory
+from .loader_factory import LoaderFactory
 
 from .collate_batch import collate_batch
 
@@ -32,13 +32,13 @@ __all__ = [
     "ImageLabelLoader",
     "DataSplitter",
     "SplitPlotter",
+    "LoaderFactory",
     "Preprocessor",
     "AugmentationPipeline",
     "HorizontalFlip",
     "RandomRotation",
     "BoundingBoxScaler",
     "DatasetHandler",
-    "DataLoaderFactory",
     # Methods
     "collate_batch",
     # Types
