@@ -2,7 +2,7 @@ from typing import Dict, Tuple
 from torch.utils.data import DataLoader
 
 from .downloader import DatasetDownloader
-from .loader import PairsLoader
+from .pair_loader import ImageLabelLoader
 from .splitter import DatasetSplitter
 from .plotter import SplitPlotter
 from .preprocessor import Preprocessor
@@ -54,7 +54,7 @@ class DataPreprocessingPipeline:
             show_plots (bool): Whether to show plots.
         """
         self._downloader = DatasetDownloader()
-        self._loader = PairsLoader(list(class_map.keys()))
+        self._loader = ImageLabelLoader(list(class_map.keys()))
         self._splitter = DatasetSplitter(ratios, seed=seed)
         self._show_plots = show_plots
         self._preproc = Preprocessor()

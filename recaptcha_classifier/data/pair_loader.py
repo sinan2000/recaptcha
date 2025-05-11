@@ -3,17 +3,19 @@ from pathlib import Path
 from typing import List, Tuple, Dict
 
 
-class PairsLoader:
+class ImageLabelLoader:
     """
     This class loads all image-label pairs for given classes.
+
+    It scans for all matching images and labels and caches the result.
 
     It follows Single Responsibility Principle (SRP) as it only handles
     the loading of the pairs. Also, it uses the Iterator pattern, as
     it can be looped over to get the list pairs as tuples by class,
-    in format class [(img_path, lbl_path), ...].
+    in format (class, [(img_path, lbl_path), ...].)
     """
     def __init__(self,
-                 classes: List[str] = ["Chimney", "Crosswalk", "Stair"],
+                 classes: List[str],
                  images_dir: str = "data/images",
                  labels_dir: str = "data/labels") -> None:
         """
@@ -85,7 +87,7 @@ class PairsLoader:
             lbl_dir = self._labels_dir / cls
             skipped, cls_count = 0, 0
 
-            if not img_dir.is_dir() or not lbl_dir.exists():
+            if not Path.is_dir(img_dir) or not Path.exists(lbl_dir):
                 print(f"Warning: Missing folder for {cls}. Skipping.")
                 continue
 
@@ -94,7 +96,7 @@ class PairsLoader:
                 lbl_path = lbl_dir / img_path.name.replace(".png", ".txt")
                 cls_count += 1
 
-                if not lbl_path.exists():
+                if not Path.exists(lbl_path):
                     skipped += 1
                     continue
 
