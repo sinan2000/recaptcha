@@ -10,7 +10,7 @@ def hello_world():
 
 if __name__ == '__main__':
     hello_world()
-    '''
+    """
     wrapper = PreprocessingWrapper(ModelClasses.dataset_classnames(),
                                    class_map=ModelClasses.to_dict()
                                    )  # somehow remove class_map param
@@ -20,7 +20,7 @@ if __name__ == '__main__':
     for split, loader in loaders.items():
         print(f"{split.upper()} DataLoader:")
         for batch in loader:
-            images, bboxes, labels = zip(*batch)
+            images, bboxes, labels = batch
             print(f"First image shape: {images[0].shape}")
             print(f"First image dtype: {images[0].dtype}")
 
@@ -34,4 +34,4 @@ if __name__ == '__main__':
 
             print("-" * 40)
             break
-    '''
+    """

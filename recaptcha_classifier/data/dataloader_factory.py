@@ -4,6 +4,7 @@ from .dataset import DatasetHandler
 from .preprocessor import Preprocessor
 from .augment import AugmentationPipeline
 from .types import SplitDict, PairChunk
+from .custom_collate import custom_collate
 
 
 class DataLoaderFactory:
@@ -63,7 +64,8 @@ class DataLoaderFactory:
                 dataset,
                 batch_size=self._batch_size,
                 shuffle=(split_name == 'train'),
-                num_workers=self._num_workers
+                num_workers=self._num_workers,
+                collate_fn=custom_collate
             )
 
             loaders[split_name] = loader

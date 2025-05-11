@@ -16,6 +16,7 @@ from .types import (
     BoundingBoxList,
     DatasetItem
 )
+from .custom_collate import custom_collate
 
 __all__ = [
     "KaggleDatasetDownloader",
@@ -31,5 +32,6 @@ __all__ = [
     "DataLoaderFactory",
     "PreprocessingWrapper",
     "BoundingBoxList",
-    "DatasetItem"
+    "DatasetItem",
+    "custom_collate"
 ]

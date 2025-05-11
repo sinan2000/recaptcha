@@ -16,3 +16,5 @@ PairChunk = List[LoaderPair]
 ClassList = Dict[str, PairChunk]
 
 SplitDict = Dict[str, ClassList]
+
+Batch = Tuple[Tensor, List[BoundingBoxList], Tensor]
