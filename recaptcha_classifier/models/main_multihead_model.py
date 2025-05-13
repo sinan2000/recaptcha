@@ -49,7 +49,13 @@ class MultiHeadModel(): # should inherit BaseModel(nn.Module)
                 dummy_input = layer(dummy_input)
         return int(torch.prod(torch.tensor(dummy_input.shape[1:])))
 
+    def forward(self, x):
+        for layer in self.layers:
+            x = layer(x)
 
+        x = x.view(x.size(0), -1)  # flatten
+        x = self.classifier(x)
+        return x
 
 
 
