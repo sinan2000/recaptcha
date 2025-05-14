@@ -3,8 +3,9 @@ from PIL import Image
 from pathlib import Path
 from torch import Tensor
 
+# OBJECT DETECTION TASK CLASSES
 # A (image, label) pair containing their system paths/ locations
-FilePair = Tuple[Path, Path]
+FilePair = Path  # Tuple[Path, Path]
 
 # A list of (image, label) pairs, for more items in the dataset
 FilePairList = List[FilePair]

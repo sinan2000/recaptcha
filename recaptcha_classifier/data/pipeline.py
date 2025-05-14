@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from .downloader import DatasetDownloader
 from .pair_loader import ImageLabelLoader
 from .splitter import DataSplitter
-# from .visualizer import Visualizer
+from .visualizer import Visualizer
 from .preprocessor import ImagePrep
 from .augment import (
     AugmentationPipeline,
@@ -94,7 +94,7 @@ class DataPreprocessingPipeline:
         # 1. Downloads the dataset if not already present locally
         print("a. Checking local files...")
         self._downloader.download()
-        """
+
         # 2. Finds all pairs of images and YOLO annotations from the dataset
         print("b. Searching for all the data...")
         pairs_by_class = self._loader.find_pairs()
@@ -112,7 +112,7 @@ class DataPreprocessingPipeline:
         else:
             print("d. show_plots is False, not plotting"
                   " the dataset distribution...")
-
+        """
         # 4. Create DataLoaders for each split
         print("e. Creating DataLoaders for each split...")
         loaders = self._creator.create_loaders(splits)
