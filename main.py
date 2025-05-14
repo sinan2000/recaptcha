@@ -8,7 +8,7 @@ if __name__ == '__main__':
     wrapper = DataPreprocessingPipeline(DetectionLabels.to_class_map())
     loaders = wrapper.run()
     print("Data loaders created successfully.")
-
+    """
     for split, loader in loaders.items():
         print(f"{split.upper()} DataLoader:")
         for batch in loader:
@@ -27,3 +27,4 @@ if __name__ == '__main__':
 
             print("-" * 40)
             break
+"""

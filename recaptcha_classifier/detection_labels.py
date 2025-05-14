@@ -5,9 +5,25 @@ class DetectionLabels(Enum):
     """
     Enum for improving readability of the object classes.
     """
+
+    """
+    OBJECT DETECTION TASK CLASSES
     CROSSWALK = 0
     CHIMNEY = 1
     STAIR = 2
+    """
+    BICYCLE = 0
+    BRIDGE = 1
+    BUS = 2
+    CAR = 3
+    CHIMNEY = 4
+    CROSSWALK = 5
+    HYDRANT = 6
+    MOTORCYCLE = 7
+    PALM = 8
+    STAIR = 9
+    TRAFFIC_LIGHT = 10
+    OTHER = 11
 
     @classmethod
     def from_name(cls, name: str) -> int:
@@ -20,7 +36,7 @@ class DetectionLabels(Enum):
         Returns:
             int: The integer value of the class.
         """
-        upper = name.upper()
+        upper = name.upper().replace(" ", "_")
         if upper not in cls.__members__:
             raise ValueError(f"Class '{name}' does not exist. Please define it"
                              "into the labels.py file.")
@@ -44,7 +60,8 @@ class DetectionLabels(Enum):
         Returns:
             dict: Dictionary representation of the enum.
         """
-        return {cl.name.capitalize(): cl.value for cl in cls}
+        return {cl.name.capitalize().replace("_", " "):
+                cl.value for cl in cls}
 
     @classmethod
     def from_id(cls, id: int) -> str:
@@ -59,10 +76,9 @@ class DetectionLabels(Enum):
         """
         for name, member in cls.__members__.items():
             if member.value == id:
-                return name.capitalize()
+                return name.capitalize().replace("_", " ")
 
-        raise ValueError(f"Class with ID '{id} does not exist. Please define "
-                         "it into the labels.py file")
+        raise ValueError(f"Class ID {id} does not exist in DetectionLabels.")
 
     @classmethod
     def dataset_classnames(cls) -> list:
@@ -74,4 +90,5 @@ class DetectionLabels(Enum):
         Returns:
             list: List of class names.
         """
-        return [name.capitalize() for name in cls.__members__.keys()]
+        return [name.capitalize().replace("_", " ")
+                for name in cls.__members__.keys()]
