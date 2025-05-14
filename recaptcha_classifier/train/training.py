@@ -10,7 +10,6 @@ class Trainer(object):
     """Contains main training logic"""
 
     def __init__(self,
-                 model: BaseModel,
                  train_loader: DataLoader,
                  epochs: int,
                  optimizer: torch.optim.Optimizer,
@@ -23,7 +22,6 @@ class Trainer(object):
                  ):
         """
         Constructor for Trainer class.
-        :param model: model to train.
         :param train_loader: Dataloader for training data.
         :param epochs: Number of epochs.
         :param save_folder: Folder for saving checkpoint files.
@@ -33,7 +31,6 @@ class Trainer(object):
         :param optimizer_file_name: Optimizer checkpoint file name.
         :param scheduler_file_name: Scheduler checkpoint file name.
         """
-        self.model = model
         self.train_loader = train_loader
         self.epochs = epochs
         self.save_folder = save_folder
@@ -58,7 +55,7 @@ class Trainer(object):
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-    def train(self, load_checkpoint: bool) -> None:
+    def train(self, model, load_checkpoint: bool) -> None:
         """
         Main training loop.
         :param load_checkpoint: If true, loads latest checkpoint
@@ -68,11 +65,11 @@ class Trainer(object):
         os.makedirs(self.save_folder, exist_ok=True)
         start_epoch = 0
         if load_checkpoint and os.path.exists(os.path.join(self.save_folder, self.model_file_name)):
-            start_epoch = self.load_checkpoint_states()
+            start_epoch = self.load_checkpoint_states(model)
 
 
-        self.model.to(self.device)
-        self.model.train()
+        model.to(self.device)
+        model.train()
 
         for epoch in range(start_epoch, self.epochs):
             accuracy_counter = metrics.MulticlassAccuracy().to(self.device)
@@ -84,7 +81,7 @@ class Trainer(object):
                 data, targets = data.to(self.device), targets.to(self.device)
 
                 self.optimizer.zero_grad()
-                predictions = self.model(data)
+                predictions = model(data)       # predictions?
                 loss = nn.functional.cross_entropy(predictions, targets)
                 loss.backward()
                 self.optimizer.step()
@@ -98,26 +95,26 @@ class Trainer(object):
                 )
             self.scheduler.step()
 
-            self.save_checkpoint_states()
+            self.save_checkpoint_states(model)
 
 
-    def save_checkpoint_states(self) -> None:
+    def save_checkpoint_states(self, model) -> None:
         """
         Saves states of model, optimizer, and scheduler.
         """
-        torch.save(self.model.state_dict(), os.path.join(self.save_folder, self.model_file_name))
+        torch.save(model.state_dict(), os.path.join(self.save_folder, self.model_file_name))
         torch.save(self.optimizer.state_dict(), os.path.join(self.save_folder, self.optimizer_file_name))
         torch.save(self.scheduler.state_dict(), os.path.join(self.save_folder, self.scheduler_file_name))
         print("Saved checkpoint.")
 
 
-    def load_checkpoint_states(self) -> int:
+    def load_checkpoint_states(self, model) -> int:
         """
         Loads states of model, optimizer, and scheduler.
         :return: epoch index from which the checkpoint states were saved.
         """
         checkpoint_model = torch.load(os.path.join(self.save_folder, self.model_file_name))
-        self.model.load_state_dict(checkpoint_model)
+        model.load_state_dict(checkpoint_model)
         checkpoint_optimizer = torch.load(os.path.join(self.save_folder, self.optimizer_file_name))
         self.optimizer.load_state_dict(checkpoint_optimizer)
         checkpoint_scheduler = torch.load(os.path.join(self.save_folder, self.scheduler_file_name))
