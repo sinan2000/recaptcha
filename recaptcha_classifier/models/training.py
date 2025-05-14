@@ -13,13 +13,13 @@ class Trainer(object):
                  model: BaseModel,
                  train_loader: DataLoader,
                  epochs: int,
-                 save_folder: str,
                  optimizer: torch.optim.Optimizer,
                  scheduler: torch.optim.lr_scheduler,
-                 device = None,
+                 save_folder: str,
                  model_file_name='model.pt',
                  optimizer_file_name='optimizer.pt',
-                 scheduler_file_name='scheduler.pt'
+                 scheduler_file_name='scheduler.pt',
+                 device=None
                  ):
         """
         Constructor for Trainer class.
