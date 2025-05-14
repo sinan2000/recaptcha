@@ -29,17 +29,8 @@ class Augmentation(ABC):
 
 class AugmentationPipeline:
     """Class to manage a series of augmentations in sequence."""
-    def __init__(self) -> None:
-        self._transforms: List[Augmentation] = []
-
-    def add_transform(self, transform: Augmentation) -> None:
-        """
-        Add a new transformation to the pipeline.
-
-        Args:
-            transform (Augmentation): The augmentation to be added.
-        """
-        self._transforms.append(transform)
+    def __init__(self, transforms=[]) -> None:
+        self._transforms: List[Augmentation] = transforms
 
     def apply_transforms(self,
                          image: Image.Image,
@@ -58,6 +49,8 @@ class AugmentationPipeline:
             annotations.
         """
         for transform in self._transforms:
+            if hasattr(transform, 'prob') and random.random() > transform.prob:
+                continue
             image, annotations = transform.augment(image, annotations)
         return image, annotations
 
@@ -65,14 +58,11 @@ class AugmentationPipeline:
 class HorizontalFlip(Augmentation):
     """Flips the image horizontally, with probability p and updates bboxes."""
     def __init__(self, p: float = 0.5) -> None:
-        self._p = p
+        self.prob = p
 
     def augment(self,
                 image: Image.Image,
                 annotations: BBoxList) -> DataPair:
-        if random.random() > self._p:
-            return image, annotations
-
         flipped = image.transpose(Image.FLIP_LEFT_RIGHT)
         new_annotations = YOLOScaler.scale_for_flip(annotations)
 
@@ -84,8 +74,9 @@ class RandomRotation(Augmentation):
     Rotates the image by a random angle,
     also updates bboxes to reflect the rotation.
     """
-    def __init__(self, degrees: float = 30.0) -> None:
+    def __init__(self, degrees: float = 30.0, p: float = 0.5) -> None:
         self._degrees = degrees
+        self.prob = p
 
     def augment(self,
                 image: Image.Image,

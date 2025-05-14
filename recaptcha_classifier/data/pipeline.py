@@ -75,12 +75,10 @@ class DataPreprocessingPipeline:
         Returns:
             AugmentationPipeline: The augmentation pipeline.
         """
-        aug = AugmentationPipeline()
-
-        aug.add_transform(HorizontalFlip(p=0.5))
-        aug.add_transform(RandomRotation(degrees=30))
-
-        return aug
+        return AugmentationPipeline([
+            HorizontalFlip(p=0.5),
+            RandomRotation(degrees=30, p=0.5)
+        ])
 
     def run(self) -> Dict[str, DataLoader]:
         """

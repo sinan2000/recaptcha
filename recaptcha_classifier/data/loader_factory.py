@@ -1,5 +1,6 @@
 from typing import Dict, Optional
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, WeightedRandomSampler
+from collections import Counter
 from .dataset import ImageDataset
 from .preprocessor import ImagePrep
 from .augment import AugmentationPipeline
@@ -61,14 +62,43 @@ class LoaderFactory:
                 class_map=self._class_map
             )
 
+            sampler = (self._build_sampler(flat_pairs) if self._balance
+                       and split_name == "train" else None)
+
             loader = DataLoader(
                 dataset,
                 batch_size=self._batch_size,
-                shuffle=(split_name == 'train'),
+                shuffle=(split_name == 'train' and not sampler),
                 num_workers=self._num_workers,
-                collate_fn=collate_batch
+                collate_fn=collate_batch,
+                sampler=sampler
             )
 
             loaders[split_name] = loader
 
         return loaders
+
+    def _build_sampler(self, pairs):
+        """
+        Builds a sampler for the dataset to balance the classes.
+        """
+        """
+        class_counts = Counter([class_map[pair[1].parent.name]
+                                for pair in pairs])
+        weights = [1.0 / class_counts[class_map[pair[1].parent.name]]
+                   for pair in pairs]
+        sampler = WeightedRandomSampler(weights, len(weights))
+        return sampler
+        """
+        class_counts = Counter()
+        targets = []
+        for _, lbl_path in pairs:
+            cls = lbl_path.parent.name
+            targets.append(self._class_map[cls])
+            class_counts[self._class_map[cls]] += 1
+
+        total = sum(class_counts.values())
+        weights = {k: total / v for k, v in class_counts.items()}
+        sample_weights = [weights[target] for target in targets]
+        sampler = WeightedRandomSampler(sample_weights, len(sample_weights))
+        return sampler
