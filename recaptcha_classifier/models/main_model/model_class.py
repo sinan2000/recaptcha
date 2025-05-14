@@ -14,6 +14,8 @@ class MultiHeadModel(): # should inherit BaseModel(nn.Module)
         super().__init__()
 
         # self.check_args(n_layers, kernel_size, num_classes, input_shape, base_channels)
+        self.n_layers = n_layers
+        self.kernel_size = kernel_size
 
         self.layers = nn.ModuleList()
         current_channels = input_shape[0]
