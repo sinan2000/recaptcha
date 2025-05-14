@@ -1,6 +1,6 @@
 import numpy as np
 
-from recaptcha_classifier.models.main_model.model_class import MultiHeadModel
+from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.models.training import Trainer
 
 
@@ -35,7 +35,7 @@ class HPOptimizer(object):
 
         for i in range(len(hp_combos)):
             hp_combo = hp_combos[i]
-            model = MultiHeadModel(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
+            model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
             self.trainer.train(model=model, load_checkpoint=False)
 
 
