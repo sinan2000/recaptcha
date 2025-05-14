@@ -115,5 +115,14 @@ def evaluate_map(predictions: list[dict],
     result = metric.compute()
 
     # Convert torch.Tensors to float for readability
-    return {k: v.item() if isinstance(v, torch.Tensor)
-            else v for k, v in result.items()}
+    final_result = {}
+    for k, v in result.items():
+        if isinstance(v, torch.Tensor):
+            if v.ndim == 0:
+                final_result[k] = v.item()
+            else:
+                final_result[k] = v.tolist()
+        else:
+            final_result[k] = v
+
+    return final_result

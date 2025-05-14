@@ -32,48 +32,41 @@ def evaluate_model(model: torch.nn.Module,
     model.to(device)
 
     results = {}
-
     all_preds = []
     all_targets = []
 
-    if eval_classification or eval_detection:
-        for batch in tqdm(test_loader, desc="Evaluating"):
-            if isinstance(batch, (list, tuple)):
-                images, labels = batch
-            elif isinstance(batch, dict):
-                images = batch["images"]
-                labels = batch["labels"]
+    for batch in tqdm(test_loader, desc="Evaluating"):
+        images, labels = batch
+        images = images.to(device)
+        output = model(images)
+
+        logits = output if isinstance(output, torch.Tensor) else output[0]
+        pred_boxes = output if isinstance(output, torch.Tensor) else output[1]
+
+        # Classification part
+        if eval_classification:
+            # Extract classification labels if detection targets format
+            if isinstance(labels, list):  # detection targets (list of dicts)
+                y_labels = torch.tensor([t["labels"].item() for t in labels])
             else:
-                raise ValueError("Unsupported batch format")
+                y_labels = labels
 
-            images = images.to(device)
+            all_preds.append(logits)
+            all_targets.append(y_labels.to(device))
 
-            with torch.no_grad():
-                output = model(images)
+        # Detection part
+        if eval_detection:
+            for i in range(len(images)):
+                detection_pred = {
+                    "boxes": pred_boxes[i].unsqueeze(0),
+                    "scores": torch.tensor([1.0]),  # Dummy score
+                    "labels": torch.tensor([0])     # Dummy label
+                }
+                results.setdefault("detection_preds",
+                                   []).append(detection_pred)
+                results.setdefault("detection_targets", []).append(labels[i])
 
-            if eval_classification:
-                if isinstance(output, torch.Tensor):
-                    logits = output
-                else:
-                    logits = output[0]
-                all_preds.append(logits)
-                all_targets.append(labels.to(device))
-
-            if eval_detection:
-                if isinstance(output, torch.Tensor):
-                    pred_boxes = output
-                else:
-                    pred_boxes = output[1]
-
-                for i in range(len(images)):
-                    results.setdefault("detection_preds", []).append({
-                        "boxes": pred_boxes[i].unsqueeze(0),
-                        "scores": torch.tensor([1.0]),  # placeholder
-                        "labels": torch.tensor([0])    # placeholder
-                    })
-                    results.setdefault("detection_targets",
-                                       []).append(labels[i])
-
+    # Compute classification metrics
     if eval_classification:
         y_pred = torch.cat(all_preds)
         y_true = torch.cat(all_targets)
@@ -87,6 +80,7 @@ def evaluate_model(model: torch.nn.Module,
         )
         results.update(class_results)
 
+    # Compute detection metrics
     if eval_detection:
         map_results = dm.evaluate_map(
             results["detection_preds"],
@@ -96,10 +90,14 @@ def evaluate_model(model: torch.nn.Module,
         del results["detection_preds"]
         del results["detection_targets"]
 
+    # Print results safely
     print("\n--- Evaluation Results ---")
     for key, val in results.items():
         if isinstance(val, torch.Tensor):
-            val = val.item()
-        print(f"{key}: {val:.4f}")
+            if val.ndim == 0:
+                val = val.item()
+            else:
+                val = val.tolist()
+        print(f"{key}: {val}")
 
     return results
