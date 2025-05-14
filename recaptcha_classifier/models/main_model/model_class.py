@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-class MultiHeadModel(): # should inherit BaseModel(nn.Module)
+class MainCNN(BaseModel): # should inherit BaseModel(nn.Module)
 
     def __init__(self,
                  n_layers: int,
