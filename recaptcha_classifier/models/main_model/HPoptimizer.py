@@ -1,7 +1,7 @@
 import numpy as np
 
 from recaptcha_classifier.models.main_model.model_class import MainCNN
-from recaptcha_classifier.models.training import Trainer
+from recaptcha_classifier.train.training import Trainer
 
 
 class HPOptimizer(object):
