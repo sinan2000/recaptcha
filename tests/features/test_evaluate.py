@@ -6,51 +6,40 @@ from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 
 class TestEvaluateModel(unittest.TestCase):
     """
-    Unit test for model evaluation function.
+    Unit test for classification model evaluation function.
     """
 
-    def test_evaluate_model_with_mocked_model_and_loader(self) -> None:
+    def test_evaluate_model_classification(self) -> None:
         """
-        Unit test using Magic Mock to simulate a real model.
+        Unit test using Magic Mock to simulate a classification model.
         """
         device = torch.device("cpu")
 
-        # Mock Model
         mock_model = MagicMock()
-        mock_model.return_value = (
-            torch.randn(2, 3),              # logits
-            torch.rand(2, 4) * 224          # bounding boxes
-        )
+        # batch_size=2, num_classes=3
+        mock_model.return_value = torch.randn(2, 3)
 
-        # Mock DataLoader (one batch)
+        # Mock DataLoader (one batch with 2 samples and their labels)
         mock_loader = [
             (
                 torch.randn(2, 3, 224, 224),   # images
-                [
-                    {"boxes": torch.tensor([[50., 50., 150., 150.]]),
-                     "labels": torch.tensor([0])},
-                    {"boxes": torch.tensor([[60., 60., 160., 160.]]),
-                     "labels": torch.tensor([1])}
-                ]
+                torch.tensor([0, 1])           # ground truth labels
             )
         ]
 
-        # Run evaluate_model
         results = evaluate_model(
             model=mock_model,
             test_loader=mock_loader,
             device=device,
             num_classes=3,
-            eval_classification=True,
-            eval_detection=True
+            class_names=["Class0", "Class1", "Class2"]
         )
 
-        # Assertions
+        # Check expected classification metrics keys
         self.assertIn('Accuracy', results)
         self.assertIn('F1-score', results)
-        self.assertIn('map', results)
-        self.assertIn('map_50', results)
 
+        # Check values are floats
         self.assertIsInstance(results['Accuracy'], float)
         self.assertIsInstance(results['F1-score'], float)
 
