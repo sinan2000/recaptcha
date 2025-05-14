@@ -82,23 +82,18 @@ class LoaderFactory:
         """
         Builds a sampler for the dataset to balance the classes.
         """
-        """
-        class_counts = Counter([class_map[pair[1].parent.name]
-                                for pair in pairs])
-        weights = [1.0 / class_counts[class_map[pair[1].parent.name]]
-                   for pair in pairs]
-        sampler = WeightedRandomSampler(weights, len(weights))
-        return sampler
-        """
         class_counts = Counter()
         targets = []
-        for _, lbl_path in pairs:
-            cls = lbl_path.parent.name
+        # for img_path, _ in pairs:
+        for img_path in pairs:
+            cls = img_path.parent.name
             targets.append(self._class_map[cls])
             class_counts[self._class_map[cls]] += 1
 
         total = sum(class_counts.values())
         weights = {k: total / v for k, v in class_counts.items()}
         sample_weights = [weights[target] for target in targets]
+        norm = sum(sample_weights)
+        sample_weights = [w / norm for w in sample_weights]
         sampler = WeightedRandomSampler(sample_weights, len(sample_weights))
         return sampler

@@ -4,27 +4,24 @@ from recaptcha_classifier import (
 )
 
 
-if __name__ == '__main__':
-    wrapper = DataPreprocessingPipeline(DetectionLabels.to_class_map())
-    loaders = wrapper.run()
-    print("Data loaders created successfully.")
-    """
+def main():
+    pipeline = DataPreprocessingPipeline(
+        DetectionLabels.to_class_map(),
+        balance=True
+        )
+
+    loaders = pipeline.run()
+
+    print("Data loaders built successfully.")
+
     for split, loader in loaders.items():
         print(f"{split.upper()} DataLoader:")
-        for batch in loader:
-            images, bboxes, labels = batch
-            print(f"First image shape: {images[0].shape}")
-            print(f"First image dtype: {images[0].dtype}")
+        batch = next(iter(loader))
+        images, labels = batch
+        print(f" - images.shape: {images.shape}")
+        print(f" - labels.shape: {labels.shape}")
+        print(f" - class IDs: {labels.tolist()}")
 
-            print(f"First bounding boxes: {bboxes[0]}")
 
-            # you can find labels in the DetectionLabels class
-            print(f"First label (class index): {labels[0]}")
-
-            # Check batch sizes
-            print(f"Batch size: {len(images)}")
-            print(f"Total images in batch: {len(images)}")
-
-            print("-" * 40)
-            break
-"""
+if __name__ == '__main__':
+    main()

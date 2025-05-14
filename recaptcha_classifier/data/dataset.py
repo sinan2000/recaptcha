@@ -47,27 +47,30 @@ class ImageDataset(Dataset):
             preprocessed image in tensor format, the YOLO bound
             box annotations and the label.
         """
-        img_path, lbl_path = self._pairs[idx]
+        # img_path, lbl_path = self._pairs[idx]
+        img_path = self._pairs[idx]
 
         # Load image and label
         img = self._prep.load_image(img_path)
-        bb = self._prep.load_labels(lbl_path)
+        # bb = self._prep.load_labels(lbl_path)
 
-        if not bb:
-            raise ValueError(f"Bounding box list is empty for {lbl_path}")
+        # if not bb:
+        #    raise ValueError(f"Bounding box list is empty for {lbl_path}")
 
         # Apply augmentation if passed
         if self._aug:
-            img, bb = self._aug.apply_transforms(img, bb)
+            # img, bb = self._aug.apply_transforms(img, bb)
+            img, _ = self._aug.apply_transforms(img, [])
 
         # Convert image to tensor
         tensor = self._prep.to_tensor(img)
 
         # Convert label to class index
-        c_name = lbl_path.parent.name
+        c_name = img_path.parent.name
         if c_name not in self._class_map:
             raise KeyError(f"Class name '{c_name}' not found in classes.")
         c_id = self._class_map[c_name]
 
         # Return image tensor, bounding box and class index
-        return (tensor, bb, c_id)
+        return tensor, self._prep.class_id_to_tensor(c_id)
+        # return tensor, bb, c_id

@@ -86,3 +86,15 @@ class ImagePrep:
         arr = np.array(img, dtype=np.float32) / 255.0
         arr = np.transpose(arr, (2, 0, 1))
         return torch.from_numpy(arr)
+
+    def class_id_to_tensor(self, c_id: int) -> torch.Tensor:
+        """
+        Converts a class ID to a tensor.
+
+        Args:
+            c_id (int): Class ID to be converted.
+
+        Returns:
+            torch.Tensor: Class ID as a tensor.
+        """
+        return torch.tensor(c_id, dtype=torch.long)

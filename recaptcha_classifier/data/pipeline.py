@@ -110,9 +110,8 @@ class DataPreprocessingPipeline:
         else:
             print("d. show_plots is False, not plotting"
                   " the dataset distribution...")
-        """
+
         # 4. Create DataLoaders for each split
         print("e. Creating DataLoaders for each split...")
         loaders = self._creator.create_loaders(splits)
         return loaders
-        """

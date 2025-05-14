@@ -22,12 +22,13 @@ def collate_batch(batch: List[DataItem]) -> DataBatch:
             containing the class indices.
     """
     images = [item[0] for item in batch]
-    bboxes = [item[1] for item in batch]
-    labels = [item[2] for item in batch]
+    # bboxes = [item[1] for item in batch]
+    # labels = [item[2] for item in batch]
+    labels = [item[1] for item in batch]
 
     # Stack them as (3, H, W) tensors
     images_tensor = torch.stack(images)
+    labels_tensor = torch.stack(labels)
 
-    labels_tensor = torch.tensor(labels, dtype=torch.int64)
-
-    return images_tensor, bboxes, labels_tensor
+    # return images_tensor, bboxes, labels_tensor
+    return images_tensor, labels_tensor
