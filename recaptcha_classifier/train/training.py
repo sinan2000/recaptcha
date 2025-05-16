@@ -11,6 +11,7 @@ class Trainer(object):
 
     def __init__(self,
                  train_loader: DataLoader,
+                 val_loader: DataLoader,
                  epochs: int,
                  optimizer: torch.optim.Optimizer,
                  scheduler: torch.optim.lr_scheduler,
@@ -32,10 +33,11 @@ class Trainer(object):
         :param scheduler_file_name: Scheduler checkpoint file name.
         """
         self.train_loader = train_loader
+        self.val_loader = val_loader
         self.epochs = epochs
-        self.save_folder = save_folder
         self.optimizer = optimizer
         self.scheduler = scheduler
+        self.save_folder = save_folder
         self.model_file_name = model_file_name
         self.optimizer_file_name = optimizer_file_name
         self.scheduler_file_name = scheduler_file_name
