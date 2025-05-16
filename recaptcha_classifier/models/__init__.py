@@ -1,3 +1,3 @@
-from .simple_classifier_model import Net
+from .simple_classifier_model import SimpleCNN
 
-__all__ = ['Net']
+__all__ = ['SimpleCNN']

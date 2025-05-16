@@ -1,3 +1,3 @@
-from .models import Net
+from .models import SimpleCNN
 
-__all__ = ['Net']
+__all__ = ['SimpleCNN']
