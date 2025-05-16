@@ -19,7 +19,7 @@ class Trainer(object):
                  model_file_name='model.pt',
                  optimizer_file_name='optimizer.pt',
                  scheduler_file_name='scheduler.pt',
-                 device: torch.Device|None = None
+                 device: torch.device |None = None
                  ):
         """
         Constructor for Trainer class.
