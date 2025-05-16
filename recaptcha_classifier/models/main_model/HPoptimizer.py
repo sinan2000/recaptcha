@@ -1,20 +1,23 @@
+import itertools
+
 import numpy as np
+import torch
 
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.train.training import Trainer
 
 
 class HPOptimizer(object):
-    """ ..."""
+    """Class for optimizing hyperparameters."""
 
     def __init__(self, trainer: Trainer):
         self.trainer = trainer
         self.opt_data = dict()
 
     def optimize_hyperparameters(self,
-                                 n_layers: list = [1, 5],
-                                 kernel_sizes: list = [3, 5],
-                                 learning_rates: list = [1e-3, 1e-4],
+                                 n_layers: list = list(range(1,6)),
+                                 kernel_sizes: list = list(range(3,6)),
+                                 learning_rates: list = [1e-2, 1e-3, 1e-4]
                                  ):
         """
         Main loop for optimizing hyperparameters.
@@ -24,19 +27,24 @@ class HPOptimizer(object):
         :return: model architecture performances ranked from best to worst.
         """
 
-        n = self._check_arg_dims(n_layers, kernel_sizes, learning_rates)
-        layers = np.arange(n_layers, n, dtype=int)
-        kernels = np.arange(kernel_sizes, n, dtype=int)
-        learning_rates = np.arange(learning_rates, n, dtype=float)
+        # n = self._check_arg_dims(n_layers, kernel_sizes, learning_rates)
+        # layers = np.arange(n_layers, n, dtype=int)
+        # kernels = np.arange(kernel_sizes, n, dtype=int)
+        # learning_rates = np.arange(learning_rates, n, dtype=float)
 
-        hp = [layers, kernels,learning_rates]
+        hp = [n_layers, kernel_sizes, learning_rates]
 
-        hp_combos = np.array(np.meshgrid(hp)).T.reshape(-1, len(hp))
+        # generating HP combinations:
+        # hp_combos = np.array(np.meshgrid(hp)).T.reshape(-1, len(hp))
+        hp_combos = list(itertools.product(*hp))
 
         for i in range(len(hp_combos)):
             hp_combo = hp_combos[i]
+            self.opt_data[f'model_{i}'] = list()
             model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
+            self.trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
             self.trainer.train(model=model, load_checkpoint=False)
+            self.trainer.loss_history()
 
 
 
