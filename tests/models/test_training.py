@@ -50,7 +50,7 @@ class TrainingUnitTests(unittest.TestCase):
         param2 = model.parameters()
         assert_equal(param1 == param2, False,
                      "Model parameters have not changed. No training occurred. ")
-        trainer.delete_save_folder()
+        trainer.delete_checkpoints()
 
 
     def test_train_load_checkpoint(self):
@@ -59,7 +59,7 @@ class TrainingUnitTests(unittest.TestCase):
         assert_equal(os.path.exists(os.path.join(trainer.save_folder, trainer.model_file_name)),
                      True,
                      "Save folder for model checkpoint doesn't exist.")
-        trainer.delete_save_folder()
+        trainer.delete_checkpoints()
 
 
 

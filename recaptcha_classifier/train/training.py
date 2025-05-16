@@ -123,3 +123,13 @@ class Trainer(object):
         self.scheduler.load_state_dict(checkpoint_scheduler)
         start_epoch = self.scheduler._step_count - 1
         return start_epoch
+
+    def delete_checkpoints(self):
+        if not os.path.exists(self.save_folder):
+            return
+        for filename in os.listdir(self.save_folder):
+            file_path = os.path.join(self.save_folder, filename)
+
+            if os.path.isfile(file_path):
+                os.remove(file_path)
+                print(f"Deleted file: {filename}")
