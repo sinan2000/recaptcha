@@ -1,4 +1,6 @@
 import os
+
+import numpy as np
 import torch
 from torch.utils.data import DataLoader
 from torcheval import metrics
@@ -44,6 +46,13 @@ class Trainer(object):
 
         self.device = None
         self.select_device(device)
+
+        self._loss_acc_history = []
+
+
+    @property
+    def loss_acc_history(self) -> np.ndarray:
+        return np.array(self._loss_acc_history.copy())
 
 
     def select_device(self, device=None):
@@ -111,10 +120,14 @@ class Trainer(object):
             train_accuracy_counter.update(predictions, targets)
             train_loss_counter.update(loss, weight=data.size(0))
 
+            loss_item = train_loss_counter.compute().item()
+            acc_item = train_accuracy_counter.compute().item()
             train_progress_bar.set_postfix(
-                loss=train_loss_counter.compute().item(),
-                accuracy=train_accuracy_counter.compute().item()
+                loss=loss_item,
+                accuracy=acc_item
             )
+            self._loss_acc_history.append([loss_item, acc_item])
+
         self.scheduler.step()
 
 
