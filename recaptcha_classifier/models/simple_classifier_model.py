@@ -53,27 +53,27 @@ class SimpleCNN(BaseModel):
         x = torch.argmax(x, dim=1)  # Output class index
         return x
 
-    def __str__(self) -> str:
-        """Returns a string representation of the model's configuration
-        and architecture."""
-        config = (
-            f"SimpleCNN Arguments:\n"
-            f"  input_channels      = {self.input_channels}\n"
-            f"  num_classes         = {self.num_classes}\n"
-            f"  conv1_out_channels  = {self.conv1_out_channels}\n"
-            f"  conv2_out_channels  = {self.conv2_out_channels}\n"
-            f"  conv1_kernel_size   = {self.conv1_kernel_size}\n"
-            f"  conv2_kernel_size   = {self.conv2_kernel_size}\n"
-            f"  pool_kernel_size    = {self.pool_kernel_size}\n"
-            f"  pool_stride         = {self.pool_stride}\n"
-        )
+    # def __str__(self) -> str:
+    #     """Returns a string representation of the model's configuration
+    #     and architecture."""
+    #     config = (
+    #         f"SimpleCNN Arguments:\n"
+    #         f"  input_channels      = {self.input_channels}\n"
+    #         f"  num_classes         = {self.num_classes}\n"
+    #         f"  conv1_out_channels  = {self.conv1_out_channels}\n"
+    #         f"  conv2_out_channels  = {self.conv2_out_channels}\n"
+    #         f"  conv1_kernel_size   = {self.conv1_kernel_size}\n"
+    #         f"  conv2_kernel_size   = {self.conv2_kernel_size}\n"
+    #         f"  pool_kernel_size    = {self.pool_kernel_size}\n"
+    #         f"  pool_stride         = {self.pool_stride}\n"
+    #     )
 
-        layers = ["Model Parameters:"]
-        for name, param in self.named_parameters():
-            shape = tuple(param.shape)
-            layers.append(f"  {name:<25} shape={shape}")
+    #     layers = ["Model Parameters:"]
+    #     for name, param in self.named_parameters():
+    #         shape = tuple(param.shape)
+    #         layers.append(f"  {name:<25} shape={shape}")
 
-        return config + "\n" + "\n".join(layers)
+    #     return config + "\n" + "\n".join(layers)
 
 
 # model = SimpleCNN()
