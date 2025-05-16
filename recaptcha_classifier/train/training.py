@@ -60,6 +60,7 @@ class Trainer(object):
     def train(self, model, load_checkpoint: bool) -> None:
         """
         Main training loop.
+        :param model: Model for training.
         :param load_checkpoint: If true, loads latest checkpoint
         with the previous states of the model, optimizer, and scheduler.
         """
@@ -69,35 +70,70 @@ class Trainer(object):
         if load_checkpoint and os.path.exists(os.path.join(self.save_folder, self.model_file_name)):
             start_epoch = self.load_checkpoint_states(model)
 
-
         model.to(self.device)
         model.train()
 
         for epoch in range(start_epoch, self.epochs):
-            accuracy_counter = metrics.MulticlassAccuracy().to(self.device)
-            loss_counter = metrics.Mean().to(self.device)
+            # Training
+            train_accuracy_counter = metrics.MulticlassAccuracy().to(self.device)
+            train_loss_counter = metrics.Mean().to(self.device)
 
-            progress_bar = tqdm(self.train_loader, desc=f"Epoch {epoch + 1}/{self.epochs}")
+            train_progress_bar = tqdm(self.train_loader, desc=f"Epoch {epoch + 1}/{self.epochs}")
+            self._train_one_epoch(model,
+                                      train_accuracy_counter,
+                                      train_loss_counter,
+                                      train_progress_bar)
 
-            for data, targets in progress_bar:
-                data, targets = data.to(self.device), targets.to(self.device)
-
-                self.optimizer.zero_grad()
-                predictions = model(data)       # predictions?
-                loss = nn.functional.cross_entropy(predictions, targets)
-                loss.backward()
-                self.optimizer.step()
-
-                accuracy_counter.update(predictions, targets)
-                loss_counter.update(loss, weight=data.size(0))
-
-                progress_bar.set_postfix(
-                    loss=loss_counter.compute().item(),
-                    accuracy=accuracy_counter.compute().item()
-                )
-            self.scheduler.step()
-
+            # Saving states
             self.save_checkpoint_states(model)
+
+            # Validation
+            val_accuracy_counter = metrics.MulticlassAccuracy().to(self.device)
+            val_loss_counter = metrics.Mean().to(self.device)
+
+            val_progress_bar = tqdm(self.val_loader, desc="Eval")
+            self._val_one_epoch(model,
+                                    val_accuracy_counter,
+                                    val_loss_counter,
+                                    val_progress_bar)
+
+
+    def _train_one_epoch(self, model, train_accuracy_counter, train_loss_counter, train_progress_bar):
+        for data, targets in train_progress_bar:
+            data, targets = data.to(self.device), targets.to(self.device)
+
+            self.optimizer.zero_grad()
+            predictions = model(data)
+            loss = nn.functional.cross_entropy(predictions, targets)
+            loss.backward()
+            self.optimizer.step()
+
+            train_accuracy_counter.update(predictions, targets)
+            train_loss_counter.update(loss, weight=data.size(0))
+
+            train_progress_bar.set_postfix(
+                loss=train_loss_counter.compute().item(),
+                accuracy=train_accuracy_counter.compute().item()
+            )
+        self.scheduler.step()
+
+
+    def _val_one_epoch(self, model, val_accuracy_counter, val_loss_counter, val_progress_bar):
+        for data, targets in val_progress_bar:
+            data, targets = data.to(self.device), targets.to(self.device)
+
+            model.eval()
+            with torch.no_grad():
+                predictions = model(data)
+                loss = nn.functional.cross_entropy(predictions, targets)
+
+                val_accuracy_counter.update(predictions, targets)
+                val_loss_counter.update(loss, weight=data.size(0))
+
+                val_progress_bar.set_postfix(
+                    loss=val_loss_counter.compute().item(),
+                    accuracy=val_accuracy_counter.compute().item()
+                )
 
 
     def save_checkpoint_states(self, model) -> None:
