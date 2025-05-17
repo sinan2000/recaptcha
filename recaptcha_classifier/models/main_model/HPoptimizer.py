@@ -30,14 +30,21 @@ class HPOptimizer(object):
         hp = [n_layers, kernel_sizes, learning_rates]
 
         # generating HP combinations:
-        # hp_combos = np.array(np.meshgrid(hp)).T.reshape(-1, len(hp))
-        hp_combos = list(itertools.product(*hp))
+        hp_combos = self._generate_hp_combinations(hp)
 
         for i in range(len(hp_combos)):
             hp_combo = hp_combos[i]
             self.opt_data[f'model_{i}'] = list()
-            model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
-            self.trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
-            self.trainer.train(model=model, load_checkpoint=False)
+            self._train_one_model(hp_combo)
             self.opt_data[f'model_{i}'] = [hp_combo, self.trainer.loss_acc_history[-1]]
+            # SORT MODELS BY LOSS/ACC
 
+
+    def _train_one_model(self, hp_combo) -> None:
+        model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
+        self.trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
+        self.trainer.train(model=model, load_checkpoint=False)
+
+
+    def _generate_hp_combinations(self, hp) -> list:
+        return list(itertools.product(*hp))
