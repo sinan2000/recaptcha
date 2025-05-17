@@ -27,11 +27,6 @@ class HPOptimizer(object):
         :return: model architecture performances ranked from best to worst.
         """
 
-        # n = self._check_arg_dims(n_layers, kernel_sizes, learning_rates)
-        # layers = np.arange(n_layers, n, dtype=int)
-        # kernels = np.arange(kernel_sizes, n, dtype=int)
-        # learning_rates = np.arange(learning_rates, n, dtype=float)
-
         hp = [n_layers, kernel_sizes, learning_rates]
 
         # generating HP combinations:
@@ -44,14 +39,5 @@ class HPOptimizer(object):
             model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
             self.trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
             self.trainer.train(model=model, load_checkpoint=False)
-            self.trainer.loss_history()
-
-
-
-
-                '''name = 'model_' + str(i)
-                self.opt_data[name] = {
-                    'n_layers': layers
-                }
-                self.opt_data[name].append()'''
+            self.opt_data[f'model_{i}'] = [hp_combo, self.trainer.loss_acc_history[-1]]
 
