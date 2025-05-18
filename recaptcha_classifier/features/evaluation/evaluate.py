@@ -8,7 +8,8 @@ def evaluate_model(model: torch.nn.Module,
                    test_loader: torch.utils.data.DataLoader,
                    device: torch.device,
                    num_classes: int = None,
-                   class_names: list[str] = None) -> dict:
+                   class_names: list[str] = None,
+                   plot_cm: bool = False) -> dict:
     """
     Evaluation function for classification models.
 
@@ -18,6 +19,7 @@ def evaluate_model(model: torch.nn.Module,
         device (torch.device): Device to evaluate on.
         num_classes (int): Number of classes for classification metrics.
         class_names (list[str]): Class names for confusion matrix.
+        plot_cm (bool): Whether to show a plot of the confusion matrix.
 
     Returns:
         dict: Dictionary containing evaluation results.
@@ -47,7 +49,7 @@ def evaluate_model(model: torch.nn.Module,
         y_true=y_true,
         num_classes=num_classes,
         class_names=class_names,
-        cm_plot=True
+        cm_plot=plot_cm
     )
     results.update(class_results)
 
