@@ -52,7 +52,6 @@ class KFoldValidation:
                            'Palm', 'Tlight', 'Bicycle', 'Bridge', 'Stair',
                            'Chimney', 'Motorcycle']
             for model in best_models:
-                # class labels for evaluate model function for cm
                 metrics_result = evaluate_model(
                     model, val_loader, device=self.device, num_classes=12,
                     class_names=class_names, plot_cm=False
