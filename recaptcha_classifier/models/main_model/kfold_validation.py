@@ -2,6 +2,7 @@ from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader
 from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
+from recaptcha_classifier.models.main_model.model_class import MainCNN
 
 
 class KFoldValidation:
@@ -44,14 +45,16 @@ class KFoldValidation:
 
             self.hp_optimizer.trainer.train_loader = train_data
 
-            best_models = self.hp_optimizer.optimize_hyperparameters()
+            self.hp_optimizer.optimize_hyperparameters()
 
             val_loader = DataLoader(val_data, batch_size=32)
             evaluated_models = []
             class_names = ['Car', 'Other', 'Cross', 'Bus', 'Hydrant',
                            'Palm', 'Tlight', 'Bicycle', 'Bridge', 'Stair',
                            'Chimney', 'Motorcycle']
-            for model in best_models:
+            for _, (hp_combo, _) in self.hp_optimizer.opt_data.items():
+                model = MainCNN(n_layers=int(hp_combo[0]),
+                                kernel_size=int(hp_combo[1]))
                 metrics_result = evaluate_model(
                     model, val_loader, device=self.device, num_classes=12,
                     class_names=class_names, plot_cm=False
@@ -59,6 +62,7 @@ class KFoldValidation:
                 evaluated_models.append((model, metrics_result))
 
             # Keep only top_n_models
+            evaluated_models.sort(key=lambda x: x[1]["F1-score"], reverse=True)
             self.best_models_per_fold.append(evaluated_models[:top_n_models])
 
     def get_all_best_models(self) -> list:
