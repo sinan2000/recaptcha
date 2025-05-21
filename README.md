@@ -1,21 +1,28 @@
-# Applied ML Template 🛠️
+# reCAPTCHA Solver with Multi-Task Learning 🛠️
 
-**Welcome to Applied Machine Learning!** This template is designed to streamline the development process and boost the quality of your code.
+This project is part of the **[Applied Machine Learning](https://ocasys.rug.nl/current/catalog/course/WBAI065-05#WBAI065-05.2024-2025.1)** course at the **University of Groningen**, developed by **Group 23**. Our project goal is to build an AI system that is able to automatically solve reCAPTCHA by combining **image classification** and **object detection** using **Multi-Task Learning**.
 
-Before getting started with your projects, we encourage you to carefully read the sections below and familiarise yourselves with the proposed tools.
+---
+
+### **Team Members:**
+
+- **Katya Toncheva** (S5460786)  
+- **Iva Ivanova** (S5614260)  
+- **Beatrice Ursan-Racz** (S5572509)  
+- **Sinan-Deniz Ceviker** (S5559308)  
+
+Before getting started with our project, we encourage you to carefully read the sections below.
+
+
 
 ## Prerequisites
-Make sure you have the following software and tools installed:
-
-- **PyCharm**: We recommend using PyCharm as your IDE, since it offers a highly tailored experience for Python development. You can get a free student license [here](https://www.jetbrains.com/community/education/#students/).
+Make sure you have the following installed:
 
 - **Pipenv**: Pipenv is used for dependency management. This tools enables users to easily create and manage virtual environments. To install Pipenv, use the following command:
     ```bash
     $ pip install --user pipenv
     ```
     For detailed installation instructions, [click here](https://pipenv.pypa.io/en/latest/installation.html).
-
-- **Git LFS**: Instead of committing large files to your repository, you should store and manage them using Git LFS. For installation information, [click here](https://github.com/git-lfs/git-lfs?utm_source=gitlfs_site&utm_medium=installation_link&utm_campaign=gitlfs#installing).
 
 ## Getting Started
 ### Setting up your own repository
@@ -33,29 +40,15 @@ Make sure you have the following software and tools installed:
    3. `git push origin main`
       
       Sometimes you may need to use `git push --force origin main`. Only use this flag the first time you push after you rebased, and be careful as you might overwrite your teammates' changes.
-### Git LFS
-1. Set it up for your user account (only once, not each time you want to use it).
-    ```bash
-    git lfs install
-    ```
-2. Select the files that Git LFS should manage. To track all files of a certain type, you can use a wildcard as in the command below.
-    ```bash
-   git lfs track "*.psd"
-    ```
-3. Add _.gitattributes_ to the staging area.
-    ```bash
-    git add .gitattributes
-    ```
-That's all, you can commit and push as always. The tracked files will be automatically stored with Git LFS.
 
 ### Pipenv
 This tool is incredibly easy to use. Let's **install** our first package, which you will all need in your projects.
 
 ```bash
-pipenv install pre-commit
+pipenv install <package-name>
 ```
 
-After running this command, you will notice that two files were created, namely, _Pipfile_ and _Pipfile.lock_. _Pipfile_ is the configuration file that specifies all the dependencies in your virtual environment.
+After running this command, you will notice that two files were modified, namely, _Pipfile_ and _Pipfile.lock_. _Pipfile_ is the configuration file that specifies all the dependencies in your virtual environment.
 
 To **uninstall** a package, you can run the command:
 ```bash
@@ -81,19 +74,6 @@ If you wish to see additional details, run it in verbose mode:
 ```bash
 python -m unittest discover -v tests
 ```
-
-### Pre-commit
-Another good coding practice is using pre-commit hooks. This is used to inspect the code before committing to ensure it matches your standards.
-
-In this course, we will be using two hooks (already configured in _.pre-commit-config.yaml_):
-- Unit testing
-- Flake8 (checks your code for errors, styling issues and complexity)
-
-Since we have already configured the hooks, all you need to do is run:
-```bash
-pre-commit install
-```
-Now `pre-commit` will automatically run whenever you want to commit something to the repository.
 
 ## Get Coding
 You are now ready to start working on your projects.

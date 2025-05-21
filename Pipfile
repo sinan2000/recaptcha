@@ -3,9 +3,14 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
 
+[[source]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+verify_ssl = true
+
 [packages]
 numpy = "*"
-opencv-python = "*"
+pillow = "*"
 pre-commit = "*"
 torch = "*"
 torchvision = "*"
