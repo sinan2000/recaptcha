@@ -13,14 +13,13 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
                  ) -> None:
         super().__init__()
 
-        # self.check_args(n_layers, kernel_size, num_classes, input_shape, base_channels)
         self.n_layers = n_layers
         self.kernel_size = kernel_size
         self.num_classes = num_classes
         self.layers = nn.ModuleList()
         self.input_shape = input_shape
         current_channels = self.input_shape[0]
-        channels = []
+
 
         for layer_idx in range(n_layers):
             output_channels = base_channels * (2 ** layer_idx)
@@ -34,9 +33,7 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
                     nn.MaxPool2d(kernel_size=2, stride=2)
                 )
             )
-            channels = [current_channels, output_channels]
             current_channels = output_channels
-
 
         flattened_features = self._get_conv_output(self.input_shape)
 
@@ -47,8 +44,11 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
             nn.Linear(512, num_classes)
         )
 
-    def _get_conv_output(self, shape):
-        """Dynamically calculate conv layers' output size"""
+    def _get_conv_output(self, shape) -> int:
+        """Dynamically calculate conv layers' output size
+        :param shape: input shape
+        :return: output shape
+        """
         dummy_input = torch.zeros(1, *shape)  # batch_size=1
         with torch.no_grad():
             for layer in self.layers:
@@ -57,7 +57,7 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
         return size
 
 
-    def forward(self, x):
+    def forward(self, x) -> torch.Tensor:
         for layer in self.layers:
             x = layer(x)
 

@@ -23,8 +23,7 @@ class HPOptimizer(object):
     def optimize_hyperparameters(self,
                                  n_layers: list = list(range(1,3)),
                                  kernel_sizes: list = list(range(3,6)),
-                                 learning_rates: list = [1e-2, 1e-3, 1e-4],
-
+                                 learning_rates: list = [1e-2, 1e-3, 1e-4]
                                  ) -> pd.DataFrame:
         """
         Main loop for optimizing hyperparameters.
