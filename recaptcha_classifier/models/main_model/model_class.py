@@ -34,22 +34,13 @@ class MainCNN(BaseModel): # should inherit BaseModel(nn.Module)
             )
             current_channels = output_channels
 
-            self.flattened_features = self._get_conv_output(input_shape)
-
             self.classifier = nn.Sequential(
-                nn.Linear(self.flattened_features, 512),
+                nn.Linear(current_channels, 512),
                 nn.ReLU(),
                 nn.Dropout(0.3),
                 nn.Linear(512, num_classes)
             )
 
-    def _get_conv_output(self, shape):
-        """Dynamically calculate conv layers' output size"""
-        dummy_input = torch.zeros(1, *shape)  # batch_size=1
-        with torch.no_grad():
-            for layer in self.layers:
-                dummy_input = layer(dummy_input)
-        return int(torch.prod(torch.tensor(dummy_input.shape[1:])))
 
     def forward(self, x):
         for layer in self.layers:
