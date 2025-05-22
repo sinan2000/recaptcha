@@ -39,6 +39,7 @@ class TestHPOptimizer(unittest.TestCase):
                              f"{tru_combos} not the same as {self.hp_combos}")
 
     def test_train_one_model(self):
+        # MainModel is currently hardcoded
         self.hpo._train_one_model(self.hp_combos[0])
         assert os.path.exists(self.hpo._trainer.save_folder)
 

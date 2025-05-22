@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-class MainCNN(BaseModel): # should inherit BaseModel(nn.Module)
+class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
 
     def __init__(self,
                  n_layers: int,
@@ -16,9 +16,10 @@ class MainCNN(BaseModel): # should inherit BaseModel(nn.Module)
         # self.check_args(n_layers, kernel_size, num_classes, input_shape, base_channels)
         self.n_layers = n_layers
         self.kernel_size = kernel_size
-
+        self.num_classes = num_classes
         self.layers = nn.ModuleList()
-        current_channels = input_shape[0]
+        self.input_shape = input_shape
+        current_channels = self.input_shape[0]
 
         for layer_idx in range(n_layers):
             output_channels = base_channels * (2 ** layer_idx)
@@ -34,12 +35,23 @@ class MainCNN(BaseModel): # should inherit BaseModel(nn.Module)
             )
             current_channels = output_channels
 
-            self.classifier = nn.Sequential(
-                nn.Linear(current_channels, 512),
-                nn.ReLU(),
-                nn.Dropout(0.3),
-                nn.Linear(512, num_classes)
-            )
+        flattened_features = self._get_conv_output(self.input_shape)
+
+        self.classifier = nn.Sequential(
+            nn.Linear(in_features=flattened_features, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(512, num_classes)
+        )
+
+
+    def _get_conv_output(self, shape):
+        """Dynamically calculate conv layers' output size"""
+        dummy_input = torch.zeros(1, *shape)  # batch_size=1
+        with torch.no_grad():
+            for layer in self.layers:
+                dummy_input = layer(dummy_input)
+        return int(torch.prod(torch.tensor(dummy_input.shape[1:])))
 
 
     def forward(self, x):
