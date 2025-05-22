@@ -6,7 +6,7 @@ import torch
 
 from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
 from recaptcha_classifier.train.training import Trainer
-from tests.models.utils_training_hpo import initialize_dummy_components
+from tests.models.utils_training_hpo import initialize_dummy_components, dummy_components
 
 
 class TestHPOptimizer(unittest.TestCase):
@@ -15,8 +15,8 @@ class TestHPOptimizer(unittest.TestCase):
     @override
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        model, optim, train_loader, val_loader = initialize_dummy_components(8, 2, 2, 3)
-
+        model, optim, train_loader, val_loader = dummy_components
+        self.model = model
         trainer = Trainer(train_loader=train_loader,
                                val_loader=val_loader,
                                epochs=1,
@@ -26,7 +26,6 @@ class TestHPOptimizer(unittest.TestCase):
         self.hpo = HPOptimizer(trainer)
         self.hp = [list(range(1,3)), list(range(3,5)), [1e-2]]
         self.hp_combos = self.hpo._generate_hp_combinations(self.hp)
-
 
 
     def test_generating_combos(self):
@@ -48,8 +47,8 @@ class TestHPOptimizer(unittest.TestCase):
     def test_retrieve_results(self):
         results = self.hpo.optimize_hyperparameters(*self.hp)
         self.hpo._trainer.delete_checkpoints()
-        print(results[:3])
-        self.assertNotEqual(results, None)
+        print(results.head())
+        self.assertEqual(len(results['loss']), 4)
 
 if __name__ == '__main__':
     unittest.main()

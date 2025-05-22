@@ -20,6 +20,7 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
         self.layers = nn.ModuleList()
         self.input_shape = input_shape
         current_channels = self.input_shape[0]
+        channels = []
 
         for layer_idx in range(n_layers):
             output_channels = base_channels * (2 ** layer_idx)
@@ -33,7 +34,9 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
                     nn.MaxPool2d(kernel_size=2, stride=2)
                 )
             )
+            channels = [current_channels, output_channels]
             current_channels = output_channels
+
 
         flattened_features = self._get_conv_output(self.input_shape)
 
@@ -43,7 +46,6 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
             nn.Dropout(0.3),
             nn.Linear(512, num_classes)
         )
-
 
     def _get_conv_output(self, shape):
         """Dynamically calculate conv layers' output size"""
@@ -59,9 +61,10 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
         for layer in self.layers:
             x = layer(x)
 
-        x = x.view(x.size(0), -1)  # flatten
+        x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+
 
 
 

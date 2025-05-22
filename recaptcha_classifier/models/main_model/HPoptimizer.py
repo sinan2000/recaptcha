@@ -12,16 +12,19 @@ class HPOptimizer(object):
 
     def __init__(self, trainer: Trainer):
         self._trainer = trainer
-        self._opt_data = {'Models': [],
-                         'hp combination': [],
+        self._opt_data = {'Model index': [],
+                         'layers': [],
+                         'kernel_sizes': [],
+                         'lr': [],
                          'loss': [],
                          'accuracy': []}
 
 
     def optimize_hyperparameters(self,
-                                 n_layers: list = list(range(1,6)),
+                                 n_layers: list = list(range(1,3)),
                                  kernel_sizes: list = list(range(3,6)),
-                                 learning_rates: list = [1e-2, 1e-3, 1e-4]
+                                 learning_rates: list = [1e-2, 1e-3, 1e-4],
+
                                  ) -> pd.DataFrame:
         """
         Main loop for optimizing hyperparameters.
@@ -38,17 +41,18 @@ class HPOptimizer(object):
 
         for i in range(len(hp_combos)):
             hp_combo = hp_combos[i]
-            self._opt_data[f'model_{i}'] = list()
             self._train_one_model(hp_combo)
 
             final_train_history = self._trainer.loss_acc_history[-1]
             loss = final_train_history[0]
             accuracy = final_train_history[1]
 
-            self._opt_data['Models'].append(i)
-            self._opt_data['hp combination'].append(hp_combo)
-            self._opt_data['loss'].append(loss)
-            self._opt_data['accuracy'].append(accuracy)
+            curr_architecture = [i, hp_combo[0], hp_combo[1], hp_combo[2], loss, accuracy]
+
+            v = 0
+            for key in self._opt_data.keys():
+                self._opt_data[key].append(curr_architecture[v])
+                v+=1
 
         self._opt_data = pd.DataFrame(self._opt_data)
         self._opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
