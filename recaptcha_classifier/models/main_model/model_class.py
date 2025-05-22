@@ -27,7 +27,7 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
             self.layers.append(
                 nn.Sequential(
                     nn.Conv2d(in_channels=current_channels, out_channels=output_channels,
-                              kernel_size=kernel_size, stride=2, padding=(kernel_size-1)//2),
+                              kernel_size=kernel_size, stride=1, padding=(kernel_size-1)//2),
                     nn.BatchNorm2d(output_channels),
                     nn.ReLU(),
                     nn.MaxPool2d(kernel_size=2, stride=2)
@@ -51,7 +51,8 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
         with torch.no_grad():
             for layer in self.layers:
                 dummy_input = layer(dummy_input)
-        return int(torch.prod(torch.tensor(dummy_input.shape[1:])))
+        size = dummy_input.view(1, -1).size(1)
+        return size
 
 
     def forward(self, x):

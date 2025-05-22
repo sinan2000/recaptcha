@@ -4,7 +4,7 @@ from torchvision.datasets import FakeData
 from torchvision.models import resnet18
 
 
-def create_dummy_data(image_size = (3, 32, 32), num_classes = 3, num_samples = 8):
+def create_dummy_data(image_size = (3, 224, 224), num_classes = 3, num_samples = 8):
     """
     Creates fake dummy data for testing purposes.
     :param image_size: tuple with 3 values: channels (RGB=3; greyscale=1), nxn e.g. 32x32 pixels
@@ -43,3 +43,5 @@ def initialize_dummy_components(train_data_samples: int, val_data_samples: int, 
     model.fc = torch.nn.Linear(512, 32)
     optim = torch.optim.RAdam(model.parameters(), lr=0.01)
     return model, optim, train_loader, val_loader
+
+dummy_components = initialize_dummy_components(8, 2, 2, 3)
