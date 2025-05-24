@@ -2,18 +2,19 @@
 url = "https://pypi.org/simple"
 verify_ssl = true
 name = "pypi"
-# [[source]]
-# name = "pytorch-cu128"
-# url = "https://download.pytorch.org/whl/cu128"
-# verify_ssl = true
+
+[[source]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+verify_ssl = true
 
 [packages]
 numpy = "*"
 opencv-python = "*"
 pre-commit = "*"
-torch = "*"
-torchvision = "*"
-torchaudio = "*"
+torch = {index = "pytorch-cu128", version = "2.7.0+cu128", markers = "platform_system == 'Windows'"}
+torchvision = {index = "pytorch-cu128", version = "0.22.0+cu128", markers = "platform_system == 'Windows'"}
+torchaudio = {index = "pytorch-cu128", version = "2.7.0+cu128", markers = "platform_system == 'Windows'"}
 alive-progress = "*"
 matplotlib = "*"
 scikit-learn = "*"
@@ -22,3 +23,4 @@ scikit-learn = "*"
 
 [requires]
 python_version = "3.12"
+

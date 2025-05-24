@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 
-class MainCNN(BaseModel): # should inherit BaseModel(nn.Module)
+class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
 
     def __init__(self,
                  n_layers: int,
@@ -13,12 +13,13 @@ class MainCNN(BaseModel): # should inherit BaseModel(nn.Module)
                  ) -> None:
         super().__init__()
 
-        # self.check_args(n_layers, kernel_size, num_classes, input_shape, base_channels)
         self.n_layers = n_layers
         self.kernel_size = kernel_size
-
+        self.num_classes = num_classes
         self.layers = nn.ModuleList()
-        current_channels = input_shape[0]
+        self.input_shape = input_shape
+        current_channels = self.input_shape[0]
+
 
         for layer_idx in range(n_layers):
             output_channels = base_channels * (2 ** layer_idx)
@@ -26,7 +27,7 @@ class MainCNN(BaseModel): # should inherit BaseModel(nn.Module)
             self.layers.append(
                 nn.Sequential(
                     nn.Conv2d(in_channels=current_channels, out_channels=output_channels,
-                              kernel_size=kernel_size, stride=2, padding=(kernel_size-1)//2),
+                              kernel_size=kernel_size, stride=1, padding=(kernel_size-1)//2),
                     nn.BatchNorm2d(output_channels),
                     nn.ReLU(),
                     nn.MaxPool2d(kernel_size=2, stride=2)
@@ -34,30 +35,36 @@ class MainCNN(BaseModel): # should inherit BaseModel(nn.Module)
             )
             current_channels = output_channels
 
-            self.flattened_features = self._get_conv_output(input_shape)
+        flattened_features = self._get_conv_output(self.input_shape)
 
-            self.classifier = nn.Sequential(
-                nn.Linear(self.flattened_features, 512),
-                nn.ReLU(),
-                nn.Dropout(0.3),
-                nn.Linear(512, num_classes)
-            )
+        self.classifier = nn.Sequential(
+            nn.Linear(in_features=flattened_features, out_features=512),
+            nn.ReLU(),
+            nn.Dropout(0.3),
+            nn.Linear(512, num_classes)
+        )
 
-    def _get_conv_output(self, shape):
-        """Dynamically calculate conv layers' output size"""
+    def _get_conv_output(self, shape) -> int:
+        """Dynamically calculate conv layers' output size
+        :param shape: input shape
+        :return: output shape
+        """
         dummy_input = torch.zeros(1, *shape)  # batch_size=1
         with torch.no_grad():
             for layer in self.layers:
                 dummy_input = layer(dummy_input)
-        return int(torch.prod(torch.tensor(dummy_input.shape[1:])))
+        size = dummy_input.view(1, -1).size(1)
+        return size
 
-    def forward(self, x):
+
+    def forward(self, x) -> torch.Tensor:
         for layer in self.layers:
             x = layer(x)
 
-        x = x.view(x.size(0), -1)  # flatten
+        x = x.view(x.size(0), -1)
         x = self.classifier(x)
         return x
+
 
 
 
