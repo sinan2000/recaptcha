@@ -9,8 +9,9 @@ def main():
         DetectionLabels,
         balance=True
         )
+
     loaders = pipeline.run()
-    """
+    
     print("Data loaders built successfully.")
 
     for split, loader in loaders.items():
@@ -20,7 +21,7 @@ def main():
         print(f" - images.shape: {images.shape}")
         print(f" - labels.shape: {labels.shape}")
         print(f" - class IDs: {labels.tolist()}")
-    """
+
 
 if __name__ == '__main__':
     main()

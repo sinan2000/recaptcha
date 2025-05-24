@@ -53,7 +53,7 @@ class DetectionLabels(Enum):
         Returns:
             dict: Dictionary representation of the enum.
         """
-        return {cl.name.capitalize().replace("_", " "):
+        return {cl.name.replace("_", " ").title():
                 cl.value for cl in cls}
 
     @classmethod

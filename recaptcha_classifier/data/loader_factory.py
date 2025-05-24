@@ -25,7 +25,7 @@ class LoaderFactory:
 
         Args:
             class_map (dict): A dictionary mapping class names to indices.
-            preprocessor (ImagePrep): The preprocessor to use.
+            preprocessor (ImagePrep): The preprocessor to use for data.
             augmentator (Optional[AugmentationPipeline]): The augmentator used
             batch_size (int): Batch size for DataLoader.
             num_workers (int): Number of workers for DataLoader.
@@ -35,34 +35,33 @@ class LoaderFactory:
         self._aug = augmentator
         self._batch_size = batch_size
         self._num_workers = num_workers
-        self._balance = balance  # do we use WeightedRandomSampler??
+        self._balance = balance 
         self._class_map = class_map
-        #  OPTIONAL: self._loaders to cache response
 
     def create_loaders(self,
                        splits: DatasetSplitMap) -> Dict[str, DataLoader]:
         loaders: Dict[str, DataLoader] = {}
 
         for split_name, cls_dict in splits.items():
-            # flatten nested dict of pairs
-            flat_pairs: ImagePathList = [pair
+            # flatten nested dict of image_paths
+            flat_image_paths: ImagePathList = [image_path
                                         # traversing over classes
-                                        for pairs in cls_dict.values()
-                                        # traversing over pairs
-                                        for pair in pairs
+                                        for image_paths in cls_dict.values()
+                                        # traversing over image_paths
+                                        for image_path in image_paths
                                         ]
 
             # augmentatr only for training set
             augmentator = self._aug if split_name == 'train' else None
 
             dataset = ImageDataset(
-                pairs=flat_pairs,
+                items=flat_image_paths,
                 preprocessor=self._preprocessor,
                 augmentator=augmentator,
                 class_map=self._class_map
             )
 
-            sampler = (self._build_sampler(flat_pairs) if self._balance
+            sampler = (self._build_sampler(flat_image_paths) if self._balance
                        and split_name == "train" else None)
 
             loader = DataLoader(
@@ -78,14 +77,13 @@ class LoaderFactory:
 
         return loaders
 
-    def _build_sampler(self, pairs):
+    def _build_sampler(self, image_paths):
         """
         Builds a sampler for the dataset to balance the classes.
         """
         class_counts = Counter()
         targets = []
-        # for img_path, _ in pairs:
-        for img_path in pairs:
+        for img_path in image_paths:
             cls = img_path.parent.name
             targets.append(self._class_map[cls])
             class_counts[self._class_map[cls]] += 1
