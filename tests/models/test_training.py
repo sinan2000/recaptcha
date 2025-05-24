@@ -1,5 +1,11 @@
 import os
 import unittest
+import torch
+from numpy.ma.testutils import assert_equal
+from typing_extensions import override
+
+from recaptcha_classifier.train.training import Trainer
+from tests.models.utils_training_hpo import initialize_dummy_components
 
 import torch
 from numpy.ma.testutils import assert_equal
@@ -37,23 +43,17 @@ class TrainingUnitTests(unittest.TestCase):
     @override
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        train_data = create_dummy_data()
-        val_data = create_dummy_data(num_samples=2)
-        train_loader = torch.utils.data.DataLoader(train_data, batch_size=2, shuffle=True)
-        val_loader = torch.utils.data.DataLoader(val_data, batch_size=2, shuffle=True)
-        model = resnet18(weights='DEFAULT')
-        model.conv1 = torch.nn.Conv2d(3, 64, 4, (2, 2), (1, 1), bias=False)
-        model.fc = torch.nn.Linear(512, 32)
+
+        model, optim, train_loader, val_loader = initialize_dummy_components(8,2,2, 3)
+
         self.model = model
-        optim = torch.optim.RAdam(model.parameters(), lr=0.01)
+
         self.trainer = Trainer(train_loader=train_loader,
                           val_loader=val_loader,
                           epochs=2,
                           optimizer=optim,
                           scheduler=torch.optim.lr_scheduler.StepLR(optim, step_size=1, gamma=0.5),
                           save_folder='test_training_checkpoints')
-
-
 
 
     def test_device(self):

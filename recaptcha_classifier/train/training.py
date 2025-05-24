@@ -182,3 +182,7 @@ class Trainer(object):
             if os.path.isfile(file_path):
                 os.remove(file_path)
                 print(f"Deleted file: {filename}")
+        
+        if not os.listdir(self.save_folder): # make sure it's empty
+          os.rmdir(self.save_folder)
+          print(f"Deleted folder: {self.save_folder}")
