@@ -1,7 +1,11 @@
 from recaptcha_classifier import (
     DetectionLabels,
-    DataPreprocessingPipeline
+    DataPreprocessingPipeline,
+    MainCNN,
+    Trainer,
+    evaluate_model
 )
+import torch
 
 
 def main():
@@ -12,15 +16,44 @@ def main():
 
     loaders = pipeline.run()
     
-    print("Data loaders built successfully.")
-
-    for split, loader in loaders.items():
-        print(f"{split.upper()} DataLoader:")
-        batch = next(iter(loader))
-        images, labels = batch
-        print(f" - images.shape: {images.shape}")
-        print(f" - labels.shape: {labels.shape}")
-        print(f" - class IDs: {labels.tolist()}")
+    model = MainCNN(
+        n_layers=3,
+        kernel_size=3,
+        num_classes=len(DetectionLabels),
+    )
+    
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    
+    trainer = Trainer(
+        train_loader=loaders['train'],
+        val_loader=loaders['val'],
+        epochs=10,
+        optimizer=optimizer,
+        scheduler=scheduler,
+        save_folder='models',
+        device=device
+    )
+    
+    trainer.train(model)
+    
+    history = trainer.loss_acc_history
+    print("Training completed. Loss and accuracy history:")
+    print(history)
+    
+    results = evaluate_model(
+        model=model,
+        test_loader=loaders['test'],
+        device=device,
+        num_classes=len(DetectionLabels),
+        class_names=DetectionLabels.dataset_classnames(),
+        plot_cm=True
+    )
+    
+    print("Evaluation results:")
+    for key, value in results.items():
+        print(f"{key}: {value}")
 
 
 if __name__ == '__main__':

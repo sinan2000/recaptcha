@@ -76,9 +76,7 @@ class DetectionLabels(Enum):
     @classmethod
     def dataset_classnames(cls) -> list:
         """
-        Returns a list of class names, only with first letter capitalized.
-        We use it for the pair loader, as that is the format of the folders
-        downloaded from the dataset.
+        Returns a list of class names.
 
         Returns:
             list: List of class names.

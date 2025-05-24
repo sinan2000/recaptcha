@@ -10,6 +10,7 @@ verify_ssl = true
 
 [packages]
 numpy = "*"
+pillow= "*"
 opencv-python = "*"
 pre-commit = "*"
 torch = "*"
@@ -18,6 +19,8 @@ torchaudio = "*"
 matplotlib = "*"
 torchmetrics = "*"
 tqdm = "*"
+alive-progress = "*"
+torcheval = "*"
 
 [dev-packages]
 

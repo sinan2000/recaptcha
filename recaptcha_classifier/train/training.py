@@ -17,10 +17,10 @@ class Trainer(object):
                  epochs: int,
                  optimizer: torch.optim.Optimizer,
                  scheduler: torch.optim.lr_scheduler,
-                 save_folder: str,
-                 model_file_name='model.pt',
-                 optimizer_file_name='optimizer.pt',
-                 scheduler_file_name='scheduler.pt',
+                 save_folder: str = "models",
+                 model_file_name: str ='model.pt',
+                 optimizer_file_name: str ='optimizer.pt',
+                 scheduler_file_name: str ='scheduler.pt',
                  device: torch.device |None = None
                  ):
         """
@@ -66,7 +66,7 @@ class Trainer(object):
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-    def train(self, model, load_checkpoint: bool) -> None:
+    def train(self, model, load_checkpoint: bool = False) -> None:
         """
         Main training loop.
         :param model: Model for training.
