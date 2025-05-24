@@ -17,27 +17,6 @@ from typing_extensions import overload, override
 from recaptcha_classifier.train.training import Trainer
 
 
-def create_dummy_data(image_size = (3, 32, 32), num_classes = 3, num_samples = 8):
-    """
-    Creates dummy data for testing purposes.
-    :param image_size: tuple with 3 values: channels (RGB=3; greyscale=1), nxn e.g. 32x32 pixels
-    :param num_classes: int number of classes
-    :param num_samples: Number of images in the dummy dataset
-    :return: dummy data
-    """
-
-    transform = transforms.ToTensor()  # Converts PIL images to tensors
-    ds = FakeData(
-        size=num_samples,
-        image_size=image_size,
-        num_classes=num_classes,
-        transform=transform
-    )
-
-    #print(ds[0])
-    return ds
-
-
 class TrainingUnitTests(unittest.TestCase):
 
     @override
