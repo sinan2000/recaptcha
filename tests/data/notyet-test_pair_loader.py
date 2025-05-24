@@ -2,10 +2,10 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from recaptcha_classifier.data.pair_loader import ImageLabelLoader
+from recaptcha_classifier.data.pair_loader import ImagePathsLoader
 
 
-class TestImageLabelLoader(unittest.TestCase):
+class TestImagePathsLoader(unittest.TestCase):
     @patch("recaptcha_classifier.data.pair_loader.Path.glob")
     @patch("recaptcha_classifier.data.pair_loader.Path.exists",
            return_value=True)
@@ -20,8 +20,8 @@ class TestImageLabelLoader(unittest.TestCase):
             Path("data/images/class1/img2.png"),
         ]  # 2 images found in the png glob
 
-        loader = ImageLabelLoader(["class1"])
-        pairs = loader.find_pairs()
+        loader = ImagePathsLoader(["class1"])
+        pairs = loader.find_image_paths()
 
         expected_pairs = {
             (Path("data/images/class1/img1.png"),
@@ -49,8 +49,8 @@ class TestImageLabelLoader(unittest.TestCase):
         # label folder exists, img1.txt exists but img2.txt does not
         exists_mock.side_effect = [True, True, False]
 
-        loader = ImageLabelLoader(["class1"])
-        pairs = loader.find_pairs()
+        loader = ImagePathsLoader(["class1"])
+        pairs = loader.find_image_paths()
 
         self.assertIn("class1", pairs)
         expected_pair = {
@@ -65,14 +65,14 @@ class TestImageLabelLoader(unittest.TestCase):
     @patch("recaptcha_classifier.data.pair_loader.Path.exists")
     @patch("recaptcha_classifier.data.pair_loader.Path.is_dir")
     def test_caching(self, is_dir_mock, exists_mock, glob_mock):
-        loader = ImageLabelLoader(["class1"])
+        loader = ImagePathsLoader(["class1"])
         loader._pairs = {"test": [(Path("test.png"), Path("test.txt"))]}
 
         # if any mocked method is called, then the cache is not used
         for method in (is_dir_mock, exists_mock, glob_mock):
             method.side_effect = AssertionError(f"{method} called, error!")
 
-        pairs = loader.find_pairs()
+        pairs = loader.find_image_paths()
 
         self.assertIs(pairs, loader._pairs)
         self.assertEqual(pairs, {"test": [(Path("test.png"),

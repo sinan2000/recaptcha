@@ -6,11 +6,10 @@ from recaptcha_classifier import (
 
 def main():
     pipeline = DataPreprocessingPipeline(
-        DetectionLabels.to_class_map(),
+        DetectionLabels,
         balance=True
         )
-
-    loaders = pipeline._downloader.download()
+    loaders = pipeline.run()
     """
     print("Data loaders built successfully.")
 
