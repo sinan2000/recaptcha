@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from PIL import Image
 from typing import List
 from .scaler import YOLOScaler
-from .types import DataPair, BBoxList
+from .types import LoadedImg, BBoxList
 
 
 class Augmentation(ABC):
@@ -11,7 +11,7 @@ class Augmentation(ABC):
     @abstractmethod
     def augment(self,
                 image: Image.Image,
-                annotations: List) -> DataPair:
+                annotations: List) -> LoadedImg:
         """
         Apply the transformation of the image and updates the bounding boxes
         if necessary.
@@ -21,7 +21,7 @@ class Augmentation(ABC):
             annotations (List): List of annotations associated with the image.
 
         Returns:
-            DataPair: The augmented image and the updated
+            LoadedImg: The augmented image and the updated
             annotations.
         """
         pass
@@ -34,7 +34,7 @@ class AugmentationPipeline:
 
     def apply_transforms(self,
                          image: Image.Image,
-                         annotations: BBoxList) -> DataPair:
+                         annotations: BBoxList) -> LoadedImg:
         """
         Apply all transformations in the pipeline to the image and
         annotations.
@@ -45,7 +45,7 @@ class AugmentationPipeline:
             associated with the image.
 
         Returns:
-            DataPair: The augmented image and the updated
+            LoadedImg: The augmented image and the updated
             annotations.
         """
         for transform in self._transforms:
@@ -62,7 +62,7 @@ class HorizontalFlip(Augmentation):
 
     def augment(self,
                 image: Image.Image,
-                annotations: BBoxList) -> DataPair:
+                annotations: BBoxList) -> LoadedImg:
         flipped = image.transpose(Image.FLIP_LEFT_RIGHT)
         new_annotations = YOLOScaler.scale_for_flip(annotations)
 
@@ -80,7 +80,7 @@ class RandomRotation(Augmentation):
 
     def augment(self,
                 image: Image.Image,
-                annotations: BBoxList) -> DataPair:
+                annotations: BBoxList) -> LoadedImg:
         angle = random.uniform(-self._degrees, self._degrees)
 
         rotated = image.rotate(angle)

@@ -4,7 +4,7 @@ from collections import Counter
 from .dataset import ImageDataset
 from .preprocessor import ImagePrep
 from .augment import AugmentationPipeline
-from .types import DatasetSplitDict, FilePairList
+from .types import DatasetSplitMap, ImagePathList
 from .collate_batch import collate_batch
 
 
@@ -40,12 +40,12 @@ class LoaderFactory:
         #  OPTIONAL: self._loaders to cache response
 
     def create_loaders(self,
-                       splits: DatasetSplitDict) -> Dict[str, DataLoader]:
+                       splits: DatasetSplitMap) -> Dict[str, DataLoader]:
         loaders: Dict[str, DataLoader] = {}
 
         for split_name, cls_dict in splits.items():
             # flatten nested dict of pairs
-            flat_pairs: FilePairList = [pair
+            flat_pairs: ImagePathList = [pair
                                         # traversing over classes
                                         for pairs in cls_dict.values()
                                         # traversing over pairs

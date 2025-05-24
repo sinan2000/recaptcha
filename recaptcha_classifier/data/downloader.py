@@ -1,10 +1,8 @@
 import requests
 import zipfile
-import logging
+import shutil
 from pathlib import Path
 from alive_progress import alive_bar
-
-logger = logging.getLogger(__name__)
 
 
 class DatasetDownloader:
@@ -37,11 +35,11 @@ class DatasetDownloader:
         If not, downloads and then unzips it.
         """
         if self._is_downloaded():
-            logger.info("Dataset already exists, skipping download.")
+            print("Dataset already exists, skipping download.")
             return
 
         self._prepare_dest()
-        logger.info(f"Downloading {self._url} to {self._dest}...")
+        print(f"Downloading {self._url} to {self._dest}...")
         self._download_zip()
         self._unzip_and_cleanup()
 
@@ -82,7 +80,7 @@ class DatasetDownloader:
             for chunk in resp.iter_content(chunk_size=8192):
                 f.write(chunk)
                 bar(len(chunk))
-        logger.info("Download completed successfully.")
+        print("Download completed successfully.")
 
     def _unzip_and_cleanup(self) -> None:
         """
@@ -92,7 +90,7 @@ class DatasetDownloader:
         Note: this assumes that the downloaded dataset has exactly
         the structure of our selected Kaggle dataset for simplicity.
         """
-        logger.info("Extracting...")
+        print("Extracting...")
         with zipfile.ZipFile(self._zip_path) as z:
             z.extractall(self._dest)
 
@@ -101,5 +99,10 @@ class DatasetDownloader:
             (root / sub).rename(self._dest / sub)
 
         root.rmdir()
+        
+        label_dir = self._dest / "labels"
+        if label_dir.exists() and label_dir.is_dir():
+            shutil.rmtree(label_dir)
+        
         self._zip_path.unlink()
         print("Extraction and cleanup completed successfully.")

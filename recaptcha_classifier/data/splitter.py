@@ -1,6 +1,6 @@
 import random
 from typing import Tuple
-from .types import ClassFileDict, DatasetSplitDict, FilePairList
+from .types import ClassToImgPaths, DatasetSplitMap, ImagePathList
 
 
 class DataSplitter:
@@ -29,8 +29,8 @@ class DataSplitter:
         self._validate_ratios()
 
     def split(self,
-              pairs_by_class: ClassFileDict
-              ) -> DatasetSplitDict:
+              pairs_by_class: ClassToImgPaths
+              ) -> DatasetSplitMap:
         """
         Splits each class into train, validation, and test sets.
         It shuffles the data if specified and returns a dictionary
@@ -40,7 +40,7 @@ class DataSplitter:
             items (List): List of items to be split.
 
         Returns:
-            DatasetSplitDict: Nested dictionary containing
+            DatasetSplitMap: Nested dictionary containing
             splits for each class.
         """
         splits = {'train': {}, 'val': {}, 'test': {}}
@@ -69,16 +69,16 @@ class DataSplitter:
         if any(ratio < 0 for ratio in self._ratios):
             raise ValueError("Ratios must be positive.")
 
-    def _shuffle_items(self, items: FilePairList) -> FilePairList:
+    def _shuffle_items(self, items: ImagePathList) -> ImagePathList:
         """
         Returns a shuffled copied version of the items list,
         using seed if provided.
 
         Args:
-            items (FilePairList): List of items to be shuffled.
+            items (ImagePathList): List of items to be shuffled.
 
         Returns:
-            FilePairList: Shuffled list of items.
+            ImagePathList: Shuffled list of items.
         """
         new_items = items.copy()
         rand = random.Random(self._seed)
