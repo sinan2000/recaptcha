@@ -18,9 +18,10 @@ torchaudio = {index = "pytorch-cu128", version = "2.7.0+cu128", markers = "platf
 alive-progress = "*"
 matplotlib = "*"
 scikit-learn = "*"
+pandas = "*"
+torcheval = "*"
 
 [dev-packages]
 
 [requires]
 python_version = "3.12"
-

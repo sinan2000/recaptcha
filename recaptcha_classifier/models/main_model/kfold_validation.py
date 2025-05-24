@@ -17,7 +17,7 @@ class KFoldValidation:
         """
         Initialize the cross-validation setup.
 
-        :param data: Full dataset (torch Dataset or list of samples)
+        :param data: Full dataset
         :param k_folds: Number of folds
         :param hp_optimizer: Instance of HPOptimizer
         :param device: Optional torch device
@@ -35,6 +35,9 @@ class KFoldValidation:
         :param top_n_models: Number of best models to keep from each fold.
         """
         kf = KFold(n_splits=self.k_folds, shuffle=True, random_state=42)
+        class_names = ['Car', 'Other', 'Cross', 'Bus', 'Hydrant',
+                       'Palm', 'Tlight', 'Bicycle', 'Bridge', 'Stair',
+                       'Chimney', 'Motorcycle']
 
         for fold_index, (train_indices, val_indices) in enumerate(kf.split(
                                                                  self.data)):
@@ -43,26 +46,23 @@ class KFoldValidation:
             train_data = [self.data[i] for i in train_indices]
             val_data = [self.data[i] for i in val_indices]
 
-            self.hp_optimizer.trainer.train_loader = train_data
-
-            self.hp_optimizer.optimize_hyperparameters()
-
+            train_loader = DataLoader(train_data, batch_size=32)
             val_loader = DataLoader(val_data, batch_size=32)
+
+            self.hp_optimizer._trainer.train_loader = train_loader
+            self.hp_optimizer._trainer.val_loader = val_loader
+
+            opt_hp = self.hp_optimizer.optimize_hyperparameters()
             evaluated_models = []
-            class_names = ['Car', 'Other', 'Cross', 'Bus', 'Hydrant',
-                           'Palm', 'Tlight', 'Bicycle', 'Bridge', 'Stair',
-                           'Chimney', 'Motorcycle']
-            for _, (hp_combo, _) in self.hp_optimizer.opt_data.items():
-                model = MainCNN(n_layers=int(hp_combo[0]),
-                                kernel_size=int(hp_combo[1]))
+            for _, row in opt_hp.iterrows():
+                model = MainCNN(n_layers=int(row['layers']),
+                                kernel_size=int(row['kernel_sizes']))
                 metrics_result = evaluate_model(
                     model, val_loader, device=self.device, num_classes=12,
                     class_names=class_names, plot_cm=False
                 )
                 evaluated_models.append((model, metrics_result))
 
-            # Keep only top_n_models
-            evaluated_models.sort(key=lambda x: x[1]["F1-score"], reverse=True)
             self.best_models_per_fold.append(evaluated_models[:top_n_models])
 
     def get_all_best_models(self) -> list:
