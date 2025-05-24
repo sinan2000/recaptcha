@@ -10,7 +10,7 @@ verify_ssl = true
 
 [packages]
 numpy = "*"
-pillow = "*"
+opencv-python = "*"
 pre-commit = "*"
 torch = "*"
 torchvision = "*"
