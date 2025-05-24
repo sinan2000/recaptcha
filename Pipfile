@@ -12,11 +12,7 @@ verify_ssl = true
 numpy = "*"
 pillow = "*"
 pre-commit = "*"
-torch = {index = "pytorch-cu128", version = "2.7.0+cu128", markers = "platform_system == 'Windows'"}
-torchvision = {index = "pytorch-cu128", version = "0.22.0+cu128", markers = "platform_system == 'Windows'"}
-torchaudio = {index = "pytorch-cu128", version = "2.7.0+cu128", markers = "platform_system == 'Windows'"}
-alive-progress = "*"
-matplotlib = "*"
+torchvision = "*"
 
 [dev-packages]
 
