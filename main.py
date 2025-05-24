@@ -17,7 +17,7 @@ def main():
     loaders = pipeline.run()
     
     model = MainCNN(
-        n_layers=3,
+        n_layers=2,#3,
         kernel_size=3,
         num_classes=len(DetectionLabels),
     )
@@ -54,7 +54,6 @@ def main():
     print("Evaluation results:")
     for key, value in results.items():
         print(f"{key}: {value}")
-
 
 if __name__ == '__main__':
     main()

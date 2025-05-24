@@ -6,11 +6,7 @@ from .visualizer import Visualizer
 from .loader_factory import LoaderFactory
 from .dataset import ImageDataset
 from .preprocessor import ImagePrep
-from .augment import (
-    AugmentationPipeline,
-    HorizontalFlip,
-    RandomRotation
-)
+from .augment import AugmentationPipeline
 
 from .collate_batch import collate_batch
 
@@ -33,8 +29,6 @@ __all__ = [
     "ImageDataset",
     "ImagePrep",
     "AugmentationPipeline",
-    "HorizontalFlip",
-    "RandomRotation",
     # Methods
     "collate_batch",
     # Types

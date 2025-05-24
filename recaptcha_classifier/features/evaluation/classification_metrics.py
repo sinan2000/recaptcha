@@ -11,7 +11,8 @@ def evaluate_classification(y_pred: Tensor,
                             num_classes: int,
                             average: str = 'macro',
                             cm_plot: bool = True,
-                            class_names: Optional[list[str]] = None) -> dict:
+                            class_names: Optional[list[str]] = None,
+                            ) -> dict:
     """
     Evaluate classification model using torchmetrics
 
@@ -37,10 +38,12 @@ def evaluate_classification(y_pred: Tensor,
     # Convert logits to predicted labels
     y_pred = torch.argmax(y_pred, dim=1)
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     # Initialize Metrics
-    acc = Accuracy(task="multiclass", num_classes=num_classes)
-    f1 = F1Score(task="multiclass", num_classes=num_classes, average=average)
-    confmat = MulticlassConfusionMatrix(num_classes=num_classes)
+    acc = Accuracy(task="multiclass", num_classes=num_classes).to(device)
+    f1 = F1Score(task="multiclass", num_classes=num_classes, average=average).to(device)
+    confmat = MulticlassConfusionMatrix(num_classes=num_classes).to(device)
 
     # Compute metrics
     acc_val = acc(y_pred, y_true)
