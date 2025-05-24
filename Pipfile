@@ -12,7 +12,12 @@ verify_ssl = true
 numpy = "*"
 pillow = "*"
 pre-commit = "*"
+torch = "*"
 torchvision = "*"
+torchaudio = "*"
+matplotlib = "*"
+torchmetrics = "*"
+tqdm = "*"
 
 [dev-packages]
 
