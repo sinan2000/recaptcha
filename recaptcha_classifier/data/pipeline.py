@@ -39,7 +39,7 @@ class DataPreprocessingPipeline:
                  batch_size: int = 32,
                  num_workers: int = 4,
                  balance: bool = False,
-                 show_plots: bool = True) -> None:
+                 show_plots: bool = False) -> None:
         """
         Initializes the DataPreprocessingPipeline with the given parameters.
 
@@ -115,6 +115,5 @@ class DataPreprocessingPipeline:
 
         # 4. Create DataLoaders for each split
         print("e. Creating DataLoaders for each split...")
-        #loaders = self._creator.create_loaders(splits)
-        #return loaders
-        return []
+        loaders = self._creator.create_loaders(splits)
+        return loaders

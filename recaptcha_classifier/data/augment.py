@@ -9,14 +9,14 @@ class Augmentation(ABC):
     """Abstract class for data augmentation."""
     @abstractmethod
     def augment(self,
-                image: Image.Image,
+                image: LoadedImg,
                 annotations: List) -> LoadedImg:
         """
         Apply the transformation of the image and updates the bounding boxes
         if necessary.
 
         Args:
-            image (Image.Image): The image to be augmented.
+            image (LoadedImg): The image to be augmented.
             annotations (List): List of annotations associated with the image.
 
         Returns:
@@ -32,24 +32,22 @@ class AugmentationPipeline:
         self._transforms: List[Augmentation] = transforms
 
     def apply_transforms(self,
-                         image: Image.Image) -> LoadedImg:
+                         image: LoadedImg) -> LoadedImg:
         """
         Apply all transformations in the pipeline to the image and
         annotations.
 
         Args:
-            image (Image.Image): The image to be augmented.
-            associated with the image.
+            image (LoadedImg): The image to be augmented.
 
         Returns:
-            LoadedImg: The augmented image and the updated
-            annotations.
+            LoadedImg: The augmented image.
         """
         for transform in self._transforms:
             if hasattr(transform, 'prob') and random.random() > transform.prob:
                 continue
-            image, annotations = transform.augment(image)
-        return image, annotations
+            image = transform.augment(image)
+        return image
 
 
 class HorizontalFlip(Augmentation):
@@ -58,7 +56,7 @@ class HorizontalFlip(Augmentation):
         self.prob = p
 
     def augment(self,
-                image: Image.Image) -> LoadedImg:
+                image: LoadedImg) -> LoadedImg:
         flipped = image.transpose(Image.FLIP_LEFT_RIGHT)
 
         return flipped
@@ -73,7 +71,7 @@ class RandomRotation(Augmentation):
         self.prob = p
 
     def augment(self,
-                image: Image.Image) -> LoadedImg:
+                image: LoadedImg) -> LoadedImg:
         angle = random.uniform(-self._degrees, self._degrees)
 
         rotated = image.rotate(angle)
