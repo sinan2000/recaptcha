@@ -6,11 +6,8 @@ from .paths_loader import ImagePathsLoader
 from .splitter import DataSplitter
 from .visualizer import Visualizer
 from .preprocessor import ImagePrep
-from .augment import (
-    AugmentationPipeline,
-    HorizontalFlip,
-    RandomRotation
-)
+from .augment import AugmentationPipeline
+from torchvision import transforms
 from .loader_factory import LoaderFactory
 
 
@@ -78,8 +75,11 @@ class DataPreprocessingPipeline:
             AugmentationPipeline: The augmentation pipeline.
         """
         return AugmentationPipeline([
-            HorizontalFlip(p=0.5),
-            RandomRotation(degrees=30, p=0.5)
+            transforms.RandomHorizontalFlip(p=0.5),
+            transforms.RandomRotation(degrees=15),
+            transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3),
+            transforms.RandomResizedCrop(size=(224, 224), scale=(0.8, 1.0)),
+            transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 2.0)),
         ])
 
     def run(self) -> Dict[str, DataLoader]:

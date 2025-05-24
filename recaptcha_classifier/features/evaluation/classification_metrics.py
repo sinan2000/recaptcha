@@ -13,7 +13,8 @@ def evaluate_classification(y_pred: Tensor,
                             device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu"),
                             average: str = 'weighted',
                             cm_plot: bool = True,
-                            class_names: Optional[list[str]] = None) -> dict:
+                            class_names: Optional[list[str]] = None,
+                            ) -> dict:
     """
     Evaluate classification model using torchmetrics
 
@@ -39,6 +40,8 @@ def evaluate_classification(y_pred: Tensor,
 
     # Convert logits to predicted labels
     y_pred = torch.argmax(y_pred, dim=1)
+
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     # Initialize Metrics
     acc = Accuracy(task="multiclass", num_classes=num_classes).to(device=device)
