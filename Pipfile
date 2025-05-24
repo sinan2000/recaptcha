@@ -16,7 +16,7 @@ torch = "*"
 torchvision = "*"
 torchaudio = "*"
 matplotlib = "*"
-torchmetrics = {extras = ["detection"], version = "*"}
+torchmetrics = "*"
 tqdm = "*"
 
 [dev-packages]
