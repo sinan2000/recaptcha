@@ -3,7 +3,6 @@ from typing import Tuple
 from PIL import Image
 import numpy as np
 import torch
-from .types import BBoxList
 
 
 class ImagePrep:
@@ -38,28 +37,6 @@ class ImagePrep:
         """
         loaded = Image.open(img_path).convert("RGB")
         return self._resize(loaded)
-
-    def load_labels(self, lbl_path: Path) -> BBoxList:
-        """
-        Parses the list of YOLO format labels from the file at the given path.
-
-        Args:
-            lbl_path (Path): Path to the label file.
-
-        Returns:
-            BBoxList: List of bounding boxes in YOLO format
-            (x_center, y_center, width, height).
-        """
-        bounding_boxes = []
-        with open(lbl_path, "r") as f:
-            for line in f:
-                parts = line.strip().split()
-                if len(parts) < 5:
-                    continue  # invalid line skipped
-                _, x_center, y_center, width, height = map(float, parts)
-                bounding_boxes.append((x_center, y_center, width, height))
-
-        return bounding_boxes
 
     def _resize(self, img: Image.Image) -> Image.Image:
         """

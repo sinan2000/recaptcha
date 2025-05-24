@@ -52,10 +52,6 @@ class ImageDataset(Dataset):
 
         # Load image and label
         img = self._prep.load_image(img_path)
-        # bb = self._prep.load_labels(lbl_path)
-
-        # if not bb:
-        #    raise ValueError(f"Bounding box list is empty for {lbl_path}")
 
         # Apply augmentation if passed
         if self._aug:
@@ -71,6 +67,4 @@ class ImageDataset(Dataset):
             raise KeyError(f"Class name '{c_name}' not found in classes.")
         c_id = self._class_map[c_name]
 
-        # Return image tensor, bounding box and class index
         return tensor, self._prep.class_id_to_tensor(c_id)
-        # return tensor, bb, c_id

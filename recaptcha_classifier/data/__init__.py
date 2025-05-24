@@ -11,7 +11,6 @@ from .augment import (
     HorizontalFlip,
     RandomRotation
 )
-from .scaler import YOLOScaler
 
 from .collate_batch import collate_batch
 
@@ -36,7 +35,6 @@ __all__ = [
     "AugmentationPipeline",
     "HorizontalFlip",
     "RandomRotation",
-    "YOLOScaler",
     # Methods
     "collate_batch",
     # Types
