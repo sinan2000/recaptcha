@@ -83,5 +83,5 @@ class DetectionLabels(Enum):
         Returns:
             list: List of class names.
         """
-        return [name.capitalize().replace("_", " ")
+        return [name.replace("_", " ").title()
                 for name in cls.__members__.keys()]

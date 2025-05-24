@@ -1,8 +1,8 @@
 from typing import Dict, Tuple
 from torch.utils.data import DataLoader
-
+from enum import EnumMeta
 from .downloader import DatasetDownloader
-from .pair_loader import ImageLabelLoader
+from .paths_loader import ImagePathsLoader
 from .splitter import DataSplitter
 from .visualizer import Visualizer
 from .preprocessor import ImagePrep
@@ -33,7 +33,7 @@ class DataPreprocessingPipeline:
     pipeline and it includes all its components.
     """
     def __init__(self,
-                 class_map: Dict[str, int],
+                 class_enum: EnumMeta,
                  ratios: Tuple[float, float, float] = (0.7, 0.2, 0.1),
                  seed: int = 23,  # our group number
                  batch_size: int = 32,
@@ -44,7 +44,7 @@ class DataPreprocessingPipeline:
         Initializes the DataPreprocessingPipeline with the given parameters.
 
         Args:
-            class_map (Dict[str, int]): Mappng of class names to indices.
+            class_enum (EnumMeta): Enum class containing dataset classes.
             ratios (Tuple[float, float, float]): Ratios for train,
             val, and test splits.
             seed (int): Random seed for reproducibility.
@@ -53,14 +53,16 @@ class DataPreprocessingPipeline:
             balance (bool): Whether to balance the dataset.
             show_plots (bool): Whether to show plots.
         """
-        self._downloader = DatasetDownloader()
-        self._loader = ImageLabelLoader(list(class_map.keys()))
+        self._class_enum = class_enum
+        self._downloader = DatasetDownloader(self._class_enum
+                                             .dataset_classnames())
+        self._loader = ImagePathsLoader(self._class_enum.dataset_classnames())
         self._splitter = DataSplitter(ratios, seed=seed)
         self._show_plots = show_plots
         self._preproc = ImagePrep()
         self._augment = self._build_augmentator()
         self._creator = LoaderFactory(
-            class_map=class_map,
+            class_map=self._class_enum.to_class_map(),
             preprocessor=self._preproc,
             augmentator=self._augment,
             batch_size=batch_size,
@@ -95,7 +97,7 @@ class DataPreprocessingPipeline:
 
         # 2. Finds all pairs of images and YOLO annotations from the dataset
         print("b. Searching for all the data...")
-        pairs_by_class = self._loader.find_pairs()
+        pairs_by_class = self._loader.find_image_paths()
 
         # 3a. Splits the data into train, val, and test sets
         print("c. Splitting the data...")
@@ -113,5 +115,6 @@ class DataPreprocessingPipeline:
 
         # 4. Create DataLoaders for each split
         print("e. Creating DataLoaders for each split...")
-        loaders = self._creator.create_loaders(splits)
-        return loaders
+        #loaders = self._creator.create_loaders(splits)
+        #return loaders
+        return []

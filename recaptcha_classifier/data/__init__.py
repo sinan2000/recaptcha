@@ -1,6 +1,6 @@
 from .pipeline import DataPreprocessingPipeline
 from .downloader import DatasetDownloader
-from .pair_loader import ImageLabelLoader
+from .paths_loader import ImagePathsLoader
 from .splitter import DataSplitter
 from .visualizer import Visualizer
 from .loader_factory import LoaderFactory
@@ -26,7 +26,7 @@ __all__ = [
     # Classes
     "DataPreprocessingPipeline",
     "DatasetDownloader",
-    "ImageLabelLoader",
+    "ImagePathsLoader",
     "DataSplitter",
     "Visualizer",
     "LoaderFactory",

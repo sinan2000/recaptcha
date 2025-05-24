@@ -2,8 +2,8 @@ import requests
 import zipfile
 import shutil
 from pathlib import Path
+from typing import List
 from alive_progress import alive_bar
-from recaptcha_classifier.detection_labels import DetectionLabels
 
 
 class DatasetDownloader:
@@ -15,6 +15,7 @@ class DatasetDownloader:
     dataset downloading operation, with no other responsibilities.
     """
     def __init__(self,
+                 class_names: List[str],
                  url: str = ("https://www.kaggle.com/api/v1/datasets/"
                              "download/mikhailma/test-dataset"),
                  dest: str = "data") -> None:
@@ -29,7 +30,7 @@ class DatasetDownloader:
         self._dest: Path = Path(dest)
         self._zip_path: Path = self._dest / "dataset.zip"
         self._progress = alive_bar
-        self._expected_folder_names = DetectionLabels.dataset_classnames()
+        self._expected_folder_names = class_names
 
     def download(self) -> None:
         """

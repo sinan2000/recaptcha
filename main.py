@@ -71,6 +71,5 @@ def open_api():
     # opens endpoint at http://localhost:8000/
     uvicorn.run("recaptcha_classifier.server.api:app", reload=True)
 
-
 if __name__ == '__main__':
     main()
