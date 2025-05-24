@@ -1,7 +1,7 @@
 import logging
 from pathlib import Path
 from typing import List, Dict
-from .types import ClassFileDict
+from .types import ClassToImgPaths
 
 logger = logging.getLogger(__name__)
 
@@ -33,9 +33,9 @@ class ImageLabelLoader:
         self._classes = classes
         self._images_dir = Path(images_dir)
         # self._labels_dir = Path(labels_dir)
-        self._pairs: ClassFileDict = dict()
+        self._pairs: ClassToImgPaths = dict()
 
-    def find_pairs(self) -> ClassFileDict:
+    def find_pairs(self) -> ClassToImgPaths:
         """
         Returns all pairs loaded for the given classes.
         It caches the response after first run.

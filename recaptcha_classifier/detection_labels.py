@@ -5,13 +5,6 @@ class DetectionLabels(Enum):
     """
     Enum for improving readability of the object classes.
     """
-
-    """
-    OBJECT DETECTION TASK CLASSES
-    CROSSWALK = 0
-    CHIMNEY = 1
-    STAIR = 2
-    """
     BICYCLE = 0
     BRIDGE = 1
     BUS = 2

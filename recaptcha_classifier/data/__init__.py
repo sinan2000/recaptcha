@@ -16,11 +16,9 @@ from .scaler import YOLOScaler
 from .collate_batch import collate_batch
 
 from .types import (
-    FilePair,
-    FilePairList,
-    DatasetSplitDict,
-    BBoxList,
-    DataPair,
+    ImagePathList,
+    DatasetSplitMap,
+    LoadedImg,
     DataItem,
     DataBatch
 )
@@ -43,10 +41,9 @@ __all__ = [
     "collate_batch",
     # Types
     "FilePair",
-    "FilePairList",
-    "DatasetSplitDict",
-    "BBoxList",
-    "DataPair",
+    "ImagePathList",
+    "DatasetSplitMap",
+    "LoadedImg",
     "DataItem",
     "DataBatch",
 ]

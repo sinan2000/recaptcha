@@ -1,5 +1,5 @@
 import matplotlib.pyplot as plt
-from .types import DatasetSplitDict
+from .types import DatasetSplitMap
 import numpy as np
 
 
@@ -10,12 +10,12 @@ class Visualizer:
     visualization of classes across the splits.
     """
     @classmethod
-    def print_counts(cls, splits: DatasetSplitDict) -> None:
+    def print_counts(cls, splits: DatasetSplitMap) -> None:
         """
         Prints the counts of samples in each class, for each split.
 
         Args:
-            splits (DatasetSplitDict): the dataset splits
+            splits (DatasetSplitMap): the dataset splits
                 containing the pairs for each class.
         """
         for split, cls_dict in splits.items():
@@ -26,14 +26,14 @@ class Visualizer:
 
     @classmethod
     def plot_splits(cls,
-                    splits: DatasetSplitDict,
+                    splits: DatasetSplitMap,
                     title: str = "Class Distribution in Splits") -> None:
         """
         Plots a bar chart showing the amount and percentage of samples
         present in each class, for each of the splits.
 
         Args:
-            splits (DatasetSplitDict): the dataset splits
+            splits (DatasetSplitMap): the dataset splits
                 containing the pairs for each class.
             title (str): the title of the plot.
         """

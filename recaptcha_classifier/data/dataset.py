@@ -2,7 +2,7 @@ from typing import Optional
 from torch.utils.data import Dataset
 from .preprocessor import ImagePrep
 from .augment import AugmentationPipeline
-from .types import FilePairList, DataItem
+from .types import ImagePathList, DataItem
 
 
 class ImageDataset(Dataset):
@@ -17,7 +17,7 @@ class ImageDataset(Dataset):
     https://docs.pytorch.org/tutorials/beginner/basics/data_tutorial.html
     """
     def __init__(self,
-                 pairs: FilePairList,
+                 pairs: ImagePathList,
                  preprocessor: ImagePrep,
                  augmentator: Optional[AugmentationPipeline] = None,
                  class_map: dict = {}
