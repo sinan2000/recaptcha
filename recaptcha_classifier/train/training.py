@@ -66,11 +66,12 @@ class Trainer(object):
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-    def train(self, model, load_checkpoint: bool) -> None:
+    def train(self, model, load_checkpoint: bool, save_checkpoint: bool = True) -> None:
         """
         Main training loop.
+        :param save_checkpoint: If True, saves checkpoint files.
         :param model: Model for training.
-        :param load_checkpoint: If true, loads latest checkpoint
+        :param load_checkpoint: If true, loads latest checkpoint if it exists.
         with the previous states of the model, optimizer, and scheduler.
         """
 
@@ -78,6 +79,9 @@ class Trainer(object):
         start_epoch = 0
         if load_checkpoint and os.path.exists(os.path.join(self.save_folder, self.model_file_name)):
             start_epoch = self.load_checkpoint_states(model)
+
+        if start_epoch == 0:
+            self._loss_acc_history = []
 
         model.to(self.device)
         model.train()
@@ -94,7 +98,8 @@ class Trainer(object):
                                       train_progress_bar)
 
             # Saving states
-            self.save_checkpoint_states(model)
+            if save_checkpoint:
+                self.save_checkpoint_states(model)
 
             # Validation
             val_accuracy_counter = metrics.MulticlassAccuracy().to(self.device)
@@ -182,4 +187,7 @@ class Trainer(object):
             if os.path.isfile(file_path):
                 os.remove(file_path)
                 print(f"Deleted file: {filename}")
-        os.removedirs(self.save_folder)
+        
+        if not os.listdir(self.save_folder): # make sure it's empty
+          os.rmdir(self.save_folder)
+          print(f"Deleted folder: {self.save_folder}")

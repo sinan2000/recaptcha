@@ -7,15 +7,26 @@ from typing_extensions import override
 from recaptcha_classifier.train.training import Trainer
 from tests.models.utils_training_hpo import initialize_dummy_components
 
+import torch
+from numpy.ma.testutils import assert_equal
+from torchvision import transforms
+from torchvision.datasets import FakeData
+from torchvision.models import resnet18
+from typing_extensions import overload, override
+
+from recaptcha_classifier.train.training import Trainer
+
 
 class TrainingUnitTests(unittest.TestCase):
 
     @override
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         model, optim, train_loader, val_loader = initialize_dummy_components(8,2,2, 3)
 
         self.model = model
+
         self.trainer = Trainer(train_loader=train_loader,
                           val_loader=val_loader,
                           epochs=2,
