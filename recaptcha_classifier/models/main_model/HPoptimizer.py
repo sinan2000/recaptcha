@@ -29,10 +29,12 @@ class HPOptimizer(object):
     def optimize_hyperparameters(self,
                                  n_layers: list = list(range(1,3)),
                                  kernel_sizes: list = list(range(3,6)),
-                                 learning_rates: list = [1e-2, 1e-3, 1e-4]
+                                 learning_rates: list = [1e-2, 1e-3, 1e-4],
+                                 save_checkpoints: bool = True
                                  ) -> pd.DataFrame:
         """
         Main loop for optimizing hyperparameters. History is cleared every time the method is called.
+        :param save_checkpoints: If True, trainer saves checkpoints after each epoch.
         :param n_layers: list of integers specifying the number of hidden layers range.
         :param kernel_sizes: list of integers specifying the kernel sizes range.
         :param learning_rates: list of floats specifying the learning rate range.
@@ -49,7 +51,7 @@ class HPOptimizer(object):
 
         for i in range(len(hp_combos)):
             hp_combo = hp_combos[i]
-            self._train_one_model(hp_combo)
+            self._train_one_model(hp_combo, save_checkpoints)
 
             final_train_history = self._trainer.loss_acc_history[-1]
             loss = final_train_history[0]
@@ -67,17 +69,15 @@ class HPOptimizer(object):
         return df_opt_data.copy()
 
 
-    def _train_one_model(self, hp_combo) -> None:
+    def _train_one_model(self, hp_combo, save_checkpoints) -> None:
         model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
         self._trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
-        self._trainer.train(model=model, load_checkpoint=False)
+        self._trainer.train(model=model, load_checkpoint=False, save_checkpoint=save_checkpoints)
 
 
     def _generate_hp_combinations(self, hp) -> list:
         return list(itertools.product(*hp))
 
     def _clear_history(self) -> None:
-        self._trainer.loss_acc_history[-1] = []
-        self._opt_data['Model index'] = []
-        self._opt_data['layers'] = []
-        self._opt_data['kernel_sizes'] = []
+        for key in self._opt_data.keys():
+            self._opt_data[key] = []
