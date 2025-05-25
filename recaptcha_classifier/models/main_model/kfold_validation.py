@@ -28,7 +28,8 @@ class KFoldValidation:
         self.device = device
         self.best_models_per_fold = []
 
-    def run_cross_validation(self, top_n_models: int = 3) -> None:
+    def run_cross_validation(self, top_n_models: int = 3,
+                             save_checkpoints: bool = True) -> None:
         """
         Runs k-Fold Cross-Validation and hyperparameter optimization.
 
@@ -52,7 +53,7 @@ class KFoldValidation:
             self.hp_optimizer._trainer.train_loader = train_loader
             self.hp_optimizer._trainer.val_loader = val_loader
 
-            opt_hp = self.hp_optimizer.optimize_hyperparameters()
+            opt_hp = self.hp_optimizer.optimize_hyperparameters(save_checkpoints=save_checkpoints)
             evaluated_models = []
             for _, row in opt_hp.iterrows():
                 model = MainCNN(n_layers=int(row['layers']),

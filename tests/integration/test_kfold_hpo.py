@@ -16,7 +16,13 @@ from tests.models.utils_training_hpo import create_dummy_data
 
 
 class TestKFoldHPOIntegration(unittest.TestCase):
-    def setUp(self):
+    """
+    Integration test for cross validation + hp optimizer.
+    """
+    def setUp(self) -> None:
+        """
+        Setting up.
+        """
         self.temp_dir = tempfile.mkdtemp()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.dummy_data = create_dummy_data(num_classes=3, num_samples=30)
@@ -48,9 +54,14 @@ class TestKFoldHPOIntegration(unittest.TestCase):
             device=self.device
         )
 
-    def test_kfold_and_hpo_run(self):
+    def test_kfold_and_hpo_run(self) -> None:
+        """
+        Running cross validation and asserting if it returns the
+        necessary items.
+        """
         # Run cross-validation
-        self.kfold_validator.run_cross_validation(top_n_models=2)
+        self.kfold_validator.run_cross_validation(top_n_models=2,
+                                                  save_checkpoints=False)
 
         # Get results
         results = self.kfold_validator.get_all_best_models()
@@ -64,14 +75,15 @@ class TestKFoldHPOIntegration(unittest.TestCase):
                 self.assertIn("F1-score", metrics, "Metrics should include F1-score")
 
     def tearDown(self):
+        """
+        Deleting files if neded.
+        """
         try:
-            # Force file handles to close
-            torch.cuda.empty_cache()  # if using GPU
-            gc.collect()              # release Python objects
+            torch.cuda.empty_cache()
+            gc.collect()
         except Exception as e:
             print(f"Warning during cleanup: {e}")
 
-        # Retry delete with forced unlock
         try:
             shutil.rmtree(self.temp_dir)
         except PermissionError:
