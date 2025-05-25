@@ -20,13 +20,21 @@ class HPOptimizer(object):
                          'accuracy': []}
 
 
+    def get_history(self)->pd.DataFrame:
+        df_opt_data = pd.DataFrame(self._opt_data)
+        df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
+        return df_opt_data.copy()
+
+
     def optimize_hyperparameters(self,
                                  n_layers: list = list(range(1,3)),
                                  kernel_sizes: list = list(range(3,6)),
-                                 learning_rates: list = [1e-2, 1e-3, 1e-4]
+                                 learning_rates: list = [1e-2, 1e-3, 1e-4],
+                                 save_checkpoints: bool = True
                                  ) -> pd.DataFrame:
         """
-        Main loop for optimizing hyperparameters.
+        Main loop for optimizing hyperparameters. History is cleared every time the method is called.
+        :param save_checkpoints: If True, trainer saves checkpoints after each epoch.
         :param n_layers: list of integers specifying the number of hidden layers range.
         :param kernel_sizes: list of integers specifying the kernel sizes range.
         :param learning_rates: list of floats specifying the learning rate range.
@@ -38,9 +46,12 @@ class HPOptimizer(object):
         # generating HP combinations:
         hp_combos = self._generate_hp_combinations(hp)
 
+        if len(self._opt_data['loss']) != 0:
+            self._clear_history()
+
         for i in range(len(hp_combos)):
             hp_combo = hp_combos[i]
-            self._train_one_model(hp_combo)
+            self._train_one_model(hp_combo, save_checkpoints)
 
             final_train_history = self._trainer.loss_acc_history[-1]
             loss = final_train_history[0]
@@ -53,16 +64,20 @@ class HPOptimizer(object):
                 self._opt_data[key].append(curr_architecture[v])
                 v+=1
 
-        self._opt_data = pd.DataFrame(self._opt_data)
-        self._opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
-        return self._opt_data.copy()
+        df_opt_data = pd.DataFrame(self._opt_data)
+        df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
+        return df_opt_data.copy()
 
 
-    def _train_one_model(self, hp_combo) -> None:
+    def _train_one_model(self, hp_combo, save_checkpoints) -> None:
         model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
         self._trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
-        self._trainer.train(model=model, load_checkpoint=False)
+        self._trainer.train(model=model, load_checkpoint=False, save_checkpoint=save_checkpoints)
 
 
     def _generate_hp_combinations(self, hp) -> list:
         return list(itertools.product(*hp))
+
+    def _clear_history(self) -> None:
+        for key in self._opt_data.keys():
+            self._opt_data[key] = []
