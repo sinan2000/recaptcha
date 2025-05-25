@@ -53,9 +53,9 @@ class HPOptimizer(object):
                 self._opt_data[key].append(curr_architecture[v])
                 v+=1
 
-        self._opt_data = pd.DataFrame(self._opt_data)
-        self._opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
-        return self._opt_data.copy()
+        df_opt_data = pd.DataFrame(self._opt_data)
+        df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
+        return df_opt_data.copy()
 
 
     def _train_one_model(self, hp_combo) -> None:
