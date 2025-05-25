@@ -7,12 +7,13 @@ import shutil
 import os
 import uuid
 import gc
+from torch.utils.data import Subset
 
 from recaptcha_classifier.train.training import Trainer
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
 from recaptcha_classifier.models.main_model.kfold_validation import KFoldValidation
-from tests.models.utils_training_hpo import create_dummy_data
+from tests.integration.get_real_data import get_real_dataloaders
 
 
 class TestKFoldHPOIntegration(unittest.TestCase):
@@ -25,11 +26,17 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         """
         self.temp_dir = tempfile.mkdtemp()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.dummy_data = create_dummy_data(num_classes=3, num_samples=30)
-        loader = torch.utils.data.DataLoader(self.dummy_data, batch_size=4)
 
-        # Dummy model
-        model = MainCNN(n_layers=1, kernel_size=3)
+        # Data loading
+        loaders = get_real_dataloaders()
+        train_loader = loaders['train']
+        val_loader = loaders['val']
+        train_dataset = train_loader.dataset
+        subset_indices = list(range(min(100, len(train_dataset))))
+        small_dataset = Subset(train_dataset, subset_indices)
+
+        # Model
+        model = MainCNN(n_layers=1, kernel_size=3, num_classes=12)
         optimizer = RAdam(model.parameters(), lr=0.01)
         scheduler = StepLR(optimizer, step_size=1, gamma=0.1)
 
@@ -37,8 +44,8 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         os.makedirs(unique_folder, exist_ok=True)   
 
         self.trainer = Trainer(
-            train_loader=loader,
-            val_loader=loader,
+            train_loader=train_loader,
+            val_loader=val_loader,
             optimizer=optimizer,
             scheduler=scheduler,
             epochs=1,
@@ -48,7 +55,7 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         # Initialize optimizer and CV validator
         self.hp_optimizer = HPOptimizer(self.trainer)
         self.kfold_validator = KFoldValidation(
-            data=self.dummy_data,
+            data=small_dataset,
             k_folds=3,
             hp_optimizer=self.hp_optimizer,
             device=self.device
@@ -60,7 +67,7 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         necessary items.
         """
         # Run cross-validation
-        self.kfold_validator.run_cross_validation(top_n_models=2,
+        self.kfold_validator.run_cross_validation(top_n_models=1,
                                                   save_checkpoints=False)
 
         # Get results
@@ -69,7 +76,7 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         # Check result structure
         self.assertEqual(len(results), 3, "Should return results for 3 folds")
         for fold_models in results:
-            self.assertEqual(len(fold_models), 2, "Should return top 2 models per fold")
+            self.assertEqual(len(fold_models), 1, "Should return top 1 model per fold")
             for model, metrics in fold_models:
                 self.assertTrue(hasattr(model, "forward"), "Model should be valid")
                 self.assertIn("F1-score", metrics, "Metrics should include F1-score")

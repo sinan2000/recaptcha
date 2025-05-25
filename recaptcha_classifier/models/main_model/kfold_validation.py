@@ -36,9 +36,9 @@ class KFoldValidation:
         :param top_n_models: Number of best models to keep from each fold.
         """
         kf = KFold(n_splits=self.k_folds, shuffle=True, random_state=42)
-        class_names = ['Car', 'Other', 'Cross', 'Bus', 'Hydrant',
-                       'Palm', 'Tlight', 'Bicycle', 'Bridge', 'Stair',
-                       'Chimney', 'Motorcycle']
+        class_names = ['BICYCLE', 'BRIDGE', 'BUS', 'CAR', 'CHIMNEY',
+                       'CROSSWALK', 'HYDRANT', 'MOTORCYCLE', 'PALM',
+                       'STAIR', 'TRAFFIC_LIGHT', 'OTHER']
 
         for fold_index, (train_indices, val_indices) in enumerate(kf.split(
                                                                  self.data)):
@@ -57,7 +57,8 @@ class KFoldValidation:
             evaluated_models = []
             for _, row in opt_hp.iterrows():
                 model = MainCNN(n_layers=int(row['layers']),
-                                kernel_size=int(row['kernel_sizes']))
+                                kernel_size=int(row['kernel_sizes']),
+                                num_classes=12)
                 metrics_result = evaluate_model(
                     model, val_loader, device=self.device, num_classes=12,
                     class_names=class_names, plot_cm=False

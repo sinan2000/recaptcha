@@ -7,7 +7,7 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
                  n_layers: int,
                  # n_heads: int,
                  kernel_size: int,
-                 num_classes: int = 3,
+                 num_classes: int = 12,
                  input_shape: tuple = (3, 224, 224),
                  base_channels: int = 32
                  ) -> None:
