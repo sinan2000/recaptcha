@@ -1,5 +1,5 @@
 from .models import SimpleCNN
-from .models.main_model import MainCNN
+from .models.main_model import MainCNN, HPOptimizer
 from .detection_labels import DetectionLabels
 from .data import DataPreprocessingPipeline
 from .train import Trainer
@@ -10,6 +10,7 @@ __all__ = [
     "DataPreprocessingPipeline",
     'SimpleCNN',
     'MainCNN',
+    'HPOptimizer',
     'Trainer',
     'evaluate_model'
 ]
