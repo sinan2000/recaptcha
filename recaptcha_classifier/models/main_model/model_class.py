@@ -11,7 +11,7 @@ class MainCNN(BaseModel):
                  kernel_size: int,
                  num_classes: int,
                  input_shape: tuple = (3, 224, 224),
-                 base_channels: int = 16 #32
+                 base_channels: int = 32
                  ) -> None:
         super().__init__()
 

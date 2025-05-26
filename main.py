@@ -17,19 +17,19 @@ def main():
     loaders = pipeline.run()
     
     model = MainCNN(
-        n_layers=2,#3,
+        n_layers=2,
         kernel_size=3,
         num_classes=len(DetectionLabels),
     )
     
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.RAdam(model.parameters(), lr=1e-3)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=5, gamma=0.5)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     trainer = Trainer(
         train_loader=loaders['train'],
         val_loader=loaders['val'],
-        epochs=10,
+        epochs=15,
         optimizer=optimizer,
         scheduler=scheduler,
         save_folder='models',
@@ -38,11 +38,13 @@ def main():
     
     trainer.train(model)
     
+    trainer.delete_checkpoints()
+    
     history = trainer.loss_acc_history
     print("Training completed. Loss and accuracy history:")
     print(history)
     
-    results = evaluate_model(
+    evaluate_model(
         model=model,
         test_loader=loaders['test'],
         device=device,
@@ -50,10 +52,7 @@ def main():
         class_names=DetectionLabels.dataset_classnames(),
         plot_cm=True
     )
-    
-    print("Evaluation results:")
-    for key, value in results.items():
-        print(f"{key}: {value}")
+
 
 if __name__ == '__main__':
     main()
