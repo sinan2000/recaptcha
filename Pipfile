@@ -10,6 +10,7 @@ verify_ssl = true
 
 [packages]
 numpy = "*"
+pandas = "*"
 pillow= "*"
 opencv-python = "*"
 pre-commit = "*"

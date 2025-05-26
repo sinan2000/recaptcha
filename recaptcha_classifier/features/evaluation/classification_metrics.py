@@ -40,8 +40,12 @@ def evaluate_classification(y_pred: Tensor,
 
     # Convert logits to predicted labels
     y_pred = torch.argmax(y_pred, dim=1)
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    y_pred = y_pred.to(device)
+    y_true = y_true.to(device)
+    
+    if num_classes <= 0:
+        raise ValueError("num_classes must be a positive integer")
 
     # Initialize Metrics
     acc = Accuracy(task="multiclass", num_classes=num_classes).to(device=device)

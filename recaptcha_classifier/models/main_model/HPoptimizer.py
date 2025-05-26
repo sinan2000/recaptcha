@@ -6,6 +6,8 @@ import pandas as pd
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.train.training import Trainer
 
+from recaptcha_classifier.detection_labels import DetectionLabels
+
 
 class HPOptimizer(object):
     """Class for optimizing hyperparameters."""
@@ -81,9 +83,10 @@ class HPOptimizer(object):
         return df_opt_data.copy()[:n_models]
 
 
-    def _train_one_model(self, hp_combo, save_checkpoints) -> None:
+    def _train_one_model(self, hp_combo) -> None:
         model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
-        self.trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False, save_checkpoint=save_checkpoints)
+        self._trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
+        self._trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False)
 
 
     def _generate_hp_combinations(self, hp) -> list:
