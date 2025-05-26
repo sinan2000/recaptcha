@@ -49,6 +49,7 @@ class TrainingUnitTests(unittest.TestCase):
 
 
     def test_train_load_checkpoint(self):
+        self.trainer.train(model=self.model, load_checkpoint=False)
         self.trainer.train(model=self.model, load_checkpoint=True)
         assert_equal(os.path.exists(os.path.join(self.trainer.save_folder, self.trainer.model_file_name)),
                      True,
