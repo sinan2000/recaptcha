@@ -8,16 +8,16 @@ class TestVisualizer(unittest.TestCase):
         # only written pairs as string, instead of paths, for simplicity
         self.sample_splits = {
             "train": {
-                "class1": [("img1", "label1"), ("img2", "label2")],
-                "class2": [("img3", "label3"), ("img4", "label4")],
+                "class1": ["img1", "img2"],
+                "class2": ["img3", "img4"],
             },
             "val": {
-                "class1": [("img5", "label5")],
-                "class2": [("img6", "label6")],
+                "class1": ["img5"],
+                "class2": ["img6"],
             },
             "test": {
-                "class1": [("img7", "label7")],
-                "class2": [("img8", "label8")],
+                "class1": ["img7"],
+                "class2": ["img8"],
             },
         }
 
