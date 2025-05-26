@@ -14,14 +14,17 @@ pandas = "*"
 pillow= "*"
 opencv-python = "*"
 pre-commit = "*"
-torch = "*"
-torchvision = "*"
-torchaudio = "*"
+
+torch = {index = "pytorch-cu128", version = "2.7.0+cu128", markers = "platform_system == 'Windows'"}
+torchvision = {index = "pytorch-cu128", version = "0.22.0+cu128", markers = "platform_system == 'Windows'"}
+torchaudio = {index = "pytorch-cu128", version = "2.7.0+cu128", markers = "platform_system == 'Windows'"}
+alive-progress = "*"
 matplotlib = "*"
+scikit-learn = "*"
+torcheval = "*"
 torchmetrics = "*"
 tqdm = "*"
-alive-progress = "*"
-torcheval = "*"
+requests = "*"
 
 [dev-packages]
 

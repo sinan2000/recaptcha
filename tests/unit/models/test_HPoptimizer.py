@@ -39,16 +39,25 @@ class TestHPOptimizer(unittest.TestCase):
 
     def test_train_one_model(self):
         # MainModel is currently hardcoded
-        self.hpo._train_one_model(self.hp_combos[0])
+        self.hpo._train_one_model(self.hp_combos[0], save_checkpoints=True)
         assert os.path.exists(self.hpo._trainer.save_folder)
 
 
 
     def test_retrieve_results(self):
-        results = self.hpo.optimize_hyperparameters(*self.hp)
+        results = self.hpo.optimize_hyperparameters(*self.hp, save_checkpoints=False)
         self.hpo._trainer.delete_checkpoints()
         print(results.head())
         self.assertEqual(len(results['loss']), 4)
+
+
+    def test_recurring_hpo(self):
+        results1 = self.hpo.optimize_hyperparameters(*self.hp, save_checkpoints=False)
+        results2 = self.hpo.optimize_hyperparameters(*self.hp, save_checkpoints=False)
+        print(results1.head())
+        print(results2.head())
+        self.hpo._trainer.delete_checkpoints()
+        self.assertNotEqual(results1['loss'][0], results2['loss'][0])
 
 if __name__ == '__main__':
     unittest.main()
