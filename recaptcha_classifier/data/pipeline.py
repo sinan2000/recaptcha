@@ -35,7 +35,7 @@ class DataPreprocessingPipeline:
                  seed: int = 23,  # our group number
                  batch_size: int = 32,
                  num_workers: int = 4,
-                 balance: bool = False,
+                 balance: bool = True,
                  show_plots: bool = False) -> None:
         """
         Initializes the DataPreprocessingPipeline with the given parameters.
