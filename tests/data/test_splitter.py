@@ -4,7 +4,7 @@ from recaptcha_classifier.data.splitter import DataSplitter
 
 class TestDataSplitter(unittest.TestCase):
     def test_default_split(self):
-        data = {"test_class": [(f"img_{i}", f"label_{i}") for i in range(10)]}
+        data = {"test_class": [f"img_{i}" for i in range(10)]}
         splits = DataSplitter().split(data)
 
         self.assertEqual(len(splits['train']['test_class']), 7)

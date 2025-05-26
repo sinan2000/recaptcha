@@ -12,7 +12,7 @@ class TestLoaderFactory(unittest.TestCase):
     def test_create_loaders(self, dataset_mock):
         class_map = {"class1": 0, "class2": 1}
         preprocessor = ImagePrep()
-        augmentator = AugmentationPipeline()
+        augmentator = AugmentationPipeline(transforms_list=[])
         factory = LoaderFactory(class_map, preprocessor, augmentator)
 
         dataset_mock.return_value = dataset_mock
@@ -20,20 +20,17 @@ class TestLoaderFactory(unittest.TestCase):
 
         splits = {
             "train": {
-                "class1": [(Path("img1.png"), Path("label1.txt")),
-                           (Path("img2.png"), Path("label2.txt"))],
-                "class2": [(Path("img3.png"), Path("label3.txt"))]
+                "class1": [Path("img1.png"), Path("img2.png")],
             },
             "val": {
-                "class1": [(Path("img4.png"), Path("label4.txt"))],
-                "class2": [(Path("img5.png"), Path("label5.txt"))]
+                "class1":
+                    [Path("img3.png")],
             },
             "test": {
-                "class1": [(Path("img6.png"), Path("label6.txt"))],
-                "class2": [(Path("img7.png"), Path("label7.txt"))]
+                "class1": [Path("img4.png"), Path("img5.png"), Path("img6.png")]
             }
         }
-
+        
         loaders = factory.create_loaders(splits)
 
         self.assertIn("train", loaders)
@@ -45,9 +42,7 @@ class TestLoaderFactory(unittest.TestCase):
 
         # We also need to check that the train set has the augmentator
         dataset_mock.assert_any_call(
-            pairs=[(Path("img1.png"), Path("label1.txt")),
-                   (Path("img2.png"), Path("label2.txt")),
-                   (Path("img3.png"), Path("label3.txt"))],
+            items=[Path("img1.png"),Path("img2.png")],
             preprocessor=preprocessor,
             augmentator=augmentator,
             class_map=class_map
