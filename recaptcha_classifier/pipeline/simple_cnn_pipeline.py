@@ -1,9 +1,7 @@
 import os
 import torch
-import torch.nn as nn
 import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
-from tqdm import tqdm
 from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
 from recaptcha_classifier.detection_labels import DetectionLabels
 from recaptcha_classifier.data.pipeline import DataPreprocessingPipeline
@@ -26,15 +24,15 @@ class SimpleClassifierPipeline:
 
         self._class_map = DetectionLabels.to_class_map()
         self._data = DataPreprocessingPipeline(self.class_map, balance=True)
-        self._loaders = self.data.run()
+        self._loaders = self._data.run()
         print("Data loaders built successfully.")
         
         self._model = SimpleCNN(num_classes=len(self.class_map))
         self.optimizer = optim.RAdam(self.model.parameters(), lr=lr)
         self.scheduler = StepLR(self.optimizer, step_size=step_size, gamma=gamma)
 
-        self._trainer = Trainer(train_loader=self.loaders['train'],
-                                val_loader=self.loaders['val'],
+        self._trainer = Trainer(train_loader=self._loaders['train'],
+                                val_loader=self._loaders['val'],
                                 epochs=epochs,
                                 optimizer=self.optimizer,
                                 scheduler=self.scheduler,
@@ -52,7 +50,7 @@ class SimpleClassifierPipeline:
         )
 
     def train(self) -> None:
-        self._trainer.train(self._model, self._load_checkpoint)
+        self._trainer.train(self._model, self._load_checkpoint, save_checkpoint=True)
 
     def evaluate(self, plot_cm: bool = False) -> dict:
         eval_results = evaluate_model(
