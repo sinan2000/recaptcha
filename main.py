@@ -5,12 +5,12 @@ from recaptcha_classifier import (
 
 
 def main():
-    pipeline = DataPreprocessingPipeline(
+    data = DataPreprocessingPipeline(
         DetectionLabels.to_class_map(),
         balance=True
         )
 
-    loaders = pipeline.run()
+    loaders = data.run()
 
     print("Data loaders built successfully.")
 

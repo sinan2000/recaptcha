@@ -10,7 +10,7 @@ class SimpleCNN(BaseModel):
     """
     def __init__(self,
                  input_channels: int = 3,
-                 num_classes: int = 10,
+                 num_classes: int = 12,
                  conv1_out_channels: int = 6,
                  conv2_out_channels: int = 16,
                  conv1_kernel_size: int = 5,
