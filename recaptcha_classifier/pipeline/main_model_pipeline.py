@@ -13,9 +13,6 @@ from recaptcha_classifier.models.main_model.kfold_validation import KFoldValidat
 
 class SimpleClassifierPipeline:
     def __init__(self,
-                 k_folds: int = 5,
-                 n_layers: int = 3,
-                 kernel_size: int = 5,
                  step_size: int = 5,
                  gamma: float = 0.5,
                  lr: float = 0.001,
@@ -48,24 +45,33 @@ class SimpleClassifierPipeline:
                                 device=self.device)
 
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
+        
+
+
+    def run_kfold_cross_validation(self,
+                 k_folds: int = 5,
+                 n_layers: int = 3,
+                 kernel_size: int = 5, 
+                 top_n_models: int = 1) -> None:
+
         self._kfold = KFoldValidation(
             data=self._data,
             k_folds=self.k_folds,
             hp_optimizer=self._hp_optimizer,
             device=self.device
         )
-        
-        
-        # ????????
-        self._load_checkpoint = (
-            os.path.exists(os.path.join(save_folder, model_file_name)) and
-            os.path.exists(os.path.join(save_folder, optimizer_file_name)) and
-            os.path.exists(os.path.join(save_folder, scheduler_file_name))
-        )
-
-    def train(self, save_checkpoints: bool = True, top_n_models: int = 1) -> None:
         self._kfold.run_cross_validation(top_n_models=top_n_models, save_checkpoints=save_checkpoints)
-        best_model, best_metrics = self._kfold.get_best_overall_model(metric_key='F1-score')
+        best_hp = self._kfold.get_best_overall_model(metric_key='F1-score') # should have [n_layers, kernel_size, learning rate] - can be from the HPO pandas dataframe
+
+        # self.model = MainCNN(n_layers=int(best_hp[0]), kernel_size=int(best_hp[1])) # if best_hp is list
+        # best_hp is pandas thing:
+        # self.model = MainCNN(n_layers=int(best_hp['layers']), kernel_size=int(best_hp['kernel_sizes']))
+        # self._trainer.optimizer = torch.optim.RAdam(self.model.parameters(), lr=best_hp['learning_rate'])
+
+
+
+    def train(self, save_checkpoints: bool = True) -> None:
+        
         self._loaders = self._data.run()
         self._trainer.train_loader = self._loaders["train"]
         self._trainer.val_loader = self._loaders["val"]
@@ -74,6 +80,12 @@ class SimpleClassifierPipeline:
         self._trainer.optimizer = optim.RAdam(best_model.parameters(), lr=self._trainer.optimizer.param_groups[0]['lr'])
         self._trainer.scheduler = StepLR(self._trainer.optimizer, step_size=5, gamma=0.5)
         self._trainer.train(best_model, self._load_checkpoint) # best model?? / where use best metrics
+
+    def train(self, save_checkpoint: bool = True, load_checkpoint: bool = False) -> None:
+            self._trainer.train(self._model, 
+                                load_checkpoint=load_checkpoint, 
+                                save_checkpoint=save_checkpoint)
+
 
     def evaluate(self, plot_cm: bool = False) -> dict:
         eval_results = evaluate_model(

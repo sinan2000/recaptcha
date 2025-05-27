@@ -14,7 +14,7 @@ class SimpleClassifierPipeline:
                  step_size: int = 5,
                  gamma: float = 0.5,
                  lr: float = 0.001,
-                 epochs: int = 15,
+                 epochs: int = 20,
                  device: torch.device | None = None,
                  save_folder: str = "",
                  model_file_name: str = "model.pt",
@@ -42,15 +42,11 @@ class SimpleClassifierPipeline:
                                 scheduler_file_name=scheduler_file_name,
                                 device=device)
 
-        # ????????
-        self._load_checkpoint = (
-            os.path.exists(os.path.join(save_folder, model_file_name)) and
-            os.path.exists(os.path.join(save_folder, optimizer_file_name)) and
-            os.path.exists(os.path.join(save_folder, scheduler_file_name))
-        )
 
-    def train(self) -> None:
-        self._trainer.train(self._model, self._load_checkpoint, save_checkpoint=True)
+    def train(self, save_checkpoint: bool = True, load_checkpoint: bool = False) -> None:
+        self._trainer.train(self._model, 
+                            load_checkpoint=load_checkpoint, 
+                            save_checkpoint=save_checkpoint)
 
     def evaluate(self, plot_cm: bool = False) -> dict:
         eval_results = evaluate_model(
