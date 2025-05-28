@@ -28,7 +28,9 @@ class MainClassifierPipeline(BasePipeline):
         self.k_folds = k_folds
         self._hp_optimizer = None
 
-    def run(self) -> None:
+    def run(self,
+            save_train_checkpoints: bool = True,
+            load_train_checkpoints: bool = False) -> None:
         self.data_loader()
         self._trainer = self._initialize_trainer()
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
@@ -36,7 +38,10 @@ class MainClassifierPipeline(BasePipeline):
         # model gets initialized inside here:
         self._run_kfold_cross_validation()
 
-        self._trainer.train(self._model, self.lr)
+        self._trainer.train(self._model,
+                            self.lr,
+                            save_checkpoint=save_train_checkpoints,
+                            load_checkpoint=load_train_checkpoints)
         self.evaluate()
 
     def data_loader(self) -> None:
