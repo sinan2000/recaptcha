@@ -1,15 +1,21 @@
-from recaptcha_classifier import (
-    DetectionLabels,
-    DataPreprocessingPipeline,
-    SimpleClassifierPipeline
-)
+from recaptcha_classifier.pipeline.simple_cnn_pipeline import (
+    SimpleClassifierPipeline)
+from recaptcha_classifier.pipeline.main_model_pipeline import (
+    MainModelPipeline)
+
+
+# from recaptcha_classifier import (
+#     DetectionLabels,
+#     DataPreprocessingPipeline,
+#     SimpleClassifierPipeline
+# )
 
 def main():
-    pipeline = SimpleClassifierPipeline(epochs=1)
-    pipeline.train()
-    pipeline.evaluate()
+    pipeline1 = SimpleClassifierPipeline(epochs=1)
+    pipeline1.run()
 
-
+    pipeline2 = MainModelPipeline(epochs=1)
+    pipeline2.run()
     # data = DataPreprocessingPipeline(
     #     DetectionLabels.to_class_map(),
     #     balance=True
@@ -26,7 +32,6 @@ def main():
     #     print(f" - images.shape: {images.shape}")
     #     print(f" - labels.shape: {labels.shape}")
     #     print(f" - class IDs: {labels.tolist()}")
-
 
 
 if __name__ == '__main__':
