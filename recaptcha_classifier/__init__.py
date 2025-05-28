@@ -4,6 +4,7 @@ from .detection_labels import DetectionLabels
 from .data import DataPreprocessingPipeline
 from .train import Trainer
 from .features import evaluate_model
+from .api import load_model
 
 __all__ = [
     "DetectionLabels",
@@ -12,5 +13,6 @@ __all__ = [
     'MainCNN',
     'HPOptimizer',
     'Trainer',
-    'evaluate_model'
+    'evaluate_model',
+    'load_model'
 ]
