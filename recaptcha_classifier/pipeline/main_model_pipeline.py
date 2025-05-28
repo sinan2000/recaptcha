@@ -34,7 +34,19 @@ class MainClassifierPipeline(BasePipeline):
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
 
         # model gets initialized inside here:
-        self._run_kfold_cross_validation()
+        # self._run_kfold_cross_validation()
+        """
+        We found there are too many combinations of models. So it is still in work.
+        Therefore, we skip k-fold and just train the model with the best hyperparameters.
+        """
+        hp_summary = self._hp_optimizer.optimize_hyperparameters()
+        best_hp = hp_summary.iloc[0]
+        self.lr = best_hp['lr']
+        
+        self._model = self._initialize_model(
+            n_layers=int(best_hp['n_layers']),
+            kernel_size=int(best_hp['kernel_size'])
+        )
 
         self._trainer.train(self._model,
                             self.lr,
