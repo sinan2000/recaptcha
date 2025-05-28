@@ -1,3 +1,4 @@
+import os
 from abc import abstractmethod
 import torch
 from recaptcha_classifier.detection_labels import DetectionLabels
@@ -8,18 +9,15 @@ from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 
 class BasePipeline:
     def __init__(self,
-                 step_size: int = 5,
-                 gamma: float = 0.5,
                  lr: float = 0.001,
                  epochs: int = 20,
                  device: torch.device | None = None,
-                 save_folder: str = "",
+                 save_folder: str = "checkpoints",
                  model_file_name: str = "model.pt",
                  optimizer_file_name: str = "optimizer.pt",
                  scheduler_file_name: str = "scheduler.pt"
                  ):
-        self.step_size = step_size
-        self.gamma = gamma
+
         self.lr = lr
         self.epochs = epochs
         self.device = device
@@ -32,11 +30,10 @@ class BasePipeline:
         self._loaders = None
         self._data = None
         self._model = None
-        # self.optimizer = None
-        # self.scheduler = None
         self._trainer = None
 
-    def run(self):  # abstract because the sequence of actions is
+    @abstractmethod
+    def run(self):
         # different for the two pipelines
         pass
 
@@ -48,15 +45,13 @@ class BasePipeline:
             print("Data loaders built successfully.")
 
     @abstractmethod
-    def _initialize_model(self):
+    def _initialize_model(self, **kwargs):
         pass
 
     def _initialize_trainer(self) -> Trainer:
         return Trainer(train_loader=self._loaders["train"],
                        val_loader=self._loaders["val"],
                        epochs=self.epochs,
-                       optimizer=self.optimizer,
-                       scheduler=self.scheduler,
                        save_folder=self.save_folder,
                        model_file_name=self.model_file_name,
                        optimizer_file_name=self.optimizer_file_name,
@@ -77,3 +72,6 @@ class BasePipeline:
             plot_cm=plot_cm
         )
         return eval_results
+
+    def save_model(self):
+        torch.save(self._model, os.path.join(self.save_folder, self.model_file_name))
