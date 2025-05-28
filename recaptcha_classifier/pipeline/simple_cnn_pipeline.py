@@ -1,15 +1,10 @@
-import os
 import torch
-import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
 from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
-from recaptcha_classifier.detection_labels import DetectionLabels
-from recaptcha_classifier.data.pipeline import DataPreprocessingPipeline
 from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
+from recaptcha_classifier.pipeline import BasePipeline
 
 
-class SimpleClassifierPipeline:
+class SimpleClassifierPipeline(BasePipeline):
     def __init__(self,
                  step_size: int = 5,
                  gamma: float = 0.5,
@@ -21,40 +16,38 @@ class SimpleClassifierPipeline:
                  optimizer_file_name: str = "optimizer.pt",
                  scheduler_file_name: str = "scheduler.pt"
                  ):
+        super().__init__(step_size, gamma, lr, epochs, device,
+                         save_folder, model_file_name,
+                         optimizer_file_name, scheduler_file_name)
 
-        self._class_map = DetectionLabels.to_class_map()
-        self._data = DataPreprocessingPipeline(self.class_map, balance=True)
-        self._loaders = self._data.run()
-        print("Data loaders built successfully.")
-        
-        self._model = SimpleCNN(num_classes=len(self.class_map))
-        self.optimizer = optim.RAdam(self.model.parameters(), lr=lr)
-        self.scheduler = StepLR(self.optimizer, step_size=step_size, gamma=gamma)
+    def data_loader(self) -> None:
+        super().data_loader()
 
+    def _initialize_model(self) -> None:
+        # call super??
+        self._model = SimpleCNN(num_classes=self.class_map_length)
+        # return model?
+
+    def _initialize_trainer(self) -> None:
+        # call super??
         self._trainer = Trainer(train_loader=self._loaders['train'],
                                 val_loader=self._loaders['val'],
-                                epochs=epochs,
+                                epochs=self.epochs,
                                 optimizer=self.optimizer,
                                 scheduler=self.scheduler,
-                                save_folder=save_folder,
-                                model_file_name=model_file_name,
-                                optimizer_file_name=optimizer_file_name,
-                                scheduler_file_name=scheduler_file_name,
-                                device=device)
+                                save_folder=self.save_folder,
+                                model_file_name=self.model_file_name,
+                                optimizer_file_name=self.optimizer_file_name,
+                                scheduler_file_name=self.scheduler_file_name,
+                                device=self.device)
+        # return trainer??
 
-
-    def train(self, save_checkpoint: bool = True, load_checkpoint: bool = False) -> None:
-        self._trainer.train(self._model, 
-                            load_checkpoint=load_checkpoint, 
+    def train(
+        self, save_checkpoint: bool = True, load_checkpoint: bool = False
+    ) -> None:
+        self._trainer.train(self._model,
+                            load_checkpoint=load_checkpoint,
                             save_checkpoint=save_checkpoint)
 
     def evaluate(self, plot_cm: bool = False) -> dict:
-        eval_results = evaluate_model(
-            model=self._model,
-            test_loader=self._loaders['test'],
-            device=self._trainer.device,
-            num_classes=len(self._class_map),
-            class_names=list(self._class_map.keys()),
-            plot_cm=plot_cm
-        )
-        return eval_results
+        return super().evaluate(plot_cm)
