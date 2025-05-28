@@ -50,7 +50,6 @@ class SimpleCNN(BaseModel):
         x = f.relu(self.fc1(x))
         x = f.relu(self.fc2(x))
         x = self.fc3(x)
-        x = torch.argmax(x, dim=1)  # Output class index
         return x
 
     # def __str__(self) -> str:
