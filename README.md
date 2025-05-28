@@ -23,7 +23,10 @@ Make sure you have the following installed:
     For detailed installation instructions, [click here](https://pipenv.pypa.io/en/latest/installation.html).
 
 ## Getting Started
-### Setting up your own repository
+### Setting up the repository
+
+If you're collaborating or want to explore the latest version of the project:
+
 1. Fork this repository.
 2. Clone your fork locally.
 3. Configure a remote pointing to the upstream repository to sync changes between your fork and the original repository.
@@ -36,8 +39,7 @@ Make sure you have the following installed:
    1. `git fetch upstream`
    2. `git rebase upstream/main`
    3. `git push origin main`
-      
-      Sometimes you may need to use `git push --force origin main`. Only use this flag the first time you push after you rebased, and be careful as you might overwrite your teammates' changes.
+      Sometimes you may need to use git push --force origin main. Only use this flag the first time you push after you rebased, and be careful as you might overwrite someone' changes.
 
 ## Installing Dependencies
 To install the project dependencies run:
@@ -46,7 +48,7 @@ To install the project dependencies run:
 pipenv install
 ```
 
-This will automatically create and activate a virtual environment.
+This will automatically create a virtual environment.
 
 To **activate** the virtual environment, run:
 
