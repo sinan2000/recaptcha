@@ -11,7 +11,7 @@ class HPOptimizer(object):
     """Class for optimizing hyperparameters."""
 
     def __init__(self, trainer: Trainer):
-        self._trainer = trainer
+        self.trainer = trainer
         self._opt_data = {'Model index': [],
                          'layers': [],
                          'kernel_sizes': [],
@@ -54,7 +54,7 @@ class HPOptimizer(object):
             hp_combo = hp_combos[i]
             self._train_one_model(hp_combo, save_checkpoints)
 
-            final_train_history = self._trainer.loss_acc_history[-1]
+            final_train_history = self.trainer.loss_acc_history[-1]
             loss = final_train_history[0]
             accuracy = final_train_history[1]
 
@@ -72,8 +72,8 @@ class HPOptimizer(object):
 
     def _train_one_model(self, hp_combo, save_checkpoints) -> None:
         model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
-        self._trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
-        self._trainer.train(model=model, load_checkpoint=False, save_checkpoint=save_checkpoints)
+        self.trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
+        self.trainer.train(model=model, load_checkpoint=False, save_checkpoint=save_checkpoints)
 
 
     def _generate_hp_combinations(self, hp) -> list:
