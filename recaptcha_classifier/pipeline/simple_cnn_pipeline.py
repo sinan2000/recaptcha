@@ -1,7 +1,10 @@
 import torch
+
+from recaptcha_classifier import SimpleCNN
 from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
+from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.pipeline import BasePipeline
+
 
 
 class SimpleClassifierPipeline(BasePipeline):
@@ -23,10 +26,10 @@ class SimpleClassifierPipeline(BasePipeline):
     def data_loader(self) -> None:
         super().data_loader()
 
-    def _initialize_model(self) -> None:
+    def _initialize_model(self) -> SimpleCNN:
         return SimpleCNN(num_classes=self.class_map_length)
 
-    def _initialize_trainer(self) -> None:
+    def _initialize_trainer(self) -> Trainer:
         return Trainer(train_loader=self._loaders['train'],
                        val_loader=self._loaders['val'],
                        epochs=self.epochs,

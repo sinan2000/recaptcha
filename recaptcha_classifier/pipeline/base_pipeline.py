@@ -21,8 +21,9 @@ class BasePipeline:
                  scheduler_file_name: str = "scheduler.pt"
                  ):
         self._class_map = DetectionLabels.to_class_map()
+        self._class_map_length = len(self._class_map)
         self._loaders = None
-        self._model = self._initialize_model(self._class_map)
+        self._model = self._initialize_model()
         self.optimizer = optim.RAdam(self._model.parameters(), lr=lr)
         self.scheduler = StepLR(
             self.optimizer, step_size=step_size, gamma=gamma)
