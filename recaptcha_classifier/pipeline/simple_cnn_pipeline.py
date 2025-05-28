@@ -24,23 +24,19 @@ class SimpleClassifierPipeline(BasePipeline):
         super().data_loader()
 
     def _initialize_model(self) -> None:
-        # call super??
-        self._model = SimpleCNN(num_classes=self.class_map_length)
-        # return model?
+        return SimpleCNN(num_classes=self.class_map_length)
 
     def _initialize_trainer(self) -> None:
-        # call super??
-        self._trainer = Trainer(train_loader=self._loaders['train'],
-                                val_loader=self._loaders['val'],
-                                epochs=self.epochs,
-                                optimizer=self.optimizer,
-                                scheduler=self.scheduler,
-                                save_folder=self.save_folder,
-                                model_file_name=self.model_file_name,
-                                optimizer_file_name=self.optimizer_file_name,
-                                scheduler_file_name=self.scheduler_file_name,
-                                device=self.device)
-        # return trainer??
+        return Trainer(train_loader=self._loaders['train'],
+                       val_loader=self._loaders['val'],
+                       epochs=self.epochs,
+                       optimizer=self.optimizer,
+                       scheduler=self.scheduler,
+                       save_folder=self.save_folder,
+                       model_file_name=self.model_file_name,
+                       optimizer_file_name=self.optimizer_file_name,
+                       scheduler_file_name=self.scheduler_file_name,
+                       device=self.device)
 
     def train(
         self, save_checkpoint: bool = True, load_checkpoint: bool = False
