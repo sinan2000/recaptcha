@@ -1,4 +1,6 @@
+import pandas as pd
 from sklearn.model_selection import KFold
+from sympy.printing.pytorch import torch
 from torch.utils.data import DataLoader
 from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
@@ -26,13 +28,16 @@ class KFoldValidation:
         self.k_folds = k_folds
         self.hp_optimizer = hp_optimizer
         self.device = device
-        self.best_models_per_fold = []
+        if device is None:
+            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self._best_models = pd.DataFrame()
 
-    def run_cross_validation(self, top_n_models: int = 3,
+    def run_cross_validation(self,
                              save_checkpoints: bool = True) -> None:
         """
         Runs k-Fold Cross-Validation and hyperparameter optimization.
 
+        :param save_checkpoints: boolean flag to save checkpoints
         :param top_n_models: Number of best models to keep from each fold.
         """
         kf = KFold(n_splits=self.k_folds, shuffle=True, random_state=42)
@@ -40,8 +45,8 @@ class KFoldValidation:
                        'CROSSWALK', 'HYDRANT', 'MOTORCYCLE', 'PALM',
                        'STAIR', 'TRAFFIC_LIGHT', 'OTHER']
 
-        for fold_index, (train_indices, val_indices) in enumerate(kf.split(
-                                                                 self.data)):
+        for fold_index, (train_indices, val_indices) \
+                in enumerate(kf.split(self.data)):
             print(f"\n--- Fold {fold_index + 1}/{self.k_folds} ---")
 
             train_data = [self.data[i] for i in train_indices]
@@ -53,9 +58,12 @@ class KFoldValidation:
             self.hp_optimizer._trainer.train_loader = train_loader
             self.hp_optimizer._trainer.val_loader = val_loader
 
-            opt_hp = self.hp_optimizer.optimize_hyperparameters(save_checkpoints=save_checkpoints)
-            evaluated_models = []
-            for _, row in opt_hp.iterrows():
+            optimized_hp_dataframe = self.hp_optimizer.optimize_hyperparameters(save_checkpoints=save_checkpoints)
+            evaluated_models = {'Accuracy': [],
+                                'F1-score': [],
+                            }
+            evaluated_models = pd.DataFrame(evaluated_models)
+            for _, row in optimized_hp_dataframe.iterrows():
                 model = MainCNN(n_layers=int(row['layers']),
                                 kernel_size=int(row['kernel_sizes']),
                                 num_classes=12)
@@ -63,40 +71,43 @@ class KFoldValidation:
                     model, val_loader, device=self.device, num_classes=12,
                     class_names=class_names, plot_cm=False
                 )
-                evaluated_models.append((model, metrics_result))
+                # removing confusion matrix to keep dimensions balanced
+                metrics_result.pop('Confusion Matrix')
+                metrics_result = pd.DataFrame(metrics_result, index=[0])
+                evaluated_models = pd.concat([evaluated_models, metrics_result])
 
-            self.best_models_per_fold.append(evaluated_models[:top_n_models])
+            optimized_hp_dataframe = pd.concat([optimized_hp_dataframe, evaluated_models])
 
-    def get_all_best_models(self) -> list:
+            if not self._best_models.empty:
+                self._best_models = optimized_hp_dataframe
+                continue
+
+            self._best_models = pd.concat([self._best_models, optimized_hp_dataframe])
+
+
+    def get_all_best_models(self, metric_key: str = 'F1-score') -> pd.DataFrame:
         """
         Get all best models from all folds.
 
         :return best_models_per_fold: The best models from all folds.
         """
-        return self.best_models_per_fold
+        if len(self._best_models)==0:
+             raise ValueError("No models found for selection. ")
+        self._sort_by(metric_key)
+        return self._best_models.copy()
 
-    def get_best_overall_model(self, metric_key='F1-score') -> tuple:
+
+    def get_best_overall_model(self, metric_key: str = 'F1-score') -> pd.Series:
         """
-        Finds the best model across all folds based on a specified metric.
+        Selects the single best model.
 
-        :param metric_key: The key in the metrics dictionary to use for
-        selection.
-        :return (best_model, best_metrics): Best model with its metrics
-        results.
+        :return pd.Series object: Best model with its hyperparameters and
+        metrics results.
         """
-        best_model = None
-        best_metrics = None
-        best_score = -float('inf')
 
-        for fold_models in self.best_models_per_fold:
-            for model, metrics_result in fold_models:
-                score = metrics_result.get(metric_key, None)
-                if score is not None and score > best_score:
-                    best_model = model
-                    best_metrics = metrics_result
-                    best_score = score
+        best = self.get_all_best_models(metric_key)
+        return best.iloc[0]
 
-        if best_model is None:
-            print("Warning: No models found for selection.")
 
-        return best_model, best_metrics
+    def _sort_by(self, metric: str = 'F1-score') -> None:
+        self._best_models.sort_values(by=[metric], ascending=False, inplace=True)

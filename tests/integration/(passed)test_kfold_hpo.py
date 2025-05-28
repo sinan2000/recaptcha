@@ -54,9 +54,10 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         )
         # Initialize optimizer and CV validator
         self.hp_optimizer = HPOptimizer(self.trainer)
+        self.folds = 2
         self.kfold_validator = KFoldValidation(
             data=small_dataset,
-            k_folds=3,
+            k_folds=self.folds,
             hp_optimizer=self.hp_optimizer,
             device=self.device
         )
@@ -67,19 +68,16 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         necessary items.
         """
         # Run cross-validation
-        self.kfold_validator.run_cross_validation(top_n_models=1,
-                                                  save_checkpoints=False)
+        self.kfold_validator.run_cross_validation(save_checkpoints=False)
 
         # Get results
         results = self.kfold_validator.get_all_best_models()
+        best = self.kfold_validator.get_best_overall_model()
 
         # Check result structure
-        self.assertEqual(len(results), 3, "Should return results for 3 folds")
-        for fold_models in results:
-            self.assertEqual(len(fold_models), 1, "Should return top 1 model per fold")
-            for model, metrics in fold_models:
-                self.assertTrue(hasattr(model, "forward"), "Model should be valid")
-                self.assertIn("F1-score", metrics, "Metrics should include F1-score")
+        self.assertEqual((self.folds*18, 8), results.shape,
+                         f"Should return ({self.folds*18}, 8) shape results for {self.folds} folds")
+        self.assertEqual((8,), best.shape, "Should return top 1 model row with (1,8) shape.")
 
     def tearDown(self):
         """
