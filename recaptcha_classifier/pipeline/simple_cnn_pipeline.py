@@ -1,10 +1,9 @@
 import torch
-
-from recaptcha_classifier import SimpleCNN
+import torch.optim as optim
+from torch.optim.lr_scheduler import StepLR
 from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 from recaptcha_classifier.train.training import Trainer
-
 
 
 class SimpleClassifierPipeline(BasePipeline):
@@ -30,16 +29,7 @@ class SimpleClassifierPipeline(BasePipeline):
         return SimpleCNN(num_classes=self.class_map_length)
 
     def _initialize_trainer(self) -> Trainer:
-        return Trainer(train_loader=self._loaders['train'],
-                       val_loader=self._loaders['val'],
-                       epochs=self.epochs,
-                       optimizer=self.optimizer,
-                       scheduler=self.scheduler,
-                       save_folder=self.save_folder,
-                       model_file_name=self.model_file_name,
-                       optimizer_file_name=self.optimizer_file_name,
-                       scheduler_file_name=self.scheduler_file_name,
-                       device=self.device)
+        return super()._initialize_trainer()
 
     def train(
         self, save_checkpoint: bool = True, load_checkpoint: bool = False
@@ -50,3 +40,13 @@ class SimpleClassifierPipeline(BasePipeline):
 
     def evaluate(self, plot_cm: bool = False) -> dict:
         return super().evaluate(plot_cm)
+
+    def run(self) -> None:
+        self.data_loader()
+        self._model = self._initialize_model()  # not same in main_model
+        self.optimizer = optim.RAdam(self._model.parameters(), lr=self.lr)
+        self.scheduler = StepLR(
+            self.optimizer, step_size=self.step_size, gamma=self.gamma)
+        self._trainer = self._initialize_trainer()
+        self._trainer.train(model=self._model)
+        self.evaluate()
