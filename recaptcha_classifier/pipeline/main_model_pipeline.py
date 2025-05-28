@@ -29,7 +29,7 @@ class MainClassifierPipeline(BasePipeline):
     def run(self,
             save_train_checkpoints: bool = True,
             load_train_checkpoints: bool = False) -> None:
-        self.data_loader()
+        self._data_loader()
         self._trainer = self._initialize_trainer()
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
 
@@ -41,9 +41,6 @@ class MainClassifierPipeline(BasePipeline):
                             save_checkpoint=save_train_checkpoints,
                             load_checkpoint=load_train_checkpoints)
         self.evaluate(plot_cm=True)
-
-    def data_loader(self) -> None:
-        super().data_loader()
 
     def _run_kfold_cross_validation(self) -> None:
         self._kfold = KFoldValidation(
@@ -65,12 +62,3 @@ class MainClassifierPipeline(BasePipeline):
         return MainCNN(
             n_layers=n_layers, kernel_size=kernel_size,
             num_classes=self.class_map_length)
-
-    def _initialize_trainer(self) -> Trainer:
-        return super()._initialize_trainer()
-
-    def evaluate(self, plot_cm: bool = False) -> dict:
-        return super().evaluate(plot_cm)
-
-    def save_model(self):
-        super().save_model()

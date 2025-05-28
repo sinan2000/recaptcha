@@ -37,7 +37,7 @@ class BasePipeline:
         # different for the two pipelines
         pass
 
-    def data_loader(self):  # make private?
+    def _data_loader(self): 
         if self._loaders is None:
             self._data = DataPreprocessingPipeline(
                 self._class_map, balance=True)

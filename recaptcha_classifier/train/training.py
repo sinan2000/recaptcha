@@ -19,7 +19,8 @@ class Trainer(object):
                  model_file_name='model.pt',
                  optimizer_file_name='optimizer.pt',
                  scheduler_file_name='scheduler.pt',
-                 device: torch.device |None = None
+                 device: torch.device |None = None,
+                 early_stop_threshold: int = 5
                  ):
         """
         Constructor for Trainer class.
@@ -46,6 +47,10 @@ class Trainer(object):
         self._loss_acc_history = []
         self.optimizer = None
         self.scheduler = None
+        
+        self._early_stop_threshold = early_stop_threshold
+        self._best_val_acc = 0.0
+        self._stagnation_counter = 0
 
 
     @property
@@ -116,6 +121,18 @@ class Trainer(object):
                                     val_accuracy_counter,
                                     val_loss_counter,
                                     val_progress_bar)
+
+            val_acc = val_accuracy_counter.compute().item()
+            if val_acc > self._best_val_acc:
+                self._best_val_acc = val_acc
+                self._stagnation_counter = 0
+            else:
+                self._stagnation_counter += 1
+            
+            if self._stagnation_counter >= self._early_stop_threshold:
+                print(f"Early stopping at epoch {epoch + 1}. "
+                    f"Best validation accuracy: {self._best_val_acc:.4f}")
+                break
 
 
     def _train_one_epoch(self, model, train_accuracy_counter, train_loss_counter, train_progress_bar):

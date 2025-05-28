@@ -35,9 +35,8 @@ class LoaderFactory:
         self._aug = augmentator
         self._batch_size = batch_size
         self._num_workers = num_workers
-        self._balance = balance  # do we use WeightedRandomSampler??
+        self._balance = balance
         self._class_map = class_map
-        #  OPTIONAL: self._loaders to cache response
 
     def create_loaders(self,
                        splits: DatasetSplitDict) -> Dict[str, DataLoader]:

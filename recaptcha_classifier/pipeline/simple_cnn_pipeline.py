@@ -25,24 +25,12 @@ class SimpleClassifierPipeline(BasePipeline):
         :param save_train_checkpoints: boolean to save the training checkpoints during training.
         :param load_train_checkpoints: boolean to load the training checkpoints during training.
         """
-        self.data_loader()
+        self._data_loader()
         self._model = self._initialize_model()
         self._trainer = self._initialize_trainer()
         print("Training:")
         self._trainer.train(model=self._model)
         self.evaluate(plot_cm=True)
 
-    def data_loader(self) -> None:
-        super().data_loader()
-
     def _initialize_model(self) -> SimpleCNN:
         return SimpleCNN(num_classes=self.class_map_length)
-
-    def _initialize_trainer(self) -> Trainer:
-        return super()._initialize_trainer()
-
-    def evaluate(self, plot_cm: bool = False) -> dict:
-        return super().evaluate(plot_cm)
-
-    def save_model(self):
-        super().save_model()

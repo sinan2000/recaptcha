@@ -3,7 +3,7 @@ from recaptcha_classifier.pipeline.simple_cnn_pipeline import SimpleClassifierPi
 
 
 def main():
-    pipeline1 = SimpleClassifierPipeline(epochs=1)
+    pipeline1 = SimpleClassifierPipeline()
     pipeline1.run(save_train_checkpoints=False)
 
     # pipeline2 = MainClassifierPipeline(epochs=1, k_folds=2)
@@ -12,20 +12,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-# data = DataPreprocessingPipeline(
-    #     DetectionLabels.to_class_map(),
-    #     balance=True
-    #     )
-
-    # loaders = data.run()
-
-    # print("Data loaders built successfully.")
-
-    # for split, loader in loaders.items():
-    #     print(f"{split.upper()} DataLoader:")
-    #     batch = next(iter(loader))
-    #     images, labels = batch
-    #     print(f" - images.shape: {images.shape}")
-    #     print(f" - labels.shape: {labels.shape}")
-    #     print(f" - class IDs: {labels.tolist()}")
