@@ -24,10 +24,18 @@ class SimpleClassifierPipeline(BasePipeline):
                          save_folder, model_file_name,
                          optimizer_file_name, scheduler_file_name)
 
-        # self._model = self._initialize_model(self._class_map)
-        self._trainer = self._initialize_trainer()
+        self._hp_optimizer = None
+
+    def run(self) -> None:
+        self.data_loader()
+        self._trainer = self._initialize_trainer(self._model)
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
+
+        # model gets initialized inside here:
         self._run_kfold_cross_validation()
+
+        self._trainer.train()
+        self.evaluate()
 
     def data_loader(self) -> None:
         super().data_loader()
@@ -35,8 +43,7 @@ class SimpleClassifierPipeline(BasePipeline):
     def _run_kfold_cross_validation(self,
                                     k_folds: int = 5,
                                     n_layers: int = 3,
-                                    kernel_size: int = 5,
-                                    top_n_models: int = 1) -> None:
+                                    kernel_size: int = 5) -> None:
 
         self._kfold = KFoldValidation(
             data=self._data,
@@ -44,12 +51,13 @@ class SimpleClassifierPipeline(BasePipeline):
             hp_optimizer=self._hp_optimizer,
             device=self.device
         )
-        self._kfold.run_cross_validation(
-            top_n_models=top_n_models, save_checkpoints=True)
-        best_model = self._kfold.get_best_overall_model(metric_key='F1-score') # should have [n_layers, kernel_size, learning rate] - can be from the HPO pandas dataframe
-        self._initialize_model(n_layers=int(best_model['n_layers']),
-                               kernel_size=int(best_model['kernel_size']))
-        self._best_models = self._kfold.get_all_best_models()
+        self._kfold.run_cross_validation(save_checkpoints=True)
+        best_model = self._kfold.get_best_overall_model(metric_key='F1-score')
+
+        # need lr here?
+        self._model = self._initialize_model(
+            n_layers=int(best_model['n_layers']),
+            kernel_size=int(best_model['kernel_size']))
 
     def _initialize_model(self, n_layers: int, kernel_size: int) -> MainCNN:
         return MainCNN(
@@ -57,16 +65,7 @@ class SimpleClassifierPipeline(BasePipeline):
             num_classes=self.class_map_length)
 
     def _initialize_trainer(self) -> Trainer:
-        return Trainer(train_loader=self._loaders["train"],  # will be replaced per fold???
-                       val_loader=self._loaders["val"],  # ???
-                       epochs=self.epochs,
-                       optimizer=self.optimizer,
-                       scheduler=self.scheduler,
-                       save_folder=self.save_folder,
-                       model_file_name=self.model_file_name,
-                       optimizer_file_name=self.optimizer_file_name,
-                       scheduler_file_name=self.scheduler_file_name,
-                       device=self.device)
+        return super()._initialize_trainer()
 
     def train(
         self, save_checkpoint: bool = True, load_checkpoint: bool = False
