@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 def evaluate_classification(y_pred: Tensor,
                             y_true: Tensor,
                             num_classes: int,
+                            device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu"),
                             average: str = 'macro',
                             cm_plot: bool = True,
                             class_names: Optional[list[str]] = None) -> dict:
@@ -25,6 +26,7 @@ def evaluate_classification(y_pred: Tensor,
     Args:
         y_pred (Tensor): Raw model outputs
         y_true (Tensor): Ground truth labels
+        device (torch.device): Device to use
         num_classes (int): Number of classes
         average (str): Averaging method for F1 score ('macro', 'weighted', etc)
         cm_plot (bool): Whether to show the plot of the confusion matrix
@@ -38,9 +40,9 @@ def evaluate_classification(y_pred: Tensor,
     y_pred = torch.argmax(y_pred, dim=1)
 
     # Initialize Metrics
-    acc = Accuracy(task="multiclass", num_classes=num_classes)
-    f1 = F1Score(task="multiclass", num_classes=num_classes, average=average)
-    confmat = MulticlassConfusionMatrix(num_classes=num_classes)
+    acc = Accuracy(task="multiclass", num_classes=num_classes).to(device=device)
+    f1 = F1Score(task="multiclass", num_classes=num_classes, average=average).to(device=device)
+    confmat = MulticlassConfusionMatrix(num_classes=num_classes).to(device=device)
 
     # Compute metrics
     acc_val = acc(y_pred, y_true)
