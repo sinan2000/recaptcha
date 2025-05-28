@@ -1,21 +1,13 @@
-from recaptcha_classifier.pipeline.simple_cnn_pipeline import (
-    SimpleClassifierPipeline)
-from recaptcha_classifier.pipeline.main_model_pipeline import (
-    MainModelPipeline)
+from recaptcha_classifier.pipeline.main_model_pipeline import MainClassifierPipeline
+from recaptcha_classifier.pipeline.simple_cnn_pipeline import SimpleClassifierPipeline
 
-
-# from recaptcha_classifier import (
-#     DetectionLabels,
-#     DataPreprocessingPipeline,
-#     SimpleClassifierPipeline
-# )
 
 def main():
     pipeline1 = SimpleClassifierPipeline(epochs=1)
-    pipeline1.run()
+    pipeline1.run(save_train_checkpoints=False)
 
-    pipeline2 = MainModelPipeline(epochs=1)
-    pipeline2.run()
+    # pipeline2 = MainClassifierPipeline(epochs=1)
+    # pipeline2.run(save_train_checkpoints=False)
     # data = DataPreprocessingPipeline(
     #     DetectionLabels.to_class_map(),
     #     balance=True
