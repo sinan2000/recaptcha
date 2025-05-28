@@ -29,13 +29,16 @@ class BasePipeline:
         self.scheduler_file_name = scheduler_file_name
 
         self._class_map = DetectionLabels.to_class_map()
-        self._class_map_length = self.class_map_length
         self._loaders = None
         self._data = None
         self._model = None
-        self.optimizer = None
-        self.scheduler = None
+        # self.optimizer = None
+        # self.scheduler = None
         self._trainer = None
+
+    def run(self):  # abstract because the sequence of actions is
+        # different for the two pipelines
+        pass
 
     def data_loader(self):  # make private?
         if self._loaders is None:
@@ -74,7 +77,3 @@ class BasePipeline:
             plot_cm=plot_cm
         )
         return eval_results
-
-    def run(self):  # abstract because the sequence of actions is
-        # different for the two pipelines
-        pass

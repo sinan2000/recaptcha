@@ -24,6 +24,19 @@ class SimpleClassifierPipeline(BasePipeline):
                          save_folder, model_file_name,
                          optimizer_file_name, scheduler_file_name)
 
+        self._hp_optimizer = None
+
+    def run(self) -> None:
+        self.data_loader()
+        self._trainer = self._initialize_trainer(self._model)
+        self._hp_optimizer = HPOptimizer(trainer=self._trainer)
+
+        # model gets initialized inside here:
+        self._run_kfold_cross_validation()
+
+        self._trainer.train()
+        self.evaluate()
+
     def data_loader(self) -> None:
         super().data_loader()
 
@@ -42,8 +55,9 @@ class SimpleClassifierPipeline(BasePipeline):
         best_model = self._kfold.get_best_overall_model(metric_key='F1-score')
 
         # need lr here?
-        self._initialize_model(n_layers=int(best_model['n_layers']),
-                               kernel_size=int(best_model['kernel_size']))
+        self._model = self._initialize_model(
+            n_layers=int(best_model['n_layers']),
+            kernel_size=int(best_model['kernel_size']))
 
     def _initialize_model(self, n_layers: int, kernel_size: int) -> MainCNN:
         return MainCNN(
@@ -62,14 +76,3 @@ class SimpleClassifierPipeline(BasePipeline):
 
     def evaluate(self, plot_cm: bool = False) -> dict:
         return super().evaluate(plot_cm)
-
-    def run(self) -> None:
-        self.data_loader()
-        self._trainer = self._initialize_trainer(self._model)
-        self._hp_optimizer = HPOptimizer(trainer=self._trainer)
-
-        # model gets initialized inside here:
-        self._run_kfold_cross_validation()
-
-        self._trainer.train()
-        self.evaluate()

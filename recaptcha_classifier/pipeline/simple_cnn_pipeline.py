@@ -22,6 +22,16 @@ class SimpleClassifierPipeline(BasePipeline):
                          save_folder, model_file_name,
                          optimizer_file_name, scheduler_file_name)
 
+    def run(self) -> None:
+        self.data_loader()
+        self._model = self._initialize_model()
+        # self.optimizer = optim.RAdam(self._model.parameters(), lr=self.lr)
+        # self.scheduler = StepLR(
+        #           self.optimizer, step_size=self.step_size, gamma=self.gamma)
+        self._trainer = self._initialize_trainer()
+        self._trainer.train(model=self._model)
+        self.evaluate()
+
     def data_loader(self) -> None:
         super().data_loader()
 
@@ -40,13 +50,3 @@ class SimpleClassifierPipeline(BasePipeline):
 
     def evaluate(self, plot_cm: bool = False) -> dict:
         return super().evaluate(plot_cm)
-
-    def run(self) -> None:
-        self.data_loader()
-        self._model = self._initialize_model()  # not same in main_model
-        # self.optimizer = optim.RAdam(self._model.parameters(), lr=self.lr)
-        # self.scheduler = StepLR(
-        #           self.optimizer, step_size=self.step_size, gamma=self.gamma)
-        self._trainer = self._initialize_trainer()
-        self._trainer.train(model=self._model)
-        self.evaluate()
