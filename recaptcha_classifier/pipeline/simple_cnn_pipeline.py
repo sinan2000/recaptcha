@@ -1,6 +1,6 @@
 import torch
-import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
+# import torch.optim as optim
+# from torch.optim.lr_scheduler import StepLR
 from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 from recaptcha_classifier.train.training import Trainer
@@ -44,9 +44,9 @@ class SimpleClassifierPipeline(BasePipeline):
     def run(self) -> None:
         self.data_loader()
         self._model = self._initialize_model()  # not same in main_model
-        self.optimizer = optim.RAdam(self._model.parameters(), lr=self.lr)
-        self.scheduler = StepLR(
-            self.optimizer, step_size=self.step_size, gamma=self.gamma)
+        # self.optimizer = optim.RAdam(self._model.parameters(), lr=self.lr)
+        # self.scheduler = StepLR(
+        #           self.optimizer, step_size=self.step_size, gamma=self.gamma)
         self._trainer = self._initialize_trainer()
         self._trainer.train(model=self._model)
         self.evaluate()

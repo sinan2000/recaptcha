@@ -75,7 +75,6 @@ class BasePipeline:
         )
         return eval_results
 
-    @abstractmethod
     def run(self):  # abstract because the sequence of actions is
         # different for the two pipelines
         pass
