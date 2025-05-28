@@ -1,6 +1,4 @@
 import torch
-from typing_extensions import override
-
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 from recaptcha_classifier.train.training import Trainer
@@ -42,7 +40,7 @@ class MainClassifierPipeline(BasePipeline):
                             self.lr,
                             save_checkpoint=save_train_checkpoints,
                             load_checkpoint=load_train_checkpoints)
-        self.evaluate()
+        self.evaluate(plot_cm=True)
 
     def data_loader(self) -> None:
         super().data_loader()

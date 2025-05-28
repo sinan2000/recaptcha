@@ -6,9 +6,14 @@ def main():
     pipeline1 = SimpleClassifierPipeline(epochs=1)
     pipeline1.run(save_train_checkpoints=False)
 
-    # pipeline2 = MainClassifierPipeline(epochs=1)
+    # pipeline2 = MainClassifierPipeline(epochs=1, k_folds=2)
     # pipeline2.run(save_train_checkpoints=False)
-    # data = DataPreprocessingPipeline(
+
+
+if __name__ == '__main__':
+    main()
+
+# data = DataPreprocessingPipeline(
     #     DetectionLabels.to_class_map(),
     #     balance=True
     #     )
@@ -24,7 +29,3 @@ def main():
     #     print(f" - images.shape: {images.shape}")
     #     print(f" - labels.shape: {labels.shape}")
     #     print(f" - class IDs: {labels.tolist()}")
-
-
-if __name__ == '__main__':
-    main()
