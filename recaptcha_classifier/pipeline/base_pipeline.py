@@ -4,7 +4,7 @@ import torch.optim as optim
 from torch.optim.lr_scheduler import StepLR
 from recaptcha_classifier.detection_labels import DetectionLabels
 from recaptcha_classifier.data.pipeline import DataPreprocessingPipeline
-from recaptcha_classifier.train.training import Trainer
+# from recaptcha_classifier.train.training import Trainer
 from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 
 
@@ -22,10 +22,10 @@ class BasePipeline:
                  ):
         self._class_map = DetectionLabels.to_class_map()
         self._loaders = None
-        self.optimizer = optim.RAdam(self.model.parameters(), lr=lr)
+        self._model = self._initialize_model(self._class_map)
+        self.optimizer = optim.RAdam(self._model.parameters(), lr=lr)
         self.scheduler = StepLR(
             self.optimizer, step_size=step_size, gamma=gamma)
-        self._model = self._initialize_model(self._class_map)
         self._trainer = self._initialize_trainer()
 
     def data_loader(self):
