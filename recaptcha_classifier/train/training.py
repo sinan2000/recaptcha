@@ -91,6 +91,8 @@ class Trainer(object):
         model.to(self.device)
         model.train()
 
+        print(f"Using device: {self.device}")
+
         for epoch in range(start_epoch, self.epochs):
             # Training
             train_accuracy_counter = metrics.MulticlassAccuracy().to(self.device)
