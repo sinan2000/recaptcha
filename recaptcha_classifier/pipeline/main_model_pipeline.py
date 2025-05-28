@@ -1,17 +1,14 @@
-import os
 import torch
-import torch.optim as optim
-from torch.optim.lr_scheduler import StepLR
 from recaptcha_classifier.models.main_model.model_class import MainCNN
-from recaptcha_classifier.detection_labels import DetectionLabels
-from recaptcha_classifier.data.pipeline import DataPreprocessingPipeline
 from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
-from recaptcha_classifier.models.main_model.kfold_validation import KFoldValidation
+from recaptcha_classifier.models.main_model.kfold_validation import (
+    KFoldValidation
+)
+from recaptcha_classifier.pipeline import BasePipeline
 
 
-class SimpleClassifierPipeline:
+class SimpleClassifierPipeline(BasePipeline):
     def __init__(self,
                  step_size: int = 5,
                  gamma: float = 0.5,
@@ -23,36 +20,23 @@ class SimpleClassifierPipeline:
                  optimizer_file_name: str = "optimizer.pt",
                  scheduler_file_name: str = "scheduler.pt"
                  ):
+        super().__init__(step_size, gamma, lr, epochs, device,
+                         save_folder, model_file_name,
+                         optimizer_file_name, scheduler_file_name)
 
-        self._class_map = DetectionLabels.to_class_map()
-        self._data = DataPreprocessingPipeline(self.class_map, balance=True)
-        self._loaders = self._data.run()
-        print("Data loaders built successfully.")
-
-        self._model = MainCNN(n_layers=n_layers, 
-                              kernel_size=kernel_size, 
-                              num_classes=len(self.class_map))
-        
-        self._trainer = Trainer(train_loader=None,  # will be replaced per fold
-                                val_loader=None,
-                                epochs=self.epochs,
-                                optimizer=None,     # set during HP
-                                scheduler=None,    # hardcode???
-                                save_folder=self.save_folder,
-                                model_file_name=self.model_file_name,
-                                optimizer_file_name=self.optimizer_file_name,
-                                scheduler_file_name=self.scheduler_file_name,
-                                device=self.device)
-
+        # self._model = self._initialize_model(self._class_map)
+        self._trainer = self._initialize_trainer()
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
-        
+        self._run_kfold_cross_validation()
 
+    def data_loader(self) -> None:
+        super().data_loader()
 
-    def run_kfold_cross_validation(self,
-                 k_folds: int = 5,
-                 n_layers: int = 3,
-                 kernel_size: int = 5, 
-                 top_n_models: int = 1) -> None:
+    def _run_kfold_cross_validation(self,
+                                    k_folds: int = 5,
+                                    n_layers: int = 3,
+                                    kernel_size: int = 5,
+                                    top_n_models: int = 1) -> None:
 
         self._kfold = KFoldValidation(
             data=self._data,
@@ -60,40 +44,36 @@ class SimpleClassifierPipeline:
             hp_optimizer=self._hp_optimizer,
             device=self.device
         )
-        self._kfold.run_cross_validation(top_n_models=top_n_models, save_checkpoints=save_checkpoints)
-        best_hp = self._kfold.get_best_overall_model(metric_key='F1-score') # should have [n_layers, kernel_size, learning rate] - can be from the HPO pandas dataframe
+        self._kfold.run_cross_validation(
+            top_n_models=top_n_models, save_checkpoints=True)
+        best_model = self._kfold.get_best_overall_model(metric_key='F1-score') # should have [n_layers, kernel_size, learning rate] - can be from the HPO pandas dataframe
+        self._initialize_model(n_layers=int(best_model['n_layers']),
+                               kernel_size=int(best_model['kernel_size']))
+        self._best_models = self._kfold.get_all_best_models()
 
-        # self.model = MainCNN(n_layers=int(best_hp[0]), kernel_size=int(best_hp[1])) # if best_hp is list
-        # best_hp is pandas thing:
-        # self.model = MainCNN(n_layers=int(best_hp['layers']), kernel_size=int(best_hp['kernel_sizes']))
-        # self._trainer.optimizer = torch.optim.RAdam(self.model.parameters(), lr=best_hp['learning_rate'])
+    def _initialize_model(self, n_layers: int, kernel_size: int) -> MainCNN:
+        return MainCNN(
+            n_layers=n_layers, kernel_size=kernel_size,
+            num_classes=self.class_map_length)
 
+    def _initialize_trainer(self) -> Trainer:
+        return Trainer(train_loader=self._loaders["train"],  # will be replaced per fold???
+                       val_loader=self._loaders["val"],  # ???
+                       epochs=self.epochs,
+                       optimizer=self.optimizer,
+                       scheduler=self.scheduler,
+                       save_folder=self.save_folder,
+                       model_file_name=self.model_file_name,
+                       optimizer_file_name=self.optimizer_file_name,
+                       scheduler_file_name=self.scheduler_file_name,
+                       device=self.device)
 
-
-    def train(self, save_checkpoints: bool = True) -> None:
-        
-        self._loaders = self._data.run()
-        self._trainer.train_loader = self._loaders["train"]
-        self._trainer.val_loader = self._loaders["val"]
-
-        # Re-initialize optimizer and scheduler for best model
-        self._trainer.optimizer = optim.RAdam(best_model.parameters(), lr=self._trainer.optimizer.param_groups[0]['lr'])
-        self._trainer.scheduler = StepLR(self._trainer.optimizer, step_size=5, gamma=0.5)
-        self._trainer.train(best_model, self._load_checkpoint) # best model?? / where use best metrics
-
-    def train(self, save_checkpoint: bool = True, load_checkpoint: bool = False) -> None:
-            self._trainer.train(self._model, 
-                                load_checkpoint=load_checkpoint, 
-                                save_checkpoint=save_checkpoint)
-
+    def train(
+        self, save_checkpoint: bool = True, load_checkpoint: bool = False
+    ) -> None:
+        self._trainer.train(self._model,
+                            load_checkpoint=load_checkpoint,
+                            save_checkpoint=save_checkpoint)
 
     def evaluate(self, plot_cm: bool = False) -> dict:
-        eval_results = evaluate_model(
-            model=self._model,
-            test_loader=self._loaders['test'],
-            device=self._trainer.device,
-            num_classes=len(self._class_map),
-            class_names=list(self._class_map.keys()),
-            plot_cm=plot_cm
-        )
-        return eval_results
+        return super().evaluate(plot_cm)
