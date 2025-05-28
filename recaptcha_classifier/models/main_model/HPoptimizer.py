@@ -22,7 +22,8 @@ class HPOptimizer(object):
 
     def get_history(self)->pd.DataFrame:
         df_opt_data = pd.DataFrame(self._opt_data)
-        df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
+        if len(self._opt_data['loss']) > 0:
+            df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
         return df_opt_data.copy()
 
 
