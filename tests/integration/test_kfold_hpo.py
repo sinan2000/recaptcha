@@ -65,8 +65,6 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         self.trainer = Trainer(
             train_loader=train_loader,
             val_loader=val_loader,
-            optimizer=optimizer,
-            scheduler=scheduler,
             epochs=1,
             save_folder=unique_folder,
             device=self.device
@@ -101,7 +99,7 @@ class TestKFoldHPOIntegration(unittest.TestCase):
 
     def tearDown(self):
         """
-        Deleting files if neded.
+        Deleting files if needed.
         """
         try:
             torch.cuda.empty_cache()

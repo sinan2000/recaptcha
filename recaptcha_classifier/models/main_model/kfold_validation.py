@@ -73,7 +73,6 @@ class KFoldValidation:
             self.hp_optimizer.trainer.train_loader = fold_train_loader
             self.hp_optimizer.trainer.val_loader = fold_val_loader
 
-            # --- Train and evaluate your model here ---
             optimized_hp_dataframe = self.hp_optimizer.optimize_hyperparameters(save_checkpoints=save_checkpoints)
             evaluated_models = {'Accuracy': [],
                                 'F1-score': [],
@@ -84,6 +83,7 @@ class KFoldValidation:
                                 kernel_size=int(row['kernel_sizes']),
                                 num_classes=12)
                 self.hp_optimizer.trainer.train(model=model,
+                                                lr=float(row['lr']),
                                                 save_checkpoint=save_checkpoints,
                                                 load_checkpoint=load_checkpoints)
                 metrics_result = evaluate_model(

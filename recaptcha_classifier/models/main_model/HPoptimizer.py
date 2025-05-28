@@ -72,8 +72,7 @@ class HPOptimizer(object):
 
     def _train_one_model(self, hp_combo, save_checkpoints) -> None:
         model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
-        self.trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
-        self.trainer.train(model=model, load_checkpoint=False, save_checkpoint=save_checkpoints)
+        self.trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False, save_checkpoint=save_checkpoints)
 
 
     def _generate_hp_combinations(self, hp) -> list:

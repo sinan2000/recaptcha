@@ -5,7 +5,7 @@ import torch
 from torch.utils.data import DataLoader
 from torcheval import metrics
 from tqdm import tqdm
-from torch import nn
+from torch import nn, optim
 
 
 class Trainer(object):
@@ -15,8 +15,6 @@ class Trainer(object):
                  train_loader: DataLoader,
                  val_loader: DataLoader,
                  epochs: int,
-                 optimizer: torch.optim.Optimizer,
-                 scheduler: torch.optim.lr_scheduler,
                  save_folder: str,
                  model_file_name='model.pt',
                  optimizer_file_name='optimizer.pt',
@@ -37,8 +35,6 @@ class Trainer(object):
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.epochs = epochs
-        self.optimizer = optimizer
-        self.scheduler = scheduler
         self.save_folder = save_folder
         self.model_file_name = model_file_name
         self.optimizer_file_name = optimizer_file_name
@@ -48,6 +44,8 @@ class Trainer(object):
         self.select_device(device)
 
         self._loss_acc_history = []
+        self.optimizer = None
+        self.scheduler = None
 
 
     @property
@@ -66,14 +64,21 @@ class Trainer(object):
             self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 
-    def train(self, model, load_checkpoint: bool, save_checkpoint: bool = True) -> None:
+    def train(self,
+              model: nn.Module,
+              lr: float = 0.01,
+              load_checkpoint: bool = False,
+              save_checkpoint: bool = True) -> None:
         """
-        Main training loop.
+        Main training loop. Uses RAdam as optimizer and StepLR as scheduler.
+        :param lr: learning rate.
         :param save_checkpoint: If True, saves checkpoint files.
         :param model: Model for training.
         :param load_checkpoint: If true, loads latest checkpoint if it exists.
         with the previous states of the model, optimizer, and scheduler.
         """
+        self.optimizer = optim.RAdam(model.parameters(), lr=lr)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=1, gamma=0.5)
 
         os.makedirs(self.save_folder, exist_ok=True)
         start_epoch = 0
@@ -96,7 +101,6 @@ class Trainer(object):
                                       train_accuracy_counter,
                                       train_loss_counter,
                                       train_progress_bar)
-
             # Saving states
             if save_checkpoint:
                 self.save_checkpoint_states(model)
@@ -169,6 +173,9 @@ class Trainer(object):
         Loads states of model, optimizer, and scheduler.
         :return: epoch index from which the checkpoint states were saved.
         """
+        if not os.path.exists(os.path.join(self.save_folder, self.model_file_name)):
+            raise FileNotFoundError("Checkpoint folder doesn't exist.")
+
         checkpoint_model = torch.load(os.path.join(self.save_folder, self.model_file_name))
         model.load_state_dict(checkpoint_model)
         checkpoint_optimizer = torch.load(os.path.join(self.save_folder, self.optimizer_file_name))
