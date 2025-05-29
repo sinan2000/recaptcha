@@ -60,16 +60,16 @@ class StreamlitApp:
         if file is not None:
             st.image(file, caption='Uploaded Image.', use_column_width=True)
             if st.button("Run Inference"):
-                files = {"file": {file.getvalue()}}
+                files = {"file": (file.name, file.getvalue(), file.type)}
                 
                 try:
-                    resp = requests.post("http://localhost:8000/predict", files=files)
+                    resp = requests.post("http://127.0.0.1:8000/predict", files=files)
                     resp.raise_for_status()
                     result = resp.json()
                     
                     st.success("Prediction successful!")
                     st.write(f"Label: {result['label']}")
-                    st.write(f"Confidence: {result['confidence']:.2f}")
+                    st.write(f"Confidence: {result['confidence']}")
                     st.write(f"Class ID: {result['class_id']}")
                 except Exception as e:
                     st.error(f"Error during inference: {str(e)}")

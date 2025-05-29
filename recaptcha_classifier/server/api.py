@@ -3,6 +3,7 @@ import io
 import torch
 from fastapi import FastAPI, File, UploadFile, Response
 from fastapi.responses import JSONResponse
+import torch.nn.functional as F
 from PIL import Image
 from .load_model import load_main_model, load_simple_model
 from recaptcha_classifier.detection_labels import DetectionLabels
@@ -13,7 +14,7 @@ from typing import Literal
 
 class PredictionResponse(BaseModel):
     label: str
-    confidence: float
+    confidence: str
     class_id: int
 
 
@@ -53,11 +54,13 @@ def inference(model: torch.nn.Module, device: torch.device, image: Image.Image) 
     
     with torch.no_grad():
         output = model(tensor)
+        prob = F.softmax(output, dim=1)
+        conf = prob.argmax(dim=1).item()
         id = output.argmax(dim=1).item()
         label = DetectionLabels.from_id(id)
         
     return {
         "label": label,
-        "confidence": f"{float(output.max().item()) * 100:.2f}%",
+        "confidence": f"{conf * 100:.2f}%",
         "class_id": id
     }
