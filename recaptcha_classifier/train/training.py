@@ -1,5 +1,4 @@
 import os
-
 import numpy as np
 import torch
 from torch.utils.data import DataLoader
@@ -21,18 +20,29 @@ class Trainer(object):
                  model_file_name='model.pt',
                  optimizer_file_name='optimizer.pt',
                  scheduler_file_name='scheduler.pt',
-                 device: torch.device |None = None
-                 ):
+                 device: torch.device | None = None
+                 ) -> None:
         """
         Constructor for Trainer class.
-        :param train_loader: Dataloader for training data.
-        :param epochs: Number of epochs.
-        :param save_folder: Folder for saving checkpoint files.
-        :param optimizer: Optimizer for training.
-        :param scheduler: Scheduler for training.
-        :param model_file_name: Model checkpoint file name.
-        :param optimizer_file_name: Optimizer checkpoint file name.
-        :param scheduler_file_name: Scheduler checkpoint file name.
+
+        Args:
+            train_loader (DataLoader): DataLoader for training data.
+            val_loader (DataLoader): DataLoader for validation data.
+            epochs (int): Number of epochs for training.
+            optimizer (torch.optim.Optimizer): Optimizer for training.
+            scheduler (torch.optim.lr_scheduler): Scheduler for learning rate.
+            save_folder (str): Folder for saving checkpoint files.
+            model_file_name (str, optional): Name of the model checkpoint
+                file. Defaults to "model.pt".
+            optimizer_file_name (str, optional): Name of the optimizer
+                checkpoint file. Defaults to "optimizer.pt".
+            scheduler_file_name (str, optional): Name of the scheduler
+                checkpoint file. Defaults to "scheduler.pt".
+            device (torch.device, optional): Device for training.
+                Defaults to None.
+
+        Returns:
+            None
         """
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -49,35 +59,52 @@ class Trainer(object):
 
         self._loss_acc_history = []
 
-
     @property
     def loss_acc_history(self) -> np.ndarray:
+        """Returns loss and accuracy history.
+
+        Returns:
+            np.ndarray: Loss and accuracy history.
+        """
         return np.array(self._loss_acc_history.copy())
 
-
-    def select_device(self, device=None):
+    def select_device(self, device=None) -> None:
         """
         Configures device for training.
-        :param device: Selects device as specified. If None, uses cuda if available, else cpu.
+
+        Args:
+            device (torch.device, optional): Device for training.
+                Defaults to None.
+
+        Returns:
+            None
         """
         if device is not None:
             self.device = device
         else:
-            self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+            self.device = torch.device('cuda' if torch.cuda.is_available(
+            ) else 'cpu')
 
-
-    def train(self, model, load_checkpoint: bool, save_checkpoint: bool = True) -> None:
+    def train(
+        self, model, load_checkpoint: bool, save_checkpoint: bool = True
+    ) -> None:
         """
         Main training loop.
-        :param save_checkpoint: If True, saves checkpoint files.
-        :param model: Model for training.
-        :param load_checkpoint: If true, loads latest checkpoint if it exists.
-        with the previous states of the model, optimizer, and scheduler.
+
+        Args:
+            model (torch.nn.Module): Model for training.
+            load_checkpoint (bool): Whether to load the checkpoint.
+            save_checkpoint (bool, optional): Whether to save the checkpoint.
+                Defaults to True.
+
+        Returns:
+            None
         """
 
         os.makedirs(self.save_folder, exist_ok=True)
         start_epoch = 0
-        if load_checkpoint and os.path.exists(os.path.join(self.save_folder, self.model_file_name)):
+        if load_checkpoint and os.path.exists(os.path.join(
+                self.save_folder, self.model_file_name)):
             start_epoch = self.load_checkpoint_states(model)
 
         if start_epoch == 0:
@@ -88,14 +115,16 @@ class Trainer(object):
 
         for epoch in range(start_epoch, self.epochs):
             # Training
-            train_accuracy_counter = metrics.MulticlassAccuracy().to(self.device)
+            train_accuracy_counter = metrics.MulticlassAccuracy().to(
+                self.device)
             train_loss_counter = metrics.Mean().to(self.device)
 
-            train_progress_bar = tqdm(self.train_loader, desc=f"Epoch {epoch + 1}/{self.epochs}")
+            train_progress_bar = tqdm(
+                self.train_loader, desc=f"Epoch {epoch + 1}/{self.epochs}")
             self._train_one_epoch(model,
-                                      train_accuracy_counter,
-                                      train_loss_counter,
-                                      train_progress_bar)
+                                  train_accuracy_counter,
+                                  train_loss_counter,
+                                  train_progress_bar)
 
             # Saving states
             if save_checkpoint:
@@ -107,12 +136,28 @@ class Trainer(object):
 
             val_progress_bar = tqdm(self.val_loader, desc="Eval")
             self._val_one_epoch(model,
-                                    val_accuracy_counter,
-                                    val_loss_counter,
-                                    val_progress_bar)
+                                val_accuracy_counter,
+                                val_loss_counter,
+                                val_progress_bar)
 
+    def _train_one_epoch(self, model: nn.Module,
+                         train_accuracy_counter: metrics.MulticlassAccuracy,
+                         train_loss_counter: metrics.Mean,
+                         train_progress_bar: tqdm) -> None:
+        """
+        Training loop for one epoch.
 
-    def _train_one_epoch(self, model, train_accuracy_counter, train_loss_counter, train_progress_bar):
+        Args:
+            model (torch.nn.Module): Model for training.
+            train_accuracy_counter (metrics.MulticlassAccuracy): Accuracy
+                counter for training.
+            train_loss_counter (metrics.Mean): Loss counter for training.
+            train_progress_bar (tqdm): Progress bar for training.
+
+        Returns:
+            None
+        """
+
         for data, targets in train_progress_bar:
             data, targets = data.to(self.device), targets.to(self.device)
 
@@ -135,8 +180,23 @@ class Trainer(object):
 
         self.scheduler.step()
 
+    def _val_one_epoch(self, model: nn.Module,
+                       val_accuracy_counter: metrics.MulticlassAccuracy,
+                       val_loss_counter: metrics.Mean, val_progress_bar:
+                       tqdm) -> None:
+        """
+        Validation loop for one epoch.
 
-    def _val_one_epoch(self, model, val_accuracy_counter, val_loss_counter, val_progress_bar):
+        Args:
+            model (torch.nn.Module): Model for validation.
+            val_accuracy_counter (metrics.MulticlassAccuracy): Accuracy
+                counter for validation.
+            val_loss_counter (metrics.Mean): Loss counter for validation.
+            val_progress_bar (tqdm): Progress bar for validation.
+
+        Returns:
+            None
+        """
         for data, targets in val_progress_bar:
             data, targets = data.to(self.device), targets.to(self.device)
 
@@ -153,32 +213,48 @@ class Trainer(object):
                     accuracy=val_accuracy_counter.compute().item()
                 )
 
-
-    def save_checkpoint_states(self, model) -> None:
+    def save_checkpoint_states(self, model: nn.Module) -> None:
         """
         Saves states of model, optimizer, and scheduler.
+
+        Args:
+            model (torch.nn.Module): Model for saving states.
+
+        Returns:
+            None
         """
-        torch.save(model.state_dict(), os.path.join(self.save_folder, self.model_file_name))
-        torch.save(self.optimizer.state_dict(), os.path.join(self.save_folder, self.optimizer_file_name))
-        torch.save(self.scheduler.state_dict(), os.path.join(self.save_folder, self.scheduler_file_name))
+        torch.save(model.state_dict(), os.path.join(
+            self.save_folder, self.model_file_name))
+        torch.save(self.optimizer.state_dict(), os.path.join(
+            self.save_folder, self.optimizer_file_name))
+        torch.save(self.scheduler.state_dict(), os.path.join(
+            self.save_folder, self.scheduler_file_name))
         print("Saved checkpoint.")
 
-
-    def load_checkpoint_states(self, model) -> int:
+    def load_checkpoint_states(self, model: nn.Module) -> int:
         """
         Loads states of model, optimizer, and scheduler.
-        :return: epoch index from which the checkpoint states were saved.
+
+        Args:
+            model (torch.nn.Module): Model for loading states.
+
+        Returns:
+            int: Start epoch.
         """
-        checkpoint_model = torch.load(os.path.join(self.save_folder, self.model_file_name))
+        checkpoint_model = torch.load(os.path.join(
+            self.save_folder, self.model_file_name))
         model.load_state_dict(checkpoint_model)
-        checkpoint_optimizer = torch.load(os.path.join(self.save_folder, self.optimizer_file_name))
+        checkpoint_optimizer = torch.load(os.path.join(
+            self.save_folder, self.optimizer_file_name))
         self.optimizer.load_state_dict(checkpoint_optimizer)
-        checkpoint_scheduler = torch.load(os.path.join(self.save_folder, self.scheduler_file_name))
+        checkpoint_scheduler = torch.load(os.path.join(
+            self.save_folder, self.scheduler_file_name))
         self.scheduler.load_state_dict(checkpoint_scheduler)
         start_epoch = self.scheduler._step_count - 1
         return start_epoch
 
-    def delete_checkpoints(self):
+    def delete_checkpoints(self) -> None:
+        """Deletes all checkpoint files and folders."""
         if not os.path.exists(self.save_folder):
             return
         for filename in os.listdir(self.save_folder):
@@ -187,7 +263,7 @@ class Trainer(object):
             if os.path.isfile(file_path):
                 os.remove(file_path)
                 print(f"Deleted file: {filename}")
-        
-        if not os.listdir(self.save_folder): # make sure it's empty
-          os.rmdir(self.save_folder)
-          print(f"Deleted folder: {self.save_folder}")
+
+        if not os.listdir(self.save_folder):
+            os.rmdir(self.save_folder)
+            print(f"Deleted folder: {self.save_folder}")
