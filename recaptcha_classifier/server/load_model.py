@@ -2,7 +2,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 
-from .main_model.model_class import MainCNN
+from ..models.main_model.model_class import MainCNN
 from recaptcha_classifier.detection_labels import DetectionLabels
 
 from recaptcha_classifier.constants import (
@@ -16,7 +16,7 @@ def load_simple_model(device: torch.device = torch.device("cpu")):
     """
     Load the simple CNN model for image classification.
     """
-    from .simple_classifier_model import SimpleCNN
+    from ..models.simple_classifier_model import SimpleCNN
     model = SimpleCNN()
     path = MODELS_FOLDER + "/" + SIMPLE_MODEL_FILE_NAME
     model.load_state_dict(torch.load(path, map_location=device))

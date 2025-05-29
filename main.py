@@ -68,7 +68,8 @@ def train_main_classifier():
     
 def open_api():
     import uvicorn
-    uvicorn.run("recaptcha_classifier.api:app", host="0.0.0.0", port=8000, reload=True, workers=1)
+    # opens endpoint at http://localhost:8000/
+    uvicorn.run("recaptcha_classifier.server.api:app", reload=True)
 
 
 if __name__ == '__main__':
