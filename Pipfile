@@ -28,6 +28,7 @@ python-multipart = "*"
 streamlit = "*"
 uvicorn = "*"
 questionary = "*"
+pydantic = "*"
 
 [dev-packages]
 

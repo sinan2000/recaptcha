@@ -1,12 +1,21 @@
 import numpy as np
 import io
 import torch
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Response
 from fastapi.responses import JSONResponse
 from PIL import Image
 from .load_model import load_main_model
 from recaptcha_classifier.detection_labels import DetectionLabels
 from recaptcha_classifier.constants import IMAGE_SIZE
+from pydantic import BaseModel
+from typing import Literal
+
+
+class PredictionResponse(BaseModel):
+    label: str
+    confidence: float
+    class_id: int
+
 
 app = FastAPI()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -18,20 +27,21 @@ def load_models():
     model = load_main_model(device)
     model.to(device)
 
-@app.post("/predict")
-async def predict(file: UploadFile = File(...)):
+@app.post("/predict", response_model=PredictionResponse)
+async def predict(response: Response, file: UploadFile = File(...)) -> PredictionResponse:
     try:
         data = await file.read()
         img = Image.open(io.BytesIO(data)).convert("RGB")
         result = predict(model, device, img)
-        return JSONResponse(result)
+        
+        response.headers["Cache-Control"] = "max-age=3600"
+        
+        return result
     except Exception as e:
         return JSONResponse(
             status_code=500,
             content={"error": str(e)}
         )
-        
-    # !! check /docs, pydantic and restful API design
     
 def predict(model: torch.nn.Module, device: torch.device, image: Image.Image) -> dict:
     """
