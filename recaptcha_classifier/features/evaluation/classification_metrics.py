@@ -19,7 +19,6 @@ def evaluate_classification(y_pred: Tensor,
     Evaluate classification model using torchmetrics
 
     Sources:
-
     https://lightning.ai/docs/torchmetrics/stable/classification/confusion_matrix.html
     https://lightning.ai/docs/torchmetrics/stable/classification/accuracy.html
     https://lightning.ai/docs/torchmetrics/stable/classification/f1_score.html
@@ -35,7 +34,6 @@ def evaluate_classification(y_pred: Tensor,
 
     Returns:
         dict: accuracy, f1, confusion_matrix
-
     """
     logits = y_pred
 
@@ -44,7 +42,7 @@ def evaluate_classification(y_pred: Tensor,
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     y_pred = y_pred.to(device)
     y_true = y_true.to(device)
-    
+
     if num_classes <= 0:
         raise ValueError("num_classes must be a positive integer")
 
