@@ -42,15 +42,24 @@ class TestHPOptimizer(unittest.TestCase):
 
 
     def test_retrieve_results(self):
-        results = self.hpo.optimize_hyperparameters(*self.hp, save_checkpoints=False)
+        results = self.hpo.optimize_hyperparameters(*self.hp,
+                                                    save_checkpoints=False,
+                                                    n_models=4,
+                                                    n_combos=4)
         self.hpo.trainer.delete_checkpoints()
         print(results.head())
         self.assertEqual(len(results['loss']), 4)
 
 
     def test_recurring_hpo(self):
-        results1 = self.hpo.optimize_hyperparameters(*self.hp, save_checkpoints=False)
-        results2 = self.hpo.optimize_hyperparameters(*self.hp, save_checkpoints=False)
+        results1 = self.hpo.optimize_hyperparameters(*self.hp,
+                                                     save_checkpoints=False,
+                                                     n_models=2,
+                                                     n_combos=len(self.hp_combos))
+        results2 = self.hpo.optimize_hyperparameters(*self.hp,
+                                                     save_checkpoints=False,
+                                                     n_models=2,
+                                                     n_combos=len(self.hp_combos))
         print(results1.head())
         print(results2.head())
         self.hpo.trainer.delete_checkpoints()
