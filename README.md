@@ -128,10 +128,33 @@ def main():
     open_api()  # ✅ Uncomment this line
 ```
 
-3. After running the server, you can access:
+## API Documentation
 
-Interactive API docs (Swagger UI): http://127.0.0.1:8000/docs'
+After running the server, you can access the Documentation:
 
-ReDoc documentation: http://127.0.0.1:8000/redoc
+Interactive API docs (Swagger UI): http://localhost:8000/docs
+
+ReDoc documentation: http://localhost:8000/redoc
 
 These interfaces allow you to test predictions and inspect the request/response formats.
+
+## API call and response format
+
+You can make a call to the api using curl, by running the chunk below. Make sure to include a valid file path.
+
+```bash
+curl -X POST "http://localhost:8000/predict" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "file=<path_to_file>"
+```
+You will get a response in the following format:
+
+```bash
+ {"class_id":1,"class_name":"Bridge"}
+```
+where class_id represents the
+
+
+## Possible error Responses
+
+Status code  |    Description
+   200       |  Succesful Prediction
+   422       |  Validation error (eg. file not provided or malformed request)
