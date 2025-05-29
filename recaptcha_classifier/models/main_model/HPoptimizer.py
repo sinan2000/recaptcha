@@ -1,7 +1,7 @@
 import itertools
+import random
 
 import pandas as pd
-import torch
 
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.train.training import Trainer
@@ -11,7 +11,7 @@ class HPOptimizer(object):
     """Class for optimizing hyperparameters."""
 
     def __init__(self, trainer: Trainer):
-        self._trainer = trainer
+        self.trainer = trainer
         self._opt_data = {'Model index': [],
                          'layers': [],
                          'kernel_sizes': [],
@@ -22,18 +22,24 @@ class HPOptimizer(object):
 
     def get_history(self)->pd.DataFrame:
         df_opt_data = pd.DataFrame(self._opt_data)
-        df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
+        if len(self._opt_data['loss']) > 0:
+            df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
         return df_opt_data.copy()
 
 
     def optimize_hyperparameters(self,
                                  n_layers: list = list(range(1,3)),
-                                 kernel_sizes: list = list(range(3,6)),
-                                 learning_rates: list = [1e-2, 1e-3, 1e-4],
-                                 save_checkpoints: bool = True
+                                 kernel_sizes: list = [3, 4, 5],
+                                 learning_rates: list = [1e-3, 1e-4],
+                                 save_checkpoints: bool = True,
+                                 n_models: int = 1,
+                                 n_combos: int = 8,  # Number of random samples
                                  ) -> pd.DataFrame:
         """
-        Main loop for optimizing hyperparameters. History is cleared every time the method is called.
+        Main loop for optimizing hyperparameters using Random Search.
+        History is cleared every time the method is called.
+        :param n_models: number of best models to return.
+        :param n_combos: number of randomly selected combinations to optimize.
         :param save_checkpoints: If True, trainer saves checkpoints after each epoch.
         :param n_layers: list of integers specifying the number of hidden layers range.
         :param kernel_sizes: list of integers specifying the kernel sizes range.
@@ -41,10 +47,16 @@ class HPOptimizer(object):
         :return: pd.DataFrame with model architecture performances ranked from best to worst.
         """
 
+        if max(n_combos, n_models) > (len(n_layers) * len(kernel_sizes) * len(learning_rates)):
+            raise ValueError('n_combos and n_models should be '
+                             'equal to or less than the number of HP combinations.')
+
         hp = [n_layers, kernel_sizes, learning_rates]
 
         # generating HP combinations:
         hp_combos = self._generate_hp_combinations(hp)
+        random.shuffle(hp_combos)
+        hp_combos = hp_combos[:n_combos]
 
         if len(self._opt_data['loss']) != 0:
             self._clear_history()
@@ -53,7 +65,7 @@ class HPOptimizer(object):
             hp_combo = hp_combos[i]
             self._train_one_model(hp_combo, save_checkpoints)
 
-            final_train_history = self._trainer.loss_acc_history[-1]
+            final_train_history = self.trainer.loss_acc_history[-1]
             loss = final_train_history[0]
             accuracy = final_train_history[1]
 
@@ -65,14 +77,13 @@ class HPOptimizer(object):
                 v+=1
 
         df_opt_data = pd.DataFrame(self._opt_data)
-        df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True)
-        return df_opt_data.copy()
+        df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True, ignore_index=True)
+        return df_opt_data.copy()[:n_models]
 
 
     def _train_one_model(self, hp_combo, save_checkpoints) -> None:
         model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
-        self._trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
-        self._trainer.train(model=model, load_checkpoint=False, save_checkpoint=save_checkpoints)
+        self.trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False, save_checkpoint=save_checkpoints)
 
 
     def _generate_hp_combinations(self, hp) -> list:
@@ -81,3 +92,14 @@ class HPOptimizer(object):
     def _clear_history(self) -> None:
         for key in self._opt_data.keys():
             self._opt_data[key] = []
+
+    def get_best_hp(self) -> list:
+        """
+        Returns the best hyperparameters based on the loss.
+        :return: list of best hyperparameters.
+        """
+        df_opt_data = self.get_history()
+        if len(df_opt_data) == 0:
+            return []
+        row = df_opt_data.iloc[0]
+        return [int(row['layers']), int(row['kernel_sizes']), float(row['lr'])]

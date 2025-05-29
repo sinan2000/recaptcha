@@ -1,5 +1,6 @@
 import unittest
 import torch
+from sklearn.model_selection import train_test_split
 from torch.optim import RAdam
 from torch.optim.lr_scheduler import StepLR
 import tempfile
@@ -7,7 +8,7 @@ import shutil
 import os
 import uuid
 import gc
-from torch.utils.data import Subset
+from torch.utils.data import Subset, DataLoader
 
 from recaptcha_classifier.train.training import Trainer
 from recaptcha_classifier.models.main_model.model_class import MainCNN
@@ -29,11 +30,29 @@ class TestKFoldHPOIntegration(unittest.TestCase):
 
         # Data loading
         loaders = get_real_dataloaders()
-        train_loader = loaders['train']
         val_loader = loaders['val']
-        train_dataset = train_loader.dataset
-        subset_indices = list(range(min(100, len(train_dataset))))
-        small_dataset = Subset(train_dataset, subset_indices)
+        full_dataset = val_loader.dataset
+
+        num_samples = len(full_dataset)
+        all_indices = list(range(num_samples))
+
+        train_indices, val_indices = train_test_split(
+            all_indices, test_size=0.2, shuffle=True, random_state=42
+        )
+
+        # reducing the number of samples for speed (e.g., only 10% of each split)
+        small_train_indices = train_indices[:int(0.1 * len(train_indices))]
+        small_val_indices = val_indices[:int(0.1 * len(val_indices))]
+
+        # subset datasets
+        small_train_set = Subset(full_dataset, small_train_indices)
+        small_val_set = Subset(full_dataset, small_val_indices)
+
+        # real DataLoaders
+        train_loader = DataLoader(small_train_set, batch_size=2, shuffle=True)
+        val_loader = DataLoader(small_val_set, batch_size=2, shuffle=False)
+
+
 
         # Model
         model = MainCNN(n_layers=1, kernel_size=3, num_classes=12)
@@ -46,17 +65,17 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         self.trainer = Trainer(
             train_loader=train_loader,
             val_loader=val_loader,
-            optimizer=optimizer,
-            scheduler=scheduler,
             epochs=1,
             save_folder=unique_folder,
             device=self.device
         )
         # Initialize optimizer and CV validator
         self.hp_optimizer = HPOptimizer(self.trainer)
+        self.folds = 2
         self.kfold_validator = KFoldValidation(
-            data=small_dataset,
-            k_folds=3,
+            train_loader=train_loader,
+            val_loader=val_loader,
+            k_folds=self.folds,
             hp_optimizer=self.hp_optimizer,
             device=self.device
         )
@@ -67,23 +86,20 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         necessary items.
         """
         # Run cross-validation
-        self.kfold_validator.run_cross_validation(top_n_models=1,
-                                                  save_checkpoints=False)
+        self.kfold_validator.run_cross_validation(save_checkpoints=False)
 
         # Get results
         results = self.kfold_validator.get_all_best_models()
+        best = self.kfold_validator.get_best_overall_model()
 
         # Check result structure
-        self.assertEqual(len(results), 3, "Should return results for 3 folds")
-        for fold_models in results:
-            self.assertEqual(len(fold_models), 1, "Should return top 1 model per fold")
-            for model, metrics in fold_models:
-                self.assertTrue(hasattr(model, "forward"), "Model should be valid")
-                self.assertIn("F1-score", metrics, "Metrics should include F1-score")
+        self.assertEqual((self.folds, 8), results.shape,
+                         f"Should return ({self.folds}, 8) shape results for {self.folds} folds")
+        self.assertEqual((8,), best.shape, "Should return top 1 model row with (1,8) shape.")
 
     def tearDown(self):
         """
-        Deleting files if neded.
+        Deleting files if needed.
         """
         try:
             torch.cuda.empty_cache()

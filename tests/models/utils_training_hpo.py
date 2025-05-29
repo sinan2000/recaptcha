@@ -41,7 +41,5 @@ def initialize_dummy_components(train_data_samples: int, val_data_samples: int, 
     model = resnet18(weights='DEFAULT')
     model.conv1 = torch.nn.Conv2d(3, 64, 4, (2, 2), (1, 1), bias=False)
     model.fc = torch.nn.Linear(512, 32)
-    optim = torch.optim.RAdam(model.parameters(), lr=0.01)
-    return model, optim, train_loader, val_loader
+    return model, train_loader, val_loader
 
-dummy_components = initialize_dummy_components(8, 2, 2, 3)

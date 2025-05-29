@@ -10,7 +10,7 @@ class SimpleCNN(BaseModel):
     """
     def __init__(self,
                  input_channels: int = 3,
-                 num_classes: int = 10,
+                 num_classes: int = 12,
                  conv1_out_channels: int = 6,
                  conv2_out_channels: int = 16,
                  conv1_kernel_size: int = 5,
@@ -50,7 +50,6 @@ class SimpleCNN(BaseModel):
         x = f.relu(self.fc1(x))
         x = f.relu(self.fc2(x))
         x = self.fc3(x)
-        x = torch.argmax(x, dim=1)  # Output class index
         return x
 
     # def __str__(self) -> str:

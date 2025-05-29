@@ -7,3 +7,7 @@ venv/
 
 private/
 /data/
+
+/models/
+/simple_classifier_checkpoints/
+/main_classifier_checkpoints/

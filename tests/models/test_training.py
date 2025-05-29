@@ -23,15 +23,13 @@ class TrainingUnitTests(unittest.TestCase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        model, optim, train_loader, val_loader = initialize_dummy_components(8,2,2, 3)
+        model, train_loader, val_loader = initialize_dummy_components(8,2,2, 3)
 
         self.model = model
 
         self.trainer = Trainer(train_loader=train_loader,
                           val_loader=val_loader,
                           epochs=2,
-                          optimizer=optim,
-                          scheduler=torch.optim.lr_scheduler.StepLR(optim, step_size=1, gamma=0.5),
                           save_folder='test_training_checkpoints')
 
 
