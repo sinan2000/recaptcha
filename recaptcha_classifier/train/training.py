@@ -15,10 +15,12 @@ class Trainer(object):
                  train_loader: DataLoader,
                  val_loader: DataLoader,
                  epochs: int,
+                 optimizer: torch.optim.Optimizer,
+                 scheduler: torch.optim.lr_scheduler,
                  save_folder: str,
-                 model_file_name='model.pt',
-                 optimizer_file_name='optimizer.pt',
-                 scheduler_file_name='scheduler.pt',
+                 model_file_name: str ='model.pt',
+                 optimizer_file_name: str ='optimizer.pt',
+                 scheduler_file_name: str ='scheduler.pt',
                  device: torch.device |None = None,
                  early_stop_threshold: int = 5
                  ):

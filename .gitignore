@@ -5,9 +5,6 @@ __pycache__/
 venv/
 .env
 
+/models/
 private/
 /data/
-
-/models/
-/simple_classifier_checkpoints/
-/main_classifier_checkpoints/
