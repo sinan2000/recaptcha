@@ -1,16 +1,16 @@
 from typing import List
-from .types import DataBatch, DataItem
+from .types import DataItem, DataBatch
 import torch
 
 
 def collate_batch(batch: List[DataItem]) -> DataBatch:
     """
-    Custom collate function used in the PyTorch DataLoader to handle
-    the non-uniform length of bounding box lists.
+    Custom collate function used in the PyTorch DataLoader to combine
+    the list of data items into a stacked batch for model training.
 
     Args:
-        batch (List[DataItem]): A batch of training items; each item is
-        a tuple of format (image tensor, class index).
+        batch (List[DataItem]): A list of dataset items, tensors of
+        image and label pair.
 
     Returns:
         Batch: A single tuple containing:

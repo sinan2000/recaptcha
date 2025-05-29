@@ -3,7 +3,6 @@ from sklearn.model_selection import KFold
 from sympy.printing.pytorch import torch
 from torch.utils.data import DataLoader, Subset
 import matplotlib.pyplot as plt
-from recaptcha_classifier import DetectionLabels
 from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 from recaptcha_classifier.train.training import Trainer
 from recaptcha_classifier.models.main_model.model_class import MainCNN
@@ -29,14 +28,13 @@ class KFoldValidation:
         :param hp_optimizer: Instance of HPOptimizer
         :param device: Optional torch device
         """
-        self._class_map = DetectionLabels.all() # class labels
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.k_folds = k_folds
         self.device = device
         if device is None:
-            self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+            self.device = torch.device("cuda" if torch.cuda.is_available()
+                                       else "cpu")
 
     def run_cross_validation(self,
                              hp: list,
@@ -59,38 +57,49 @@ class KFoldValidation:
         dataset = self.train_loader.dataset
 
         kf = KFold(n_splits=self.k_folds, shuffle=True, random_state=42)
-        
+
         results = []
-        
+
         n_layers, kernel_sizes, learning_rates = hp
 
-        for fold_index, (train_idx, val_idx) in enumerate(kf.split(all_indices)):
+        for fold_index, (t_idx, val_idx) in enumerate(kf.split(all_indices)):
+
             print(f"\n--- Fold {fold_index + 1}/{self.k_folds} ---")
 
-            train_subset = Subset(dataset, [all_indices[i] for i in train_idx])
+            train_subset = Subset(dataset, [all_indices[i]
+                                            for i in t_idx])
             val_subset = Subset(dataset, [all_indices[i] for i in val_idx])
 
-            fold_train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=False)
-            fold_val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)
-            
+            fold_train_loader = DataLoader(train_subset,
+                                           batch_size=batch_size,
+                                           shuffle=False)
+            fold_val_loader = DataLoader(val_subset,
+                                         batch_size=batch_size,
+                                         shuffle=False)
+
             model = MainCNN(n_layers=n_layers, kernel_size=kernel_sizes)
-            
+
             trainer = Trainer(fold_train_loader, fold_val_loader,
                               epochs=20, save_folder=MODELS_FOLDER,
                               device=self.device)
-            trainer.train(model, lr=learning_rates, save_checkpoint=save_checkpoints,
+
+            trainer.train(model,
+                          lr=learning_rates,
+                          save_checkpoint=save_checkpoints,
                           load_checkpoint=load_checkpoints)
-            
-            metrics = evaluate_model(model, fold_val_loader, device=self.device)
-            metrics.pop('Confusion Matrix') 
+
+            metrics = evaluate_model(model, fold_val_loader,
+                                     device=self.device)
+            metrics.pop('Confusion Matrix')
             metrics["fold"] = fold_index + 1
             results.append(metrics)
-        
+
         df_results = pd.DataFrame(results)
-        
+
+        df_results.to_csv(f"{MODELS_FOLDER}/kfold_results.csv", index=False)
         self.print_summary(df_results)
         self.plot_results(df_results)
-    
+
     @staticmethod
     def print_summary(results: pd.DataFrame) -> None:
         """
@@ -98,17 +107,17 @@ class KFoldValidation:
         """
         print("\n~~ Cross-Validation Summary ~~")
         print(results.round(3))
-        
+
         res = results.drop(columns=["fold"])
 
         means = res.mean()
         print("\nMean Results Across Folds:")
         print(means.round(3))
-        
+
         stds = res.std()
         print("\nStandard Deviation Across Folds:")
         print(stds.round(3))
-    
+
     @staticmethod
     def plot_results(results: pd.DataFrame) -> None:
         """
@@ -117,10 +126,10 @@ class KFoldValidation:
         metrics = [col for col in results.columns if col != 'fold']
         mean_vals = results[metrics].mean()
         std_vals = results[metrics].std()
-        
+
         fig, ax = plt.subplots(figsize=(10, 6))
         mean_vals.plot(kind="bar", yerr=std_vals, capsize=5, ax=ax)
-        
+
         ax.set_title("Cross-Validation Metrics (mean +- std)")
         ax.set_ylabel("Score")
         ax.set_xticklabels(metrics, rotation=45, ha='right')
