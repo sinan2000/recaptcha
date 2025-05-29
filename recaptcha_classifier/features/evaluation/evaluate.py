@@ -1,13 +1,14 @@
 import recaptcha_classifier.features.evaluation.classification_metrics as cm
 import torch
 from tqdm import tqdm
+from recaptcha_classifier.detection_labels import DetectionLabels
 
 
 @torch.no_grad()
 def evaluate_model(model: torch.nn.Module,
                    test_loader: torch.utils.data.DataLoader,
                    device: torch.device,
-                   class_names: list[str] = None,
+                   class_names: list[str] = len(DetectionLabels.all()),
                    plot_cm: bool = False) -> dict:
     """
     Evaluation function for classification models.

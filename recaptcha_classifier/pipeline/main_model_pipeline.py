@@ -37,21 +37,12 @@ class MainClassifierPipeline(BasePipeline):
         self._trainer = self._initialize_trainer()
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
 
+        print("~~ Hyperparameter optimization (Random Search) ~~")
+        self._hp_optimizer.optimize_hyperparameters(
+            save_checkpoints=save_train_checkpoints)
+        
         # model gets initialized inside here:
-        # self._run_kfold_cross_validation()
-        """
-        We found there are too many combinations of models. So it is still in work.
-        Therefore, we skip k-fold and just train the model with the best hyperparameters.
-        """
-        hp_summary = self._hp_optimizer.optimize_hyperparameters()
-        best_hp = self._hp_optimizer.get_best_hp()
-        
-        self._model = self._initialize_model(
-            n_layers=best_hp[0],
-            kernel_size=best_hp[1]
-        )
-        
-        self.lr = best_hp[2]
+        self._run_kfold_cross_validation()
 
         self._trainer.train(self._model,
                             self.lr,
@@ -67,13 +58,17 @@ class MainClassifierPipeline(BasePipeline):
             hp_optimizer=self._hp_optimizer,
             device=self.device
         )
-        self._kfold.run_cross_validation(save_checkpoints=True)
-        best_model = self._kfold.get_best_overall_model(metric_key='F1-score')
+        
+        best_hp = self._hp_optimizer.get_best_hp()
+        self._kfold.run_cross_validation(hp=best_hp)
+        
+        print("\n~~ Cross-Validation Summary ~~")
+        self._kfold.print_summary()
 
-        self.lr = best_model['lr']
+        self.lr = best_hp[2]
         self._model = self._initialize_model(
-            n_layers=int(best_model['n_layers']),
-            kernel_size=int(best_model['kernel_size']))
+            n_layers=best_hp[0],
+            kernel_size=best_hp[1])
 
     def _initialize_model(self, n_layers: int, kernel_size: int) -> MainCNN:
         return MainCNN(
