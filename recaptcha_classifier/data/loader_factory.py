@@ -4,7 +4,7 @@ from collections import Counter
 from .dataset import ImageDataset
 from .preprocessor import ImagePrep
 from .augment import AugmentationPipeline
-from .types import DatasetSplitDict, FilePairList
+from .types import DatasetSplitMap, ImagePathList
 from .collate_batch import collate_batch
 
 

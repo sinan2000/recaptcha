@@ -70,16 +70,26 @@ class DataPreprocessingPipeline:
     def _build_augmentator(self) -> AugmentationPipeline:
         """
         Builds the augmentation pipeline.
+        One of these augmentations will be applied randomly
+        in the dataset, for any image in the training set.
 
         Returns:
             AugmentationPipeline: The augmentation pipeline.
         """
         return AugmentationPipeline([
+            # 50 % chance to flip the image horizontally
             transforms.RandomHorizontalFlip(p=0.5),
+            # rotates image randomly within +-15 degrees
             transforms.RandomRotation(degrees=15),
+            # randomly changes brightness, contrast and saturation
             transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3),
-            transforms.RandomResizedCrop(size=(224, 224), scale=(0.8, 1.0)),
-            transforms.GaussianBlur(kernel_size=(5, 9), sigma=(0.1, 2.0)),
+            # Translates/ shifts image up to 10% of its size
+            # in both x and y directions
+            transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
+            # Mimics a camera lens blur effect
+            transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.5)),
+            # Crops image 90% then resizes it to 224x224 (zoom in effect)
+            transforms.RandomResizedCrop(size=(224, 224), scale=(0.9, 1.0)),
         ])
 
     def run(self) -> Dict[str, DataLoader]:
