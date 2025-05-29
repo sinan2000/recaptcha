@@ -43,7 +43,9 @@ class KFoldValidation:
     def run_cross_validation(self,
                              save_checkpoints: bool = True,
                              load_checkpoints: bool = False,
-                             batch_size: int = 32) -> None:
+                             batch_size: int = 32,
+                             n_hp_combos: int = 6,
+                             n_hpo_models: int = 1) -> None:
         """
         Runs k-Fold Cross-Validation and hyperparameter optimization.
 
@@ -74,6 +76,7 @@ class KFoldValidation:
             self.hp_optimizer.trainer.train_loader = fold_train_loader
             self.hp_optimizer.trainer.val_loader = fold_val_loader
 
+            print("~~ HPO ~~")
             optimized_hp_dataframe = self.hp_optimizer.optimize_hyperparameters(save_checkpoints=save_checkpoints,
                                                                                 n_models=n_hpo_models,
                                                                                 n_combos=n_hp_combos)
@@ -85,6 +88,7 @@ class KFoldValidation:
                 model = MainCNN(n_layers=int(row['layers']),
                                 kernel_size=int(row['kernel_sizes']),
                                 num_classes=12)
+                print("~~ Best Model(s) Training  ~~")
                 self.hp_optimizer.trainer.train(model=model,
                                                 lr=float(row['lr']),
                                                 save_checkpoint=save_checkpoints,
