@@ -1,5 +1,6 @@
 from abc import abstractmethod
 import torch
+from torch import nn
 from recaptcha_classifier.detection_labels import DetectionLabels
 from recaptcha_classifier.data.pipeline import DataPreprocessingPipeline
 from recaptcha_classifier.train.training import Trainer
@@ -7,6 +8,7 @@ from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 
 
 class BasePipeline:
+    """Base class for the two pipelines."""
     def __init__(self,
                  step_size: int = 5,
                  gamma: float = 0.5,
@@ -17,7 +19,31 @@ class BasePipeline:
                  model_file_name: str = "model.pt",
                  optimizer_file_name: str = "optimizer.pt",
                  scheduler_file_name: str = "scheduler.pt"
-                 ):
+                 ) -> None:
+
+        """
+        Constructor for BasePipeline class.
+
+        Args:
+            step_size (int, optional): Step size for the learning rate
+                scheduler. Defaults to 5.
+            gamma (float, optional): Gamma value for the learning rate
+                scheduler. Defaults to 0.5.
+            lr (float, optional): Learning rate for the optimizer.
+                Defaults to 0.001.
+            epochs (int, optional): Number of epochs for training.
+                Defaults to 20.
+            device (torch.device, optional): Device for training.
+                Defaults to None.
+            save_folder (str, optional): Folder for saving checkpoint files.
+                Defaults to "".
+            model_file_name (str, optional): Name of the model checkpoint
+                file. Defaults to "model.pt".
+            optimizer_file_name (str, optional): Name of the optimizer
+                checkpoint file. Defaults to "optimizer.pt".
+            scheduler_file_name (str, optional): Name of the scheduler
+                checkpoint file. Defaults to "scheduler.pt".
+        """
         self.step_size = step_size
         self.gamma = gamma
         self.lr = lr
@@ -32,15 +58,23 @@ class BasePipeline:
         self._loaders = None
         self._data = None
         self._model = None
-        # self.optimizer = None
-        # self.scheduler = None
         self._trainer = None
 
-    def run(self):  # abstract because the sequence of actions is
-        # different for the two pipelines
+    def run(self) -> None:
+        """
+        Run the pipeline.
+
+        Returns:
+            None
+        """
         pass
 
-    def data_loader(self):  # make private?
+    def data_loader(self) -> None:
+        """ Load data using the DataPreprocessingPipeline.
+
+        Returns:
+            None
+        """
         if self._loaders is None:
             self._data = DataPreprocessingPipeline(
                 self._class_map, balance=True)
@@ -48,10 +82,20 @@ class BasePipeline:
             print("Data loaders built successfully.")
 
     @abstractmethod
-    def _initialize_model(self):
+    def _initialize_model(self) -> nn.Module:
+        """Initialize the model.
+
+        Returns:
+            nn.Module: The initialized model.
+        """
         pass
 
     def _initialize_trainer(self) -> Trainer:
+        """Initialize the trainer.
+
+        Returns:
+            Trainer: The initialized trainer.
+        """
         return Trainer(train_loader=self._loaders["train"],
                        val_loader=self._loaders["val"],
                        epochs=self.epochs,
@@ -64,10 +108,20 @@ class BasePipeline:
                        device=self.device)
 
     @property
-    def class_map_length(self):
+    def class_map_length(self) -> int:
+        """Returns the length of the class map."""
         return len(self._class_map)
 
     def evaluate(self, plot_cm: bool = False) -> dict:
+        """Evaluate the model.
+
+        Args:
+            plot_cm (bool, optional): Whether to plot the confusion matrix.
+                Defaults to False.
+
+        Returns:
+            dict: A dictionary containing the evaluation results.
+        """
         eval_results = evaluate_model(
             model=self._model,
             test_loader=self._loaders['test'],
