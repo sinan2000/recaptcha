@@ -30,6 +30,16 @@ class Augmentation(ABC):
 class AugmentationPipeline:
     """Class to manage a series of augmentations in sequence."""
     def __init__(self, transforms=[]) -> None:
+        """
+        Initialize the AugmentationPipeline object.
+
+        Args:
+            transforms (List[Augmentation]): The list of augmentations
+            to be applied in sequence. Defaults to [].
+
+        Returns:
+            None
+        """
         self._transforms: List[Augmentation] = transforms
 
     def apply_transforms(self,
@@ -58,11 +68,32 @@ class AugmentationPipeline:
 class HorizontalFlip(Augmentation):
     """Flips the image horizontally, with probability p and updates bboxes."""
     def __init__(self, p: float = 0.5) -> None:
+        """Initialize the HorizontalFlip object.
+
+        Args:
+            p (float): The probability of flipping the image.
+            Defaults to 0.5.
+
+        Returns:
+            None
+        """
         self.prob = p
 
     def augment(self,
                 image: Image.Image,
                 annotations: BBoxList) -> DataPair:
+        """
+        Augment the image by flipping it horizontally.
+
+        Args:
+            image (Image.Image): The image to be augmented.
+            annotations (BBoxList): List of annotations
+            associated with the image.
+
+        Returns:
+            DataPair: The augmented image and the updated
+            annotations.
+        """
         flipped = image.transpose(Image.FLIP_LEFT_RIGHT)
         new_annotations = YOLOScaler.scale_for_flip(annotations)
 
@@ -75,12 +106,36 @@ class RandomRotation(Augmentation):
     also updates bboxes to reflect the rotation.
     """
     def __init__(self, degrees: float = 30.0, p: float = 0.5) -> None:
+        """"
+        Initialize the RandomRotation object.
+
+        Args:
+            degrees (float): The maximum angle of rotation.
+            Defaults to 30.0.
+            p (float): The probability of rotating the image.
+            Defaults to 0.5.
+
+        Returns:
+            None
+        """
         self._degrees = degrees
         self.prob = p
 
     def augment(self,
                 image: Image.Image,
                 annotations: BBoxList) -> DataPair:
+        """
+        Augment the image by rotating it by a random angle.
+
+        Args:
+            image (Image.Image): The image to be augmented.
+            annotations (BBoxList): List of annotations
+            associated with the image.
+
+        Returns:
+            DataPair: The augmented image and the updated
+            annotations.
+        """
         angle = random.uniform(-self._degrees, self._degrees)
 
         rotated = image.rotate(angle)
