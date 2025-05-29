@@ -103,6 +103,7 @@ To make navigating through the repository easier, you can find its structure bel
 ```
 
 **API Launching 🚀**
+
 To start the FastAPI server locally, follow these steps:
 
 1. Activate pipenv environment (if not already activated)
@@ -128,7 +129,9 @@ def main():
 ```
 
 3. After running the server, you can access:
-Interactive API docs (Swagger UI): 
-ReDoc documentation:
+
+Interactive API docs (Swagger UI): http://127.0.0.1:8000/docs'
+
+ReDoc documentation: http://127.0.0.1:8000/redoc
 
 These interfaces allow you to test predictions and inspect the request/response formats.
