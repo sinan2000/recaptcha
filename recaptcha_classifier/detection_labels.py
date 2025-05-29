@@ -5,13 +5,6 @@ class DetectionLabels(Enum):
     """
     Enum for improving readability of the object classes.
     """
-
-    """
-    OBJECT DETECTION TASK CLASSES
-    CROSSWALK = 0
-    CHIMNEY = 1
-    STAIR = 2
-    """
     BICYCLE = 0
     BRIDGE = 1
     BUS = 2
@@ -60,7 +53,7 @@ class DetectionLabels(Enum):
         Returns:
             dict: Dictionary representation of the enum.
         """
-        return {cl.name.capitalize().replace("_", " "):
+        return {cl.name.replace("_", " ").title():
                 cl.value for cl in cls}
 
     @classmethod
@@ -83,12 +76,10 @@ class DetectionLabels(Enum):
     @classmethod
     def dataset_classnames(cls) -> list:
         """
-        Returns a list of class names, only with first letter capitalized.
-        We use it for the pair loader, as that is the format of the folders
-        downloaded from the dataset.
+        Returns a list of class names.
 
         Returns:
             list: List of class names.
         """
-        return [name.capitalize().replace("_", " ")
+        return [name.replace("_", " ").title()
                 for name in cls.__members__.keys()]

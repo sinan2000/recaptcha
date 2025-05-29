@@ -1,10 +1,9 @@
 import requests
 import zipfile
-import logging
+import shutil
 from pathlib import Path
+from typing import List
 from alive_progress import alive_bar
-
-logger = logging.getLogger(__name__)
 
 
 class DatasetDownloader:
@@ -16,6 +15,7 @@ class DatasetDownloader:
     dataset downloading operation, with no other responsibilities.
     """
     def __init__(self,
+                 class_names: List[str],
                  url: str = ("https://www.kaggle.com/api/v1/datasets/"
                              "download/mikhailma/test-dataset"),
                  dest: str = "data") -> None:
@@ -30,6 +30,7 @@ class DatasetDownloader:
         self._dest: Path = Path(dest)
         self._zip_path: Path = self._dest / "dataset.zip"
         self._progress = alive_bar
+        self._expected_folder_names = class_names
 
     def download(self) -> None:
         """
@@ -37,22 +38,31 @@ class DatasetDownloader:
         If not, downloads and then unzips it.
         """
         if self._is_downloaded():
-            logger.info("Dataset already exists, skipping download.")
+            print("Dataset already exists, skipping download.")
             return
 
         self._prepare_dest()
-        logger.info(f"Downloading {self._url} to {self._dest}...")
+        print(f"Downloading {self._url} to {self._dest}...")
         self._download_zip()
-        self._unzip_and_cleanup()
+        self._extract_zip()
+        self._move_subfolders()
+        self._delete_labels()
+        self._flatten_images_folder()
+        self._zip_path.unlink()
+        print("Download and extraction completed successfully.")
 
     def _is_downloaded(self) -> bool:
         """
-        Checks if the dataset is already downloaded.
+        Checks if the dataset is already downloaded and in the expected format.
 
         Returns:
             bool: True if the dataset is already downloaded, False otherwise.
         """
-        return self._dest.exists() and any(self._dest.iterdir())
+        if not self._dest.exists():
+            return False
+        folders = {p.name for p in self._dest.iterdir() if p.is_dir()}
+        expected = set(self._expected_folder_names)
+        return expected.issubset(folders)
 
     def _prepare_dest(self) -> None:
         """
@@ -82,24 +92,52 @@ class DatasetDownloader:
             for chunk in resp.iter_content(chunk_size=8192):
                 f.write(chunk)
                 bar(len(chunk))
-        logger.info("Download completed successfully.")
-
-    def _unzip_and_cleanup(self) -> None:
+    
+    def _extract_zip(self) -> None:
         """
-        Unzips the downloaded dataset.
-        Then it cleans up the zip file and its main extracted directory.
-
-        Note: this assumes that the downloaded dataset has exactly
-        the structure of our selected Kaggle dataset for simplicity.
+        Extracts the downloaded zip file to the destination directory.
         """
-        logger.info("Extracting...")
         with zipfile.ZipFile(self._zip_path) as z:
             z.extractall(self._dest)
 
-        root = next(p for p in self._dest.iterdir() if p.is_dir())
+    def _move_subfolders(self) -> None:
+        """
+        Moves the main images and labels subfolders
+        from the extracted directory to the destination directory.
+        Finally, it removes the main extracted directory that is now empty.
+        """
+        root = next(p for p in self._dest.iterdir() if p.is_dir() and p.name not in self._expected_folder_names)
+        
         for sub in ("images", "labels"):
-            (root / sub).rename(self._dest / sub)
+            source = root / sub
+            if source.exists():
+                target = self._dest / sub
+                if target.exists():
+                    shutil.rmtree(target)
+                source.rename(target)
+        
+        if root.exists() and root.is_dir():
+            root.rmdir()
+    
+    def _delete_labels(self) -> None:
+        """
+        Deletes the labels directory if it exists.
+        """
+        label_dir = self._dest / "labels"
+        if label_dir.exists() and label_dir.is_dir():
+            shutil.rmtree(label_dir)
+    
+    def _flatten_images_folder(self) -> None:
+        images_dir = self._dest / "images"
+        if not images_dir.exists():
+            return
 
-        root.rmdir()
-        self._zip_path.unlink()
-        print("Extraction and cleanup completed successfully.")
+        for subfolder in images_dir.iterdir():
+            if subfolder.is_dir():
+                target_path = self._dest / subfolder.name
+                if target_path.exists():
+                    shutil.rmtree(target_path)
+                subfolder.rename(target_path)
+        
+        if not any(images_dir.iterdir()):
+            images_dir.rmdir()

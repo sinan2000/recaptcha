@@ -1,4 +1,4 @@
-import recaptcha_classifier.features.evaluation.classification_metrics as cm
+from .classification_metrics import evaluate_classification
 import torch
 from tqdm import tqdm
 from recaptcha_classifier.detection_labels import DetectionLabels
@@ -43,7 +43,7 @@ def evaluate_model(model: torch.nn.Module,
     y_pred = torch.cat(all_preds)
     y_true = torch.cat(all_targets)
 
-    class_results = cm.evaluate_classification(
+    class_results = evaluate_classification(
         y_pred=y_pred,
         y_true=y_true,
         class_names=class_names,

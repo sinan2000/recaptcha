@@ -23,24 +23,6 @@ Make sure you have the following installed:
     For detailed installation instructions, [click here](https://pipenv.pypa.io/en/latest/installation.html).
 
 ## Getting Started
-### Setting up the repository
-
-If you're collaborating or want to explore the latest version of the project:
-
-1. Fork this repository.
-2. Clone your fork locally.
-3. Configure a remote pointing to the upstream repository to sync changes between your fork and the original repository.
-   ```bash
-   git remote add upstream https://github.com/sinan2000/recaptcha
-   ```
-   **Don't skip this step.** We might update the original repository, so you should be able to easily pull our changes.
-   
-   To update your forked repo follow these steps:
-   1. `git fetch upstream`
-   2. `git rebase upstream/main`
-   3. `git push origin main`
-      Sometimes you may need to use git push --force origin main. Only use this flag the first time you push after you rebased, and be careful as you might overwrite someone' changes.
-
 ## Installing Dependencies
 To install the project dependencies run:
 
@@ -102,9 +84,9 @@ To make navigating through the repository easier, you can find its structure bel
 ├───README.md  # Instructions
 ```
 
-## **API Launching 🚀**
+## **🚀 Usage Guide**
 
-To start the FastAPI server locally, follow these steps:
+### Running the App
 
 1. Activate pipenv environment (if not already activated)
 
@@ -112,23 +94,41 @@ To start the FastAPI server locally, follow these steps:
 pipenv shell
 ```
 
-2. You can start the FastAPI server using:
+2. To launch any component of our project, run:
+```bash
+python main.py [OPTION]
+```
+
+Available list of options:
+--streamlit - Launches Streamlit UI
+--api - starts the FastAPI backend
+--train-simple-cnn - Trains the simple baseline model
+--train-main-cnn - Trains our main model
+
+If no argument has been passed, an interactive menu will appear to let you choose the action.
+
+## API Documentation
+
+### Example API call and response format
+
+You can make a call to the api using curl, by running the command below. Make sure to include a valid file path. The path can either be absolute (full) or relative to your
+current location from command terminal.
 
 ```bash
-uvicorn recaptcha_classifier.api:app --host 0.0.0.0 --port 8000 --reload
+curl -X POST "http://localhost:8000/predict" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "file=@<path_to_file>"
+```
+You will get a response in the following format:
+
+```json
+ {
+ "class_id":1,
+ "class_name":"Bridge",
+ "confidence": "99.9%"
+ }
 ```
 
-Alternatively, run the API by running main.py:
+The API is stateless, initializing the model on launching, and caches responses for 1 hour.
 
-Make sure the open_api() function is uncommented in main.py
-
-```python
-def main():
-    # train_main_classifier()
-    open_api()  # ✅ Uncomment this line
-```
-
-### API Documentation
 
 After running the server, you can access the Documentation:
 
@@ -138,24 +138,6 @@ ReDoc documentation: http://localhost:8000/redoc
 
 These interfaces allow you to test predictions and inspect the request/response formats.
 
-### API call and response format
-
-You can make a call to the api using curl, by running the chunk below. Make sure to include a valid file path.
-
-```bash
-curl -X POST "http://localhost:8000/predict" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "file=<path_to_file>"
-```
-You will get a response in the following format:
-
-```bash
- {"class_id":1,"class_name":"Bridge"}
-```
-
-If you're using Windows, running the request in the format mentioned above may not work in Powershell. Instead, use the format below in Command Prompt:
-
-```bash
-curl -X POST "http://localhost:8000/predict" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "file=@<path_to_file>"
-```
 
 ### Possible error Responses
 

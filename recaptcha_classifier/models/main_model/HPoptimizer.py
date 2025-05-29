@@ -1,8 +1,7 @@
 import itertools
 import random
-
 import pandas as pd
-
+from typing import List
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.train.training import Trainer
 
@@ -28,9 +27,9 @@ class HPOptimizer(object):
 
 
     def optimize_hyperparameters(self,
-                                 n_layers: list = list(range(1,3)),
-                                 kernel_sizes: list = [3, 4, 5],
-                                 learning_rates: list = [1e-3, 1e-4],
+                                 n_layers: list = [1, 2, 3],
+                                 kernel_sizes: list = [3, 5],
+                                 learning_rates: list = [1e-2, 1e-3, 1e-4],
                                  save_checkpoints: bool = True,
                                  n_models: int = 1,
                                  n_combos: int = 8,  # Number of random samples
@@ -81,9 +80,10 @@ class HPOptimizer(object):
         return df_opt_data.copy()[:n_models]
 
 
-    def _train_one_model(self, hp_combo, save_checkpoints) -> None:
+    def _train_one_model(self, hp_combo: List, save_checkpoints: bool) -> None:
         model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
-        self.trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False, save_checkpoint=save_checkpoints)
+        self.trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False,
+                           save_checkpoint=save_checkpoints)
 
 
     def _generate_hp_combinations(self, hp) -> list:

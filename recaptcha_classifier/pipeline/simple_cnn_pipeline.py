@@ -1,7 +1,6 @@
 import torch
 from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
-from recaptcha_classifier.train.training import Trainer
 import os
 from recaptcha_classifier.constants import (
     MODELS_FOLDER, SIMPLE_MODEL_FILE_NAME,
@@ -41,4 +40,5 @@ class SimpleClassifierPipeline(BasePipeline):
         return SimpleCNN(num_classes=self.class_map_length)
     
     def save_model(self):
+        os.makedirs(self.save_folder, exist_ok=True)
         torch.save(self._model.state_dict(), os.path.join(self.save_folder, self.model_file_name))

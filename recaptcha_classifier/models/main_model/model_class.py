@@ -1,8 +1,10 @@
 import torch
 import torch.nn as nn
 from recaptcha_classifier.constants import INPUT_SHAPE
+from recaptcha_classifier.models.base_model import BaseModel
 
-class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
+
+class MainCNN(BaseModel):
 
     def __init__(self,
                  n_layers: int,
@@ -64,8 +66,5 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
 
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
-        return x
-
-
-
+        return x  # ! return logits, torch.softmax(x, dim=1) if needed for uncertainty
 

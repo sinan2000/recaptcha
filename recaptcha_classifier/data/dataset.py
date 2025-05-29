@@ -2,12 +2,12 @@ from typing import Optional
 from torch.utils.data import Dataset
 from .preprocessor import ImagePrep
 from .augment import AugmentationPipeline
-from .types import FilePairList, DataItem
+from .types import ImagePathList, DataItem
 
 
 class ImageDataset(Dataset):
     """
-    A class to handle the pairs of (image, label) for the dataset.
+    A class to handle the images for the dataset.
     It makes them ready for training, by applying augmentation
     for the training set, preprocessing and makes sure that the
     output format is in PyTorch Tensor format.
@@ -17,7 +17,7 @@ class ImageDataset(Dataset):
     https://docs.pytorch.org/tutorials/beginner/basics/data_tutorial.html
     """
     def __init__(self,
-                 pairs: FilePairList,
+                 items: ImagePathList,
                  preprocessor: ImagePrep,
                  augmentator: Optional[AugmentationPipeline] = None,
                  class_map: dict = {}
@@ -25,13 +25,13 @@ class ImageDataset(Dataset):
         """
         Initializes the ImageDataset with the given parameters.
         """
-        self._pairs = pairs
+        self._items = items
         self._prep = preprocessor
         self._aug = augmentator
         self._class_map = class_map
 
     def __len__(self) -> int:
-        return len(self._pairs)
+        return len(self._items)
 
     def __getitem__(self,
                     idx: int
@@ -47,20 +47,14 @@ class ImageDataset(Dataset):
             preprocessed image in tensor format, the YOLO bound
             box annotations and the label.
         """
-        # img_path, lbl_path = self._pairs[idx]
-        img_path = self._pairs[idx]
+        img_path = self._items[idx]
 
-        # Load image and label
+        # Load image
         img = self._prep.load_image(img_path)
-        # bb = self._prep.load_labels(lbl_path)
-
-        # if not bb:
-        #    raise ValueError(f"Bounding box list is empty for {lbl_path}")
 
         # Apply augmentation if passed
         if self._aug:
-            # img, bb = self._aug.apply_transforms(img, bb)
-            img, _ = self._aug.apply_transforms(img, [])
+            img = self._aug.apply_transforms(img)
 
         # Convert image to tensor
         tensor = self._prep.to_tensor(img)
@@ -71,6 +65,4 @@ class ImageDataset(Dataset):
             raise KeyError(f"Class name '{c_name}' not found in classes.")
         c_id = self._class_map[c_name]
 
-        # Return image tensor, bounding box and class index
         return tensor, self._prep.class_id_to_tensor(c_id)
-        # return tensor, bb, c_id

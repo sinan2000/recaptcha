@@ -24,13 +24,6 @@ class TestImagePrep(unittest.TestCase):
         img_mock.convert.assert_called_once_with("RGB")
         resized_mock.resize.assert_called_once_with((224, 224), Image.LANCZOS)
 
-    @patch("builtins.open", new_callable=unittest.mock.mock_open,
-           read_data="0 0.2 0.3 0.4 0.5\n")
-    def test_load_labels(self, file_mock):
-        result = self.prep.load_labels(Path("test"))
-
-        self.assertEqual(result, [(0.2, 0.3, 0.4, 0.5)])
-
     def test_to_tensor(self):
         img = Image.new("RGB", (224, 224))
         tensor = self.prep.to_tensor(img)

@@ -55,15 +55,12 @@ class MainClassifierPipeline(BasePipeline):
             train_loader=self._loaders["train"],
             val_loader=self._loaders["val"],
             k_folds=self.k_folds,
-            hp_optimizer=self._hp_optimizer,
             device=self.device
         )
         
         best_hp = self._hp_optimizer.get_best_hp()
-        self._kfold.run_cross_validation(hp=best_hp)
         
-        print("\n~~ Cross-Validation Summary ~~")
-        self._kfold.print_summary()
+        self._kfold.run_cross_validation(hp=best_hp)
 
         self.lr = best_hp[2]
         self._model = self._initialize_model(
@@ -76,6 +73,7 @@ class MainClassifierPipeline(BasePipeline):
             num_classes=self.class_map_length)
     
     def save_model(self):
+        os.makedirs(self.save_folder, exist_ok=True)
         torch.save({
             "model_state_dict": self._model.state_dict(),
             "config": {
