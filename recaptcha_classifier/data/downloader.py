@@ -25,6 +25,9 @@ class DatasetDownloader:
         Args:
             url (str): URL of the Kaggle dataset to download.
             dest (str): Destination directory to save the dataset.
+
+        Returns:
+            None
         """
         self._url: str = url
         self._dest: Path = Path(dest)
@@ -35,6 +38,9 @@ class DatasetDownloader:
         """
         Checks if dataset is already downloaded.
         If not, downloads and then unzips it.
+
+        Returns:
+            None
         """
         if self._is_downloaded():
             logger.info("Dataset already exists, skipping download.")
@@ -57,6 +63,9 @@ class DatasetDownloader:
     def _prepare_dest(self) -> None:
         """
         Creates the destination directory if it doesn't exist.
+
+        Returns:
+            None
         """
         self._dest.mkdir(parents=True, exist_ok=True)
 
@@ -73,6 +82,9 @@ class DatasetDownloader:
         """
         Downloads the dataset zip file.
         This method handles the download process and shows a progress bar.
+
+        Returns:
+            None
         """
         resp = self._fetch_stream()
         resp.raise_for_status()
@@ -91,6 +103,9 @@ class DatasetDownloader:
 
         Note: this assumes that the downloaded dataset has exactly
         the structure of our selected Kaggle dataset for simplicity.
+
+        Returns:
+            None
         """
         logger.info("Extracting...")
         with zipfile.ZipFile(self._zip_path) as z:
