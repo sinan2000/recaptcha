@@ -4,9 +4,8 @@ IMAGE_HEIGHT = 224
 
 INPUT_SHAPE = (IMAGE_CHANNELS, IMAGE_HEIGHT, IMAGE_WIDTH)
 
-MAIN_MODEL_FOLDER="main_classifier_checkpoints"
+MODELS_FOLDER="models" # Folder where models are saved
 MAIN_MODEL_FILE_NAME = "main_model.pt"
-
-SIMPLE_MODEL_FOLDER = "simple_classifier_checkpoints"
 SIMPLE_MODEL_FILE_NAME = "simple_model.pt"
-
+OPTIMIZER_FILE_NAME = "optimizer.pt"
+SCHEDULER_FILE_NAME = "scheduler.pt"

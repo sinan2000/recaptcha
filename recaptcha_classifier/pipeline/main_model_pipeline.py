@@ -7,7 +7,10 @@ from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
 from recaptcha_classifier.models.main_model.kfold_validation import (
     KFoldValidation
 )
-
+from recaptcha_classifier.constants import (
+    MODELS_FOLDER, MAIN_MODEL_FILE_NAME,
+    OPTIMIZER_FILE_NAME, SCHEDULER_FILE_NAME
+)
 
 class MainClassifierPipeline(BasePipeline):
     def __init__(self,
@@ -15,10 +18,10 @@ class MainClassifierPipeline(BasePipeline):
                  k_folds: int = 5,
                  epochs: int = 15,
                  device: torch.device | None = None,
-                 save_folder: str = "main_classifier_checkpoints",
-                 model_file_name: str = "main_model.pt",
-                 optimizer_file_name: str = "optimizer.pt",
-                 scheduler_file_name: str = "scheduler.pt"
+                 save_folder: str = MODELS_FOLDER,
+                 model_file_name: str = MAIN_MODEL_FILE_NAME,
+                 optimizer_file_name: str = OPTIMIZER_FILE_NAME,
+                 scheduler_file_name: str = SCHEDULER_FILE_NAME
                  ):
         super().__init__(lr, epochs, device,
                          save_folder, model_file_name,

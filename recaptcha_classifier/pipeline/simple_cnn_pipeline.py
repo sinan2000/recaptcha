@@ -3,6 +3,10 @@ from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 from recaptcha_classifier.train.training import Trainer
 import os
+from recaptcha_classifier.constants import (
+    MODELS_FOLDER, SIMPLE_MODEL_FILE_NAME,
+    OPTIMIZER_FILE_NAME, SCHEDULER_FILE_NAME
+)
 
 
 class SimpleClassifierPipeline(BasePipeline):
@@ -10,10 +14,10 @@ class SimpleClassifierPipeline(BasePipeline):
                  lr: float = 0.001,
                  epochs: int = 20,
                  device: torch.device | None = None,
-                 save_folder: str = "simple_classifier_checkpoints",
-                 model_file_name: str = "simple_model.pt",
-                 optimizer_file_name: str = "optimizer.pt",
-                 scheduler_file_name: str = "scheduler.pt"
+                 save_folder: str = MODELS_FOLDER,
+                 model_file_name: str = SIMPLE_MODEL_FILE_NAME,
+                 optimizer_file_name: str = OPTIMIZER_FILE_NAME,
+                 scheduler_file_name: str = SCHEDULER_FILE_NAME
                  ):
         super().__init__(lr, epochs, device,
                          save_folder, model_file_name,
