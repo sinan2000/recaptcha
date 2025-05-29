@@ -24,7 +24,7 @@ def collate_batch(batch: List[DataItem]) -> DataBatch:
     images = [item[0] for item in batch]
     # bboxes = [item[1] for item in batch]
     # labels = [item[2] for item in batch]
-    labels = [item[1] for item in batch]
+    labels = [item[1] for item in batch]      
 
     # Stack them as (3, H, W) tensors
     images_tensor = torch.stack(images)
