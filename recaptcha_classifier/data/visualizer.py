@@ -36,6 +36,9 @@ class Visualizer:
             splits (DatasetSplitMap): the dataset splits
                 containing the items for each class.
             title (str): the title of the plot.
+
+        Returns:
+            None
         """
         classes = list(splits['train'].keys())
 
@@ -51,7 +54,7 @@ class Visualizer:
         # total for each class, simply adding counts of each split
         totals = [t+v+te for t, v, te in
                   zip(counts_train, counts_val, counts_test)]
-        
+
         _, ax = plt.subplots(figsize=(num_classes, 6))
         bar1 = ax.bar(x - width, counts_train, width, label='Train')
         bar2 = ax.bar(x, counts_val, width, label='Val')
