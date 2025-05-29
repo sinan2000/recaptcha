@@ -30,6 +30,9 @@ class LoaderFactory:
             batch_size (int): Batch size for DataLoader.
             num_workers (int): Number of workers for DataLoader.
             balance (bool): Whether to balance the dataset.
+
+        Returns:
+            None
         """
         self._preprocessor = preprocessor
         self._aug = augmentator
@@ -39,7 +42,18 @@ class LoaderFactory:
         self._class_map = class_map
 
     def create_loaders(self,
-                       splits: DatasetSplitMap) -> Dict[str, DataLoader]:
+                       splits: DatasetSplitDict) -> Dict[str, DataLoader]:
+        """
+        Creates the DataLoader objects for each split of the dataset.
+
+        Args:
+            splits (DatasetSplitDict): A dictionary containing the train,
+            val, and test splits of the dataset.
+
+        Returns:
+            Dict[str, DataLoader]: A dictionary containing the DataLoader
+            objects for each split of the dataset.
+        """
         loaders: Dict[str, DataLoader] = {}
 
         for split_name, cls_dict in splits.items():
@@ -77,9 +91,15 @@ class LoaderFactory:
 
         return loaders
 
-    def _build_sampler(self, image_paths):
+    def _build_sampler(self, image_paths)-> WeightedRandomSampler:
         """
         Builds a sampler for the dataset to balance the classes.
+
+        Args:
+            pairs (FilePairList): A list of file pairs.
+
+        Returns:
+            WeightedRandomSampler: A sampler for the dataset.
         """
         class_counts = Counter()
         targets = []
