@@ -3,16 +3,17 @@ from torch import Tensor
 from torchmetrics import Accuracy, F1Score
 from torchmetrics.classification import MulticlassConfusionMatrix
 from typing import Optional
+from recaptcha_classifier.detection_labels import DetectionLabels
 import matplotlib.pyplot as plt
 
 
 def evaluate_classification(y_pred: Tensor,
                             y_true: Tensor,
-                            num_classes: int,
+                            num_classes: int = len(DetectionLabels.all()),
                             device: torch.device = torch.device(
-                                "cuda" if torch.cuda.is_available(
-                                ) else "cpu"),
-                            average: str = 'macro',
+                                "cuda" if torch.cuda.is_available()
+                                else "cpu"),
+                            average: str = 'weighted',
                             cm_plot: bool = True,
                             class_names: Optional[list[str]] = None) -> dict:
     """
@@ -34,6 +35,7 @@ def evaluate_classification(y_pred: Tensor,
 
     Returns:
         dict: accuracy, f1, confusion_matrix
+
     """
 
     # Convert logits to predicted labels
@@ -55,7 +57,6 @@ def evaluate_classification(y_pred: Tensor,
 
     if cm_plot:
         fig_, ax_ = confmat.plot(labels=class_names if class_names else None)
-        fig_.show()
         plt.show()
 
     return {

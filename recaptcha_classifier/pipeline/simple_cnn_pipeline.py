@@ -2,20 +2,23 @@ import torch
 from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 from recaptcha_classifier.train.training import Trainer
+import os
+from recaptcha_classifier.constants import (
+    MODELS_FOLDER, SIMPLE_MODEL_FILE_NAME,
+    OPTIMIZER_FILE_NAME, SCHEDULER_FILE_NAME
+)
 
 
 class SimpleClassifierPipeline(BasePipeline):
     """ Pipeline for training a simple CNN model. """
     def __init__(self,
-                 step_size: int = 5,
-                 gamma: float = 0.5,
                  lr: float = 0.001,
                  epochs: int = 20,
                  device: torch.device | None = None,
-                 save_folder: str = "",
-                 model_file_name: str = "model.pt",
-                 optimizer_file_name: str = "optimizer.pt",
-                 scheduler_file_name: str = "scheduler.pt"
+                 save_folder: str = MODELS_FOLDER,
+                 model_file_name: str = SIMPLE_MODEL_FILE_NAME,
+                 optimizer_file_name: str = OPTIMIZER_FILE_NAME,
+                 scheduler_file_name: str = SCHEDULER_FILE_NAME
                  ) -> None:
         """
         Constructor for SimpleClassifierPipeline class.
@@ -44,17 +47,19 @@ class SimpleClassifierPipeline(BasePipeline):
                          save_folder, model_file_name,
                          optimizer_file_name, scheduler_file_name)
 
-    def run(self) -> None:
-        """Run the pipeline."""
-        self.data_loader()
+    def run(self, save_train_checkpoints: bool = True,
+            load_train_checkpoints: bool = False) -> None:
+        """
+        Runs the whole pipeline. Default saving of the training checkpoints.
+        :param save_train_checkpoints: boolean to save the training checkpoints during training.
+        :param load_train_checkpoints: boolean to load the training checkpoints during training.
+        """
+        self._data_loader()
         self._model = self._initialize_model()
         self._trainer = self._initialize_trainer()
+        print("Training:")
         self._trainer.train(model=self._model)
-        self.evaluate()
-
-    def data_loader(self) -> None:
-        """Load the data."""
-        super().data_loader()
+        self.evaluate(plot_cm=True)
 
     def _initialize_model(self) -> SimpleCNN:
         """Initialize the model.
@@ -63,6 +68,9 @@ class SimpleClassifierPipeline(BasePipeline):
             SimpleCNN: The initialized model.
         """
         return SimpleCNN(num_classes=self.class_map_length)
+
+    def save_model(self):
+        torch.save(self._model.state_dict(), os.path.join(self.save_folder, self.model_file_name))
 
     def _initialize_trainer(self) -> Trainer:
         """Initialize the trainer.

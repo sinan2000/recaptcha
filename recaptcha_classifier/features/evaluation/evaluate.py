@@ -1,14 +1,14 @@
 import recaptcha_classifier.features.evaluation.classification_metrics as cm
 import torch
 from tqdm import tqdm
+from recaptcha_classifier.detection_labels import DetectionLabels
 
 
 @torch.no_grad()
 def evaluate_model(model: torch.nn.Module,
                    test_loader: torch.utils.data.DataLoader,
                    device: torch.device,
-                   num_classes: int = None,
-                   class_names: list[str] = None,
+                   class_names: list[str] = len(DetectionLabels.all()),
                    plot_cm: bool = False) -> dict:
     """
     Evaluation function for classification models.
@@ -17,7 +17,6 @@ def evaluate_model(model: torch.nn.Module,
         model (nn.Module): The trained model.
         test_loader (DataLoader): DataLoader for the test set.
         device (torch.device): Device to evaluate on.
-        num_classes (int): Number of classes for classification metrics.
         class_names (list[str]): Class names for confusion matrix.
         plot_cm (bool): Whether to show a plot of the confusion matrix.
 
@@ -47,7 +46,6 @@ def evaluate_model(model: torch.nn.Module,
     class_results = cm.evaluate_classification(
         y_pred=y_pred,
         y_true=y_true,
-        num_classes=num_classes,
         class_names=class_names,
         cm_plot=plot_cm
     )

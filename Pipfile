@@ -23,6 +23,12 @@ alive-progress = "*"
 matplotlib = "*"
 scikit-learn = "*"
 torchmetrics = "*"
+fastapi = "*"
+python-multipart = "*"
+streamlit = "*"
+uvicorn = "*"
+questionary = "*"
+pydantic = "*"
 
 [dev-packages]
 

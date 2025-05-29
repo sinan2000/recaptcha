@@ -10,12 +10,10 @@ from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 class BasePipeline:
     """Base class for the two pipelines."""
     def __init__(self,
-                 step_size: int = 5,
-                 gamma: float = 0.5,
                  lr: float = 0.001,
                  epochs: int = 20,
                  device: torch.device | None = None,
-                 save_folder: str = "",
+                 save_folder: str = "checkpoints",
                  model_file_name: str = "model.pt",
                  optimizer_file_name: str = "optimizer.pt",
                  scheduler_file_name: str = "scheduler.pt"
@@ -44,8 +42,6 @@ class BasePipeline:
             scheduler_file_name (str, optional): Name of the scheduler
                 checkpoint file. Defaults to "scheduler.pt".
         """
-        self.step_size = step_size
-        self.gamma = gamma
         self.lr = lr
         self.epochs = epochs
         self.device = device
@@ -60,13 +56,15 @@ class BasePipeline:
         self._model = None
         self._trainer = None
 
-    def run(self) -> None:
+    @abstractmethod
+    def run(self):
         """
         Run the pipeline.
 
         Returns:
             None
         """
+        # different for the two pipelines
         pass
 
     def data_loader(self) -> None:
@@ -82,7 +80,7 @@ class BasePipeline:
             print("Data loaders built successfully.")
 
     @abstractmethod
-    def _initialize_model(self) -> nn.Module:
+    def _initialize_model(self, **kwargs) -> nn.Module:
         """Initialize the model.
 
         Returns:
@@ -126,8 +124,14 @@ class BasePipeline:
             model=self._model,
             test_loader=self._loaders['test'],
             device=self._trainer.device,
-            num_classes=len(self._class_map),
             class_names=list(self._class_map.keys()),
             plot_cm=plot_cm
         )
         return eval_results
+
+
+    @abstractmethod
+    def save_model(self):
+        # different for the two pipelines; we need to
+        # save n_layers and kernel_size for the main model
+        pass

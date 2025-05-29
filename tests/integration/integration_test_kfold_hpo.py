@@ -65,8 +65,6 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         self.trainer = Trainer(
             train_loader=train_loader,
             val_loader=val_loader,
-            optimizer=optimizer,
-            scheduler=scheduler,
             epochs=1,
             save_folder=unique_folder,
             device=self.device
@@ -95,13 +93,13 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         best = self.kfold_validator.get_best_overall_model()
 
         # Check result structure
-        self.assertEqual((self.folds*18, 8), results.shape,
-                         f"Should return ({self.folds*18}, 8) shape results for {self.folds} folds")
+        self.assertEqual((self.folds, 8), results.shape,
+                         f"Should return ({self.folds}, 8) shape results for {self.folds} folds")
         self.assertEqual((8,), best.shape, "Should return top 1 model row with (1,8) shape.")
 
     def tearDown(self):
         """
-        Deleting files if neded.
+        Deleting files if needed.
         """
         try:
             torch.cuda.empty_cache()

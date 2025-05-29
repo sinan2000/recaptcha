@@ -1,25 +1,28 @@
+import os
 import torch
 from recaptcha_classifier.models.main_model.model_class import MainCNN
+from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 from recaptcha_classifier.train.training import Trainer
 from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
 from recaptcha_classifier.models.main_model.kfold_validation import (
     KFoldValidation
 )
-from recaptcha_classifier.pipeline import BasePipeline
+from recaptcha_classifier.constants import (
+    MODELS_FOLDER, MAIN_MODEL_FILE_NAME,
+    OPTIMIZER_FILE_NAME, SCHEDULER_FILE_NAME
+)
 
-
-class SimpleClassifierPipeline(BasePipeline):
+class MainClassifierPipeline(BasePipeline):
     """Pipeline for training a simple classifier model."""
     def __init__(self,
-                 step_size: int = 5,
-                 gamma: float = 0.5,
                  lr: float = 0.001,
+                 k_folds: int = 5,
                  epochs: int = 15,
                  device: torch.device | None = None,
-                 save_folder: str = "",
-                 model_file_name: str = "model.pt",
-                 optimizer_file_name: str = "optimizer.pt",
-                 scheduler_file_name: str = "scheduler.pt"
+                 save_folder: str = MODELS_FOLDER,
+                 model_file_name: str = MAIN_MODEL_FILE_NAME,
+                 optimizer_file_name: str = OPTIMIZER_FILE_NAME,
+                 scheduler_file_name: str = SCHEDULER_FILE_NAME
                  ) -> None:
         """
         Constructor for SimpleClassifierPipeline class.
@@ -47,32 +50,35 @@ class SimpleClassifierPipeline(BasePipeline):
         Returns:
             None
         """
-        super().__init__(step_size, gamma, lr, epochs, device,
+        super().__init__(lr, epochs, device,
                          save_folder, model_file_name,
                          optimizer_file_name, scheduler_file_name)
 
+        self.k_folds = k_folds
         self._hp_optimizer = None
 
-    def run(self) -> None:
+    def run(self,
+            save_train_checkpoints: bool = True,
+            load_train_checkpoints: bool = False) -> None:
         """ Runs the pipeline."""
         self.data_loader()
         self._trainer = self._initialize_trainer(self._model)
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
 
-        # the best model gets initialized inside here
+        print("~~ Hyperparameter optimization (Random Search) ~~")
+        self._hp_optimizer.optimize_hyperparameters(
+            save_checkpoints=save_train_checkpoints)
+
+        # model gets initialized inside here:
         self._run_kfold_cross_validation()
 
-        self._trainer.train()
-        self.evaluate()
+        self._trainer.train(self._model,
+                            self.lr,
+                            save_checkpoint=save_train_checkpoints,
+                            load_checkpoint=load_train_checkpoints)
+        self.evaluate(plot_cm=True)
 
-    def data_loader(self) -> None:
-        """Loads the data."""
-        super().data_loader()
-
-    def _run_kfold_cross_validation(self,
-                                    k_folds: int = 5,
-                                    n_layers: int = 3,
-                                    kernel_size: int = 5) -> None:
+    def _run_kfold_cross_validation(self) -> None:
         """
         Runs k-fold cross validation.
 
@@ -87,17 +93,23 @@ class SimpleClassifierPipeline(BasePipeline):
             None
         """
         self._kfold = KFoldValidation(
-            data=self._data,
+            train_loader=self._loaders["train"],
+            val_loader=self._loaders["val"],
             k_folds=self.k_folds,
             hp_optimizer=self._hp_optimizer,
             device=self.device
         )
-        self._kfold.run_cross_validation(save_checkpoints=True)
-        best_model = self._kfold.get_best_overall_model(metric_key='F1-score')
 
+        best_hp = self._hp_optimizer.get_best_hp()
+        self._kfold.run_cross_validation(hp=best_hp)
+
+        print("\n~~ Cross-Validation Summary ~~")
+        self._kfold.print_summary()
+
+        self.lr = best_hp[2]
         self._model = self._initialize_model(
-            n_layers=int(best_model['n_layers']),
-            kernel_size=int(best_model['kernel_size']))
+            n_layers=best_hp[0],
+            kernel_size=best_hp[1])
 
     def _initialize_model(self, n_layers: int, kernel_size: int) -> MainCNN:
         """Initializes the model.
@@ -113,41 +125,17 @@ class SimpleClassifierPipeline(BasePipeline):
             n_layers=n_layers, kernel_size=kernel_size,
             num_classes=self.class_map_length)
 
-    def _initialize_trainer(self) -> Trainer:
-        """Initializes the trainer.
-
-        Returns:
-            Trainer: The initialized trainer.
+    def save_model(self) -> None:
         """
-        return super()._initialize_trainer()
-
-    def train(
-        self, save_checkpoint: bool = True, load_checkpoint: bool = False
-    ) -> None:
-        """
-        Trains the model.
-
-        Args:
-            save_checkpoint (bool, optional): Whether to save the checkpoint.
-                Defaults to True.
-            load_checkpoint (bool, optional): Whether to load the checkpoint.
-                Defaults to False.
+        Saves the model.
 
         Returns:
             None
         """
-        self._trainer.train(self._model,
-                            load_checkpoint=load_checkpoint,
-                            save_checkpoint=save_checkpoint)
-
-    def evaluate(self, plot_cm: bool = False) -> dict:
-        """Evaluates the model.
-
-        Args:
-            plot_cm (bool): Whether to plot the confusion matrix.
-                Defaults to False.
-
-        Returns:
-            dict: A dictionary containing the evaluation results.
-        """
-        return super().evaluate(plot_cm)
+        torch.save({
+            "model_state_dict": self._model.state_dict(),
+            "config": {
+                "n_layers": self._model.n_layers,
+                "kernel_size": self._model.kernel_size,
+            }
+        }, os.path.join(self.save_folder, self.model_file_name))

@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import DataLoader
 from torcheval import metrics
 from tqdm import tqdm
-from torch import nn
+from torch import nn, optim
 
 
 class Trainer(object):
@@ -14,13 +14,12 @@ class Trainer(object):
                  train_loader: DataLoader,
                  val_loader: DataLoader,
                  epochs: int,
-                 optimizer: torch.optim.Optimizer,
-                 scheduler: torch.optim.lr_scheduler,
                  save_folder: str,
                  model_file_name='model.pt',
                  optimizer_file_name='optimizer.pt',
                  scheduler_file_name='scheduler.pt',
-                 device: torch.device | None = None
+                 device: torch.device | None = None,
+                 early_stop_threshold: int = 5
                  ) -> None:
         """
         Constructor for Trainer class.
@@ -47,8 +46,6 @@ class Trainer(object):
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.epochs = epochs
-        self.optimizer = optimizer
-        self.scheduler = scheduler
         self.save_folder = save_folder
         self.model_file_name = model_file_name
         self.optimizer_file_name = optimizer_file_name
@@ -58,6 +55,12 @@ class Trainer(object):
         self.select_device(device)
 
         self._loss_acc_history = []
+        self.optimizer = None
+        self.scheduler = None
+
+        self._early_stop_threshold = early_stop_threshold
+        self._best_val_loss = float('inf')
+        self._stagnation_counter = 0
 
     @property
     def loss_acc_history(self) -> np.ndarray:
@@ -85,11 +88,15 @@ class Trainer(object):
             self.device = torch.device('cuda' if torch.cuda.is_available(
             ) else 'cpu')
 
-    def train(
-        self, model, load_checkpoint: bool, save_checkpoint: bool = True
-    ) -> None:
+
+    def train(self,
+              model: nn.Module,
+              lr: float = 0.001,
+              load_checkpoint: bool = False,
+              save_checkpoint: bool = True
+              ) -> None:
         """
-        Main training loop.
+        Main training loop. Uses RAdam as optimizer and StepLR as scheduler.
 
         Args:
             model (torch.nn.Module): Model for training.
@@ -100,8 +107,11 @@ class Trainer(object):
         Returns:
             None
         """
+        if not load_checkpoint:
+            self._reset_trainer_state(model, lr)
 
         os.makedirs(self.save_folder, exist_ok=True)
+
         start_epoch = 0
         if load_checkpoint and os.path.exists(os.path.join(
                 self.save_folder, self.model_file_name)):
@@ -111,7 +121,7 @@ class Trainer(object):
             self._loss_acc_history = []
 
         model.to(self.device)
-        model.train()
+        print(f"Using device: {self.device}")
 
         for epoch in range(start_epoch, self.epochs):
             # Training
@@ -140,6 +150,16 @@ class Trainer(object):
                                 val_loss_counter,
                                 val_progress_bar)
 
+            val_loss = val_loss_counter.compute().item()
+            val_acc = val_accuracy_counter.compute().item()
+            print(f"Epoch {epoch+1} - Val loss: {val_loss:.4f}, Val accuracy: {val_acc:.4f}")
+
+            if self._early_stop(val_loss):
+                print(f"Early stopping at epoch {epoch + 1}.")
+                print(f"Best validation loss: {self._best_val_loss:.4f}")
+                break
+
+
     def _train_one_epoch(self, model: nn.Module,
                          train_accuracy_counter: metrics.MulticlassAccuracy,
                          train_loss_counter: metrics.Mean,
@@ -157,7 +177,7 @@ class Trainer(object):
         Returns:
             None
         """
-
+        model.train()
         for data, targets in train_progress_bar:
             data, targets = data.to(self.device), targets.to(self.device)
 
@@ -170,13 +190,18 @@ class Trainer(object):
             train_accuracy_counter.update(predictions, targets)
             train_loss_counter.update(loss, weight=data.size(0))
 
-            loss_item = train_loss_counter.compute().item()
-            acc_item = train_accuracy_counter.compute().item()
+            batch_loss = loss.item()
+            batch_acc = (predictions.argmax(dim=1) == targets).float().mean().item()
+
             train_progress_bar.set_postfix(
-                loss=loss_item,
-                accuracy=acc_item
+                loss=batch_loss,
+                accuracy=batch_acc
             )
-            self._loss_acc_history.append([loss_item, acc_item])
+
+        self._loss_acc_history.append([
+            train_loss_counter.compute().item(),
+            train_accuracy_counter.compute().item()
+        ])
 
         self.scheduler.step()
 
@@ -197,11 +222,11 @@ class Trainer(object):
         Returns:
             None
         """
-        for data, targets in val_progress_bar:
-            data, targets = data.to(self.device), targets.to(self.device)
+        model.eval()
+        with torch.no_grad():
+            for data, targets in val_progress_bar:
+                data, targets = data.to(self.device), targets.to(self.device)
 
-            model.eval()
-            with torch.no_grad():
                 predictions = model(data)
                 loss = nn.functional.cross_entropy(predictions, targets)
 
@@ -241,8 +266,11 @@ class Trainer(object):
         Returns:
             int: Start epoch.
         """
-        checkpoint_model = torch.load(os.path.join(
-            self.save_folder, self.model_file_name))
+        if not os.path.exists(os.path.join(
+                self.save_folder, self.model_file_name)):
+            raise FileNotFoundError("Checkpoint folder doesn't exist.")
+
+        checkpoint_model = torch.load(os.path.join(self.save_folder, self.model_file_name))
         model.load_state_dict(checkpoint_model)
         checkpoint_optimizer = torch.load(os.path.join(
             self.save_folder, self.optimizer_file_name))
@@ -267,3 +295,33 @@ class Trainer(object):
         if not os.listdir(self.save_folder):
             os.rmdir(self.save_folder)
             print(f"Deleted folder: {self.save_folder}")
+
+    def _reset_trainer_state(self, model: nn.Module, lr: float) -> None:
+        """
+        Resets the trainer state to prevent leakage between runs.
+        :param model: Model to reset.
+        :param lr: Learning rate for the optimizer.
+        """
+        self._loss_acc_history = []
+        self.optimizer = optim.RAdam(model.parameters(), lr=lr)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=1, gamma=0.5)
+        self._best_val_loss = float('inf')
+        self._stagnation_counter = 0
+
+    def _early_stop(self, val_loss: float) -> bool:
+        """
+        Checks if early stopping criteria are met.
+        :param val_loss: Current validation loss.
+        :return: True if early stopping criteria are met, False otherwise.
+        """
+        if val_loss < self._best_val_loss:
+            self._best_val_loss = val_loss
+            self._stagnation_counter = 0
+            return False
+
+        self._stagnation_counter += 1
+        if self._stagnation_counter >= self._early_stop_threshold:
+            print(f"Early stopping triggered after {self._stagnation_counter} epochs without improvement.")
+            return True
+
+        return False
