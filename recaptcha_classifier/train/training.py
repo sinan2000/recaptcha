@@ -49,7 +49,7 @@ class Trainer(object):
         self.scheduler = None
         
         self._early_stop_threshold = early_stop_threshold
-        self._best_val_acc = 0.0
+        self._best_val_loss = float('inf')
         self._stagnation_counter = 0
 
 
@@ -122,10 +122,13 @@ class Trainer(object):
                                     val_loss_counter,
                                     val_progress_bar)
 
+            val_loss = val_loss_counter.compute().item()
             val_acc = val_accuracy_counter.compute().item()
-            if self._early_stop(val_acc):
+            print(f"Epoch {epoch+1} - Val loss: {val_loss:.4f}, Val accuracy: {val_acc:.4f}")
+
+            if self._early_stop(val_loss):
                 print(f"Early stopping at epoch {epoch + 1}.")
-                print(f"Best validation accuracy: {self._best_val_acc:.4f}")
+                print(f"Best validation loss: {self._best_val_loss:.4f}")
                 break
 
 
@@ -227,17 +230,17 @@ class Trainer(object):
         self._loss_acc_history = []
         self.optimizer = optim.RAdam(model.parameters(), lr=lr)
         self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=1, gamma=0.5)
-        self._best_val_acc = 0.0
+        self._best_val_loss = float('inf')
         self._stagnation_counter = 0
     
-    def _early_stop(self, val_acc: float) -> bool:
+    def _early_stop(self, val_loss: float) -> bool:
         """
         Checks if early stopping criteria are met.
-        :param val_acc: Current validation accuracy.
+        :param val_loss: Current validation loss.
         :return: True if early stopping criteria are met, False otherwise.
         """
-        if val_acc > self._best_val_acc:
-            self._best_val_acc = val_acc
+        if val_loss < self._best_val_loss:
+            self._best_val_loss = val_loss
             self._stagnation_counter = 0
             return False
         
