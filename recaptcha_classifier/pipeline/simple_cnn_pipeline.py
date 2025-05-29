@@ -1,7 +1,6 @@
 import torch
 from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
-from recaptcha_classifier.train.training import Trainer
 import os
 from recaptcha_classifier.constants import (
     MODELS_FOLDER, SIMPLE_MODEL_FILE_NAME,

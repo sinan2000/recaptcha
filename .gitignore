@@ -6,6 +6,5 @@ venv/
 .env
 
 /models/
-private/
 /data/
-/models/
+/private/

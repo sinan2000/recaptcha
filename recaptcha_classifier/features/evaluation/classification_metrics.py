@@ -37,6 +37,7 @@ def evaluate_classification(y_pred: Tensor,
         dict: accuracy, f1, confusion_matrix
 
     """
+    logits = y_pred
 
     # Convert logits to predicted labels
     y_pred = torch.argmax(y_pred, dim=1)
@@ -56,7 +57,7 @@ def evaluate_classification(y_pred: Tensor,
     # Compute metrics
     acc_val = acc(y_pred, y_true)
     f1_val = f1(y_pred, y_true)
-    topk_acc_val = topk_acc(y_pred, y_true)
+    topk_acc_val = topk_acc(logits, y_true)
     cm = confmat(y_pred, y_true)
 
     if cm_plot:
