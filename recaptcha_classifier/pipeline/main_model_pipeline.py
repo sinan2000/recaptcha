@@ -95,25 +95,59 @@ class SimpleClassifierPipeline(BasePipeline):
         self._kfold.run_cross_validation(save_checkpoints=True)
         best_model = self._kfold.get_best_overall_model(metric_key='F1-score')
 
-        # need lr here?
         self._model = self._initialize_model(
             n_layers=int(best_model['n_layers']),
             kernel_size=int(best_model['kernel_size']))
 
     def _initialize_model(self, n_layers: int, kernel_size: int) -> MainCNN:
+        """Initializes the model.
+
+        Args:
+            n_layers (int): Number of layers in the model.
+            kernel_size (int): Kernel size for the model.
+
+        Returns:
+            MainCNN: The initialized model.
+        """
         return MainCNN(
             n_layers=n_layers, kernel_size=kernel_size,
             num_classes=self.class_map_length)
 
     def _initialize_trainer(self) -> Trainer:
+        """Initializes the trainer.
+
+        Returns:
+            Trainer: The initialized trainer.
+        """
         return super()._initialize_trainer()
 
     def train(
         self, save_checkpoint: bool = True, load_checkpoint: bool = False
     ) -> None:
+        """
+        Trains the model.
+
+        Args:
+            save_checkpoint (bool, optional): Whether to save the checkpoint.
+                Defaults to True.
+            load_checkpoint (bool, optional): Whether to load the checkpoint.
+                Defaults to False.
+
+        Returns:
+            None
+        """
         self._trainer.train(self._model,
                             load_checkpoint=load_checkpoint,
                             save_checkpoint=save_checkpoint)
 
     def evaluate(self, plot_cm: bool = False) -> dict:
+        """Evaluates the model.
+
+        Args:
+            plot_cm (bool): Whether to plot the confusion matrix.
+                Defaults to False.
+
+        Returns:
+            dict: A dictionary containing the evaluation results.
+        """
         return super().evaluate(plot_cm)
