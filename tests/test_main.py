@@ -1,10 +1,9 @@
 import unittest
-# from main import hello_world
 
 
 class MainTest(unittest.TestCase):
+    """Tests for the main module."""
     def test_hello(self):
-        # This will rather be an integration test; to see
         self.assertTrue(True)
 
 
