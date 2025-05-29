@@ -150,11 +150,10 @@ You will get a response in the following format:
 ```bash
  {"class_id":1,"class_name":"Bridge"}
 ```
-where class_id represents the
-
 
 ## Possible error Responses
 
-Status code  |    Description
-   200       |  Succesful Prediction
-   422       |  Validation error (eg. file not provided or malformed request)
+| Status code  |    Description
+|--------------|----------------------------------------------------------------|
+|    200       |  Succesful Prediction                                          |
+|    422       |  Validation error (eg. file not provided or malformed request) |
