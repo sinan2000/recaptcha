@@ -51,7 +51,7 @@ class KFoldValidation:
         :param save_checkpoints: boolean flag to save checkpoints
         """
 
-        # Concatenate all data indices from both loaders
+        # Concatenating all data indices from both loaders
         train_indices = list(range(len(self.train_loader.dataset)))
         val_indices = list(range(len(self.val_loader.dataset)))
         all_indices = train_indices + val_indices
@@ -62,11 +62,9 @@ class KFoldValidation:
         for fold_index, (train_idx, val_idx) in enumerate(kf.split(all_indices)):
             print(f"\n--- Fold {fold_index + 1}/{self.k_folds} ---")
 
-            # Create Subsets for this fold
             train_subset = Subset(dataset, [all_indices[i] for i in train_idx])
             val_subset = Subset(dataset, [all_indices[i] for i in val_idx])
 
-            # Create DataLoaders for this fold
             fold_train_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=False)
             fold_val_loader = DataLoader(val_subset, batch_size=batch_size, shuffle=False)
 
@@ -87,7 +85,7 @@ class KFoldValidation:
                                                 save_checkpoint=save_checkpoints,
                                                 load_checkpoint=load_checkpoints)
                 metrics_result = evaluate_model(
-                    model, fold_val_loader, device=self.device, num_classes=12,
+                    model, fold_val_loader, device=self.device,
                     class_names=self._class_map, plot_cm=False
                 )
                 # removing confusion matrix to keep df dimensions balanced

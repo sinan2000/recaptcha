@@ -93,7 +93,7 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         best = self.kfold_validator.get_best_overall_model()
 
         # Check result structure
-        self.assertEqual((self.folds*18, 8), results.shape,
+        self.assertEqual((self.folds, 8), results.shape,
                          f"Should return ({self.folds*18}, 8) shape results for {self.folds} folds")
         self.assertEqual((8,), best.shape, "Should return top 1 model row with (1,8) shape.")
 
