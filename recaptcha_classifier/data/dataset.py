@@ -24,6 +24,19 @@ class ImageDataset(Dataset):
                  ) -> None:
         """
         Initializes the ImageDataset with the given parameters.
+
+        Args:
+            pairs (FilePairList): A list of tuples containing the
+            image and label file paths.
+            preprocessor (ImagePrep): An instance of the
+            ImagePrep class for preprocessing the images.
+            augmentator (Optional[AugmentationPipeline]): An
+            instance of the AugmentationPipeline class for applying
+            augmentations to the images.
+            class_map (dict): A dictionary mapping class names to indices.
+
+        Returns:
+            None
         """
         self._pairs = pairs
         self._prep = preprocessor
@@ -31,6 +44,12 @@ class ImageDataset(Dataset):
         self._class_map = class_map
 
     def __len__(self) -> int:
+        """
+        Returns the number of items in the dataset.
+
+        Returns:
+            int: The number of items in the dataset.
+        """
         return len(self._pairs)
 
     def __getitem__(self,
@@ -48,7 +67,7 @@ class ImageDataset(Dataset):
             box annotations and the label.
         """
         # img_path, lbl_path = self._pairs[idx]
-        img_path = self._pairs[idx]
+        img_path = self._pairs[idx]     
 
         # Load image and label
         img = self._prep.load_image(img_path)
