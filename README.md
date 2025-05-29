@@ -151,6 +151,12 @@ You will get a response in the following format:
  {"class_id":1,"class_name":"Bridge"}
 ```
 
+If you're using Windows, running the request in the format mentioned above may not work in Powershell. Instead, use the format below in Command Prompt:
+
+```bash
+curl -X POST "http://localhost:8000/predict" -H "accept: application/json" -H "Content-Type: multipart/form-data" -F "file=@<path_to_file>"
+```
+
 ### Possible error Responses
 
 | Status code  |    Description
