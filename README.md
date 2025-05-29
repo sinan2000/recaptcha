@@ -102,7 +102,7 @@ To make navigating through the repository easier, you can find its structure bel
 ├───README.md  # Instructions
 ```
 
-**API Launching 🚀**
+## **API Launching 🚀**
 
 To start the FastAPI server locally, follow these steps:
 
@@ -128,7 +128,7 @@ def main():
     open_api()  # ✅ Uncomment this line
 ```
 
-## API Documentation
+### API Documentation
 
 After running the server, you can access the Documentation:
 
@@ -138,7 +138,7 @@ ReDoc documentation: http://localhost:8000/redoc
 
 These interfaces allow you to test predictions and inspect the request/response formats.
 
-## API call and response format
+### API call and response format
 
 You can make a call to the api using curl, by running the chunk below. Make sure to include a valid file path.
 
@@ -151,7 +151,7 @@ You will get a response in the following format:
  {"class_id":1,"class_name":"Bridge"}
 ```
 
-## Possible error Responses
+### Possible error Responses
 
 | Status code  |    Description
 |--------------|----------------------------------------------------------------|
