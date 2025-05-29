@@ -47,6 +47,9 @@ class KFoldValidation:
         """
         Runs k-Fold Cross-Validation and hyperparameter optimization.
 
+        :param n_hpo_models: number of hpo models to return for each fold
+        :param n_hp_combos: number of hp combinations to use for each fold
+        :param load_checkpoints: boolean to load checkpoints
         :param batch_size: size of batches in fold data loaders
         :param save_checkpoints: boolean flag to save checkpoints
         """
@@ -71,7 +74,9 @@ class KFoldValidation:
             self.hp_optimizer.trainer.train_loader = fold_train_loader
             self.hp_optimizer.trainer.val_loader = fold_val_loader
 
-            optimized_hp_dataframe = self.hp_optimizer.optimize_hyperparameters(save_checkpoints=save_checkpoints)
+            optimized_hp_dataframe = self.hp_optimizer.optimize_hyperparameters(save_checkpoints=save_checkpoints,
+                                                                                n_models=n_hpo_models,
+                                                                                n_combos=n_hp_combos)
             evaluated_models = {'Accuracy': [],
                                 'F1-score': [],
                             }
