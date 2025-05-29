@@ -17,6 +17,9 @@ class Visualizer:
         Args:
             splits (DatasetSplitDict): the dataset splits
                 containing the pairs for each class.
+
+        Returns:
+            None
         """
         for split, cls_dict in splits.items():
             print(f"{split.upper()}:")
@@ -36,6 +39,9 @@ class Visualizer:
             splits (DatasetSplitDict): the dataset splits
                 containing the pairs for each class.
             title (str): the title of the plot.
+
+        Returns:
+            None
         """
         classes = list(splits['train'].keys())
 
@@ -51,7 +57,7 @@ class Visualizer:
         # total for each class, simply adding counts of each split
         totals = [t+v+te for t, v, te in
                   zip(counts_train, counts_val, counts_test)]
-
+        
         """
         # drawing bars
         train_bars = plt.bar([i - width for i in x],

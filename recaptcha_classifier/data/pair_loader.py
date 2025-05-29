@@ -19,8 +19,7 @@ class ImageLabelLoader:
     """
     def __init__(self,
                  classes: List[str],
-                 images_dir: str = "data/images",
-                 # labels_dir: str = "data/labels"
+                 images_dir: str = "data/images"
                  ) -> None:
         """
         Initializes the PairsLoader instance.
@@ -28,11 +27,12 @@ class ImageLabelLoader:
         Args:
             classes (List[str]): List of class names to load.
             images_dir (str): Path to the directory containing images.
-            labels_dir (str): Path to the directory containing labels.
+
+        Returns:
+            None
         """
         self._classes = classes
         self._images_dir = Path(images_dir)
-        # self._labels_dir = Path(labels_dir)
         self._pairs: ClassFileDict = dict()
 
     def find_pairs(self) -> ClassFileDict:
@@ -48,7 +48,7 @@ class ImageLabelLoader:
             self._load_pairs()
         return self._pairs
 
-    def __iter__(self):
+    def __iter__(self) -> None:
         """
         Iterates over classes and their respective list of pairs.
 
@@ -84,38 +84,21 @@ class ImageLabelLoader:
         Private method to scan directories of given classes and match all
         available image-label pairs.
         It ignores images with missing labels.
+
+        Returns:
+            None
         """
         total_count = 0
         for cls in self._classes:
             img_dir = self._images_dir / cls
-            # lbl_dir = self._labels_dir / cls
-            # skipped, cls_count = 0, 0
 
-            if not Path.is_dir(img_dir):  # or not Path.exists(lbl_dir)
+            if not Path.is_dir(img_dir):
                 logger.info(f"Warning: Missing folder for {cls}. Skipping.")
                 continue
 
-            self._pairs[cls] = list(img_dir.glob("*.png"))  # []
+            self._pairs[cls] = list(img_dir.glob("*.png"))
             N = len(self._pairs[cls])
             logger.info(f"Found {N} images in {cls}.")
             total_count += N
-            """
-            for img_path in img_dir.glob("*.png"):
-                lbl_path = lbl_dir / img_path.name.replace(".png", ".txt")
-                cls_count += 1
-
-                if not Path.exists(lbl_path):
-                    skipped += 1
-                    continue
-
-                self._pairs[cls].append((img_path, lbl_path))
-
-
-            print(f"Loaded {cls_count - skipped} image-label pairs for {cls}.")
-            if skipped > 0:
-                print(f"Warning: {skipped} missing labels in {cls}. Skipped.")
-
-            total_count += cls_count - skipped
-            """
 
         print(f"Total pairs loaded: {total_count}")

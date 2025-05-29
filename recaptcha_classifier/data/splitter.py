@@ -22,6 +22,9 @@ class DataSplitter:
             train, validation, and test sets.
             shuffle (bool): Whether to shuffle the data before splitting.
             seed (int): Random seed for reproducibility.
+
+        Returns:
+            None
         """
         self._ratios = ratios
         self._shuffle = shuffle
@@ -61,6 +64,9 @@ class DataSplitter:
     def _validate_ratios(self) -> None:
         """
         Makes sure the ratios sum to 1 and all are positive.
+
+        Returns:
+            None
         """
         if len(self._ratios) != 3:
             raise ValueError("Ratios must be a tuple of three floats.")
