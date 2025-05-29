@@ -16,10 +16,29 @@ class SimpleCNN(BaseModel):
                  conv1_kernel_size: int = 5,
                  conv2_kernel_size: int = 5,
                  pool_kernel_size: int = 2,
-                 pool_stride: int = 2):
+                 pool_stride: int = 2) -> None:
+        """
+        Initializes the SimpleCNN model.
+
+        Args:
+            input_channels (int): Number of input channels.
+            num_classes (int): Number of output classes.
+            conv1_out_channels (int): Number of output channels in the first
+            convolutional layer.
+            conv2_out_channels (int): Number of output channels in the second
+            convolutional layer.
+            conv1_kernel_size (int): Kernel size for the first convolutional
+            layer.
+            conv2_kernel_size (int): Kernel size for the second convolutional
+            layer.
+            pool_kernel_size (int): Kernel size for the pooling layer.
+            pool_stride (int): Stride for the pooling layer.
+
+        Returns:
+            None
+        """
         super().__init__()
 
-        # Store constructor parameters
         self.input_channels = input_channels
         self.num_classes = num_classes
         self.conv1_out_channels = conv1_out_channels
@@ -44,6 +63,15 @@ class SimpleCNN(BaseModel):
         self.fc3 = nn.Linear(84, num_classes)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the SimpleCNN model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         x = self.pool(f.relu(self.conv1(x)))
         x = self.pool(f.relu(self.conv2(x)))
         x = torch.flatten(x, 1)
@@ -52,35 +80,3 @@ class SimpleCNN(BaseModel):
         x = self.fc3(x)
         x = torch.argmax(x, dim=1)  # Output class index
         return x
-
-    # def __str__(self) -> str:
-    #     """Returns a string representation of the model's configuration
-    #     and architecture."""
-    #     config = (
-    #         f"SimpleCNN Arguments:\n"
-    #         f"  input_channels      = {self.input_channels}\n"
-    #         f"  num_classes         = {self.num_classes}\n"
-    #         f"  conv1_out_channels  = {self.conv1_out_channels}\n"
-    #         f"  conv2_out_channels  = {self.conv2_out_channels}\n"
-    #         f"  conv1_kernel_size   = {self.conv1_kernel_size}\n"
-    #         f"  conv2_kernel_size   = {self.conv2_kernel_size}\n"
-    #         f"  pool_kernel_size    = {self.pool_kernel_size}\n"
-    #         f"  pool_stride         = {self.pool_stride}\n"
-    #     )
-
-    #     layers = ["Model Parameters:"]
-    #     for name, param in self.named_parameters():
-    #         shape = tuple(param.shape)
-    #         layers.append(f"  {name:<25} shape={shape}")
-
-    #     return config + "\n" + "\n".join(layers)
-
-
-# model = SimpleCNN()
-# images = torch.randn(32, 3, 224, 224)  # Batch of 32 images
-# predictions = model(images)
-
-# print(predictions.shape)  # torch.Size([32])
-# print(predictions[0])     # ex: tensor(4) (predicted class for image)
-
-# print(model)

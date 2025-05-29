@@ -10,12 +10,23 @@ class BaseModel(nn.Module, ABC):
     parameters and constructor args.
     """
     def __init__(self) -> None:
-        """Constructor for the BaseModel class."""
+        """Constructor for the BaseModel class.
+
+        Returns:
+            None
+        """
         super().__init__()
 
     @abstractmethod
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        """Forward pass of the model."""
+        """Forward pass of the model.
+
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         pass
 
     def __str__(self) -> str:
