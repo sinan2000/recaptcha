@@ -1,7 +1,7 @@
 import itertools
 import random
 import pandas as pd
-
+from typing import List
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.train.training import Trainer
 
@@ -80,9 +80,10 @@ class HPOptimizer(object):
         return df_opt_data.copy()[:n_models]
 
 
-    def _train_one_model(self, hp_combo) -> None:
+    def _train_one_model(self, hp_combo: List, save_checkpoints: bool) -> None:
         model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
-        self.trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False)
+        self.trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False,
+                           save_checkpoint=save_checkpoints)
 
 
     def _generate_hp_combinations(self, hp) -> list:
