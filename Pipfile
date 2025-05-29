@@ -27,6 +27,7 @@ fastapi = "*"
 python-multipart = "*"
 streamlit = "*"
 uvicorn = "*"
+questionary = "*"
 
 [dev-packages]
 
