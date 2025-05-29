@@ -102,4 +102,33 @@ To make navigating through the repository easier, you can find its structure bel
 ├───README.md  # Instructions
 ```
 
-**API 🚀**
+**API Launching 🚀**
+To start the FastAPI server locally, follow these steps:
+
+1. Activate pipenv environment (if not already activated)
+
+```bash
+pipenv shell
+```
+
+2. You can start the FastAPI server using:
+
+```bash
+uvicorn recaptcha_classifier.api:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Alternatively, run the API by running main.py:
+
+Make sure the open_api() function is uncommented in main.py
+
+```python
+def main():
+    # train_main_classifier()
+    open_api()  # ✅ Uncomment this line
+```
+
+3. After running the server, you can access:
+Interactive API docs (Swagger UI): 
+ReDoc documentation:
+
+These interfaces allow you to test predictions and inspect the request/response formats.
