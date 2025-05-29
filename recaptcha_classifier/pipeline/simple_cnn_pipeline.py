@@ -9,6 +9,7 @@ from recaptcha_classifier.constants import (
 
 
 class SimpleClassifierPipeline(BasePipeline):
+    """ Pipeline for training a simple CNN model. """
     def __init__(self,
                  lr: float = 0.001,
                  epochs: int = 20,
@@ -17,7 +18,30 @@ class SimpleClassifierPipeline(BasePipeline):
                  model_file_name: str = SIMPLE_MODEL_FILE_NAME,
                  optimizer_file_name: str = OPTIMIZER_FILE_NAME,
                  scheduler_file_name: str = SCHEDULER_FILE_NAME
-                 ):
+                 ) -> None:
+        """
+        Constructor for SimpleClassifierPipeline class.
+
+        Args:
+            step_size (int, optional): Step size for the learning rate
+                scheduler. Defaults to 5.
+            gamma (float, optional): Gamma value for the learning rate
+                scheduler. Defaults to 0.5.
+            lr (float, optional): Learning rate for the optimizer.
+                Defaults to 0.001.
+            epochs (int, optional): Number of epochs for training.
+                Defaults to 20.
+            device (torch.device, optional): Device for training.
+                Defaults to None.
+            save_folder (str, optional): Folder for saving checkpoint files.
+                Defaults to "".
+            model_file_name (str, optional): Name of the model checkpoint
+                file. Defaults to "model.pt".
+            optimizer_file_name (str, optional): Name of the optimizer
+                checkpoint file. Defaults to "optimizer.pt".
+            scheduler_file_name (str, optional): Name of the scheduler
+                checkpoint file. Defaults to "scheduler.pt".
+        """
         super().__init__(lr, epochs, device,
                          save_folder, model_file_name,
                          optimizer_file_name, scheduler_file_name)
@@ -37,8 +61,18 @@ class SimpleClassifierPipeline(BasePipeline):
         self.evaluate(plot_cm=True)
 
     def _initialize_model(self) -> SimpleCNN:
+        """Initialize the model.
+
+        Returns:
+            SimpleCNN: The initialized model.
+        """
         return SimpleCNN(num_classes=self.class_map_length)
-    
+
     def save_model(self):
+        """Saves the model.
+
+        Returns:
+            None
+        """
         os.makedirs(self.save_folder, exist_ok=True)
         torch.save(self._model.state_dict(), os.path.join(self.save_folder, self.model_file_name))

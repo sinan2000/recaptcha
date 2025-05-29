@@ -109,6 +109,15 @@ class MainClassifierPipeline(BasePipeline):
             kernel_size=best_hp[1])
 
     def _initialize_model(self, n_layers: int, kernel_size: int) -> MainCNN:
+        """Initializes the model.
+
+        Args:
+            n_layers (int): Number of layers in the model.
+            kernel_size (int): Kernel size for the model.
+
+        Returns:
+            MainCNN: The initialized model.
+        """
         return MainCNN(
             n_layers=n_layers, kernel_size=kernel_size,
             num_classes=self.class_map_length)
