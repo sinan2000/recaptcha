@@ -61,9 +61,6 @@ class MainClassifierPipeline(BasePipeline):
         
         best_hp = self._hp_optimizer.get_best_hp()
         self._kfold.run_cross_validation(hp=best_hp)
-        
-        print("\n~~ Cross-Validation Summary ~~")
-        self._kfold.print_summary()
 
         self.lr = best_hp[2]
         self._model = self._initialize_model(

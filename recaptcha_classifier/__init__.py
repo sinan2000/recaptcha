@@ -4,7 +4,7 @@ from .detection_labels import DetectionLabels
 from .data import DataPreprocessingPipeline
 from .train import Trainer
 from .features import evaluate_model
-from .api import load_model
+from .server import load_model
 
 __all__ = [
     "DetectionLabels",

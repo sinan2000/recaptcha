@@ -15,8 +15,6 @@ class Trainer(object):
                  train_loader: DataLoader,
                  val_loader: DataLoader,
                  epochs: int,
-                 optimizer: torch.optim.Optimizer,
-                 scheduler: torch.optim.lr_scheduler,
                  save_folder: str,
                  model_file_name: str ='model.pt',
                  optimizer_file_name: str ='optimizer.pt',

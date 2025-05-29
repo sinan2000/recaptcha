@@ -1,12 +1,9 @@
 import itertools
 import random
-
 import pandas as pd
 
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.train.training import Trainer
-
-from recaptcha_classifier.detection_labels import DetectionLabels
 
 
 class HPOptimizer(object):
@@ -30,9 +27,9 @@ class HPOptimizer(object):
 
 
     def optimize_hyperparameters(self,
-                                 n_layers: list = list(range(1,3)),
-                                 kernel_sizes: list = [3, 4, 5],
-                                 learning_rates: list = [1e-3, 1e-4],
+                                 n_layers: list = [1, 2, 3],
+                                 kernel_sizes: list = [3, 5],
+                                 learning_rates: list = [1e-2, 1e-3, 1e-4],
                                  save_checkpoints: bool = True,
                                  n_models: int = 1,
                                  n_combos: int = 8,  # Number of random samples
@@ -85,8 +82,7 @@ class HPOptimizer(object):
 
     def _train_one_model(self, hp_combo) -> None:
         model = MainCNN(n_layers=int(hp_combo[0]), kernel_size=int(hp_combo[1]))
-        self._trainer.optimizer = torch.optim.RAdam(model.parameters(), lr=hp_combo[2])
-        self._trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False)
+        self.trainer.train(model=model, lr=hp_combo[2], load_checkpoint=False)
 
 
     def _generate_hp_combinations(self, hp) -> list:

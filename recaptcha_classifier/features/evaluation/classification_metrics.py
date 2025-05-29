@@ -1,7 +1,7 @@
 import torch
 from torch import Tensor
 from torchmetrics import Accuracy, F1Score
-from torchmetrics.classification import MulticlassConfusionMatrix
+from torchmetrics.classification import MulticlassConfusionMatrix, MulticlassAccuracy
 from typing import Optional
 from recaptcha_classifier.detection_labels import DetectionLabels
 import matplotlib.pyplot as plt
@@ -50,11 +50,13 @@ def evaluate_classification(y_pred: Tensor,
     # Initialize Metrics
     acc = Accuracy(task="multiclass", num_classes=num_classes).to(device=device)
     f1 = F1Score(task="multiclass", num_classes=num_classes, average=average).to(device=device)
+    topk_acc = MulticlassAccuracy(num_classes=num_classes, top_k=3).to(device=device)
     confmat = MulticlassConfusionMatrix(num_classes=num_classes).to(device=device)
 
     # Compute metrics
     acc_val = acc(y_pred, y_true)
     f1_val = f1(y_pred, y_true)
+    topk_acc_val = topk_acc(y_pred, y_true)
     cm = confmat(y_pred, y_true)
 
     if cm_plot:
@@ -64,5 +66,6 @@ def evaluate_classification(y_pred: Tensor,
     return {
         'Accuracy': acc_val.item(),
         'F1-score': f1_val.item(),
-        'Confusion Matrix': cm
+        'Confusion Matrix': cm,
+        'Top-3 Accuracy': topk_acc_val.item()
     }

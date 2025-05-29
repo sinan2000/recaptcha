@@ -2,7 +2,7 @@ import pandas as pd
 from sklearn.model_selection import KFold
 from sympy.printing.pytorch import torch
 from torch.utils.data import DataLoader, Subset
-
+import matplotlib.pyplot as plt
 from recaptcha_classifier import DetectionLabels
 from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 from recaptcha_classifier.train.training import Trainer
@@ -36,7 +36,6 @@ class KFoldValidation:
         self.device = device
         if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.results = None
 
 
     def run_cross_validation(self,
@@ -89,23 +88,42 @@ class KFoldValidation:
         
         df_results = pd.DataFrame(results)
         
-        self.results = df_results
+        self.print_summary(df_results)
+        self.plot_results(df_results)
     
-    def print_summary(self) -> None:
+    @staticmethod
+    def print_summary(results: pd.DataFrame) -> None:
         """
         Prints a summary of the cross-validation results.
         """
-        if self.results is None:
-            print("No results to display. Run cross-validation first.")
-            return
+        print("\n~~ Cross-Validation Summary ~~")
+        print(results.round(3))
         
-        print("\n--- Cross-Validation Summary ---")
-        print(self.results)
-        
-        mean_results = self.results.mean()
+        res = results.drop(columns=["fold"])
+
+        means = res.mean()
         print("\nMean Results Across Folds:")
-        print(mean_results)
+        print(means.round(3))
         
-        std_results = self.results.std()
+        stds = res.std()
         print("\nStandard Deviation Across Folds:")
-        print(std_results)
+        print(stds.round(3))
+    
+    @staticmethod
+    def plot_results(results: pd.DataFrame) -> None:
+        """
+        Plots the results of the cross-validation.
+        """
+        metrics = [col for col in results.columns if col != 'fold']
+        mean_vals = results[metrics].mean()
+        std_vals = results[metrics].std()
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        mean_vals.plot(kind="bar", yerr=std_vals, capsize=5, ax=ax)
+        
+        ax.set_title("Cross-Validation Metrics (mean +- std)")
+        ax.set_ylabel("Score")
+        ax.set_xticklabels(metrics, rotation=45, ha='right')
+        plt.tight_layout()
+        plt.grid(axis='y')
+        plt.show()
