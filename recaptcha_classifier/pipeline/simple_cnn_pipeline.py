@@ -40,4 +40,5 @@ class SimpleClassifierPipeline(BasePipeline):
         return SimpleCNN(num_classes=self.class_map_length)
     
     def save_model(self):
+        os.makedirs(self.save_folder, exist_ok=True)
         torch.save(self._model.state_dict(), os.path.join(self.save_folder, self.model_file_name))
