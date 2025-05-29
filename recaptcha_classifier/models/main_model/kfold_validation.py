@@ -135,4 +135,6 @@ class KFoldValidation:
         ax.set_xticklabels(metrics, rotation=45, ha='right')
         plt.tight_layout()
         plt.grid(axis='y')
-        plt.show()
+        #plt.show()
+        plt.savefig("outputs/plot5.png", dpi=300, bbox_inches='tight')
+        plt.close()

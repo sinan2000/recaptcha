@@ -62,7 +62,9 @@ def evaluate_classification(y_pred: Tensor,
 
     if cm_plot:
         fig_, ax_ = confmat.plot(labels=class_names if class_names else None)
-        plt.show()
+        #plt.show()
+        plt.savefig("outputs/plot3.png", dpi=300, bbox_inches='tight')
+        plt.close()
 
     return {
         'Accuracy': acc_val.item(),

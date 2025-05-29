@@ -77,4 +77,6 @@ class Visualizer:
         ax.grid(axis='y', linestyle='--', alpha=0.7)
 
         plt.tight_layout()
-        plt.show()
+        #plt.show()
+        plt.savefig("outputs/plot1.png", dpi=300, bbox_inches='tight')
+        plt.close()
