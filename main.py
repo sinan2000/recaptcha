@@ -49,7 +49,7 @@ def handle_action(choice: str):
         handle_action(choice)
 
 def ui():
-    from recaptcha_classifier.ui import StreamlitApp
+    from recaptcha_classifier.server.streamlit import StreamlitApp
 
     app = StreamlitApp()
     app.render()
