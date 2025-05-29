@@ -5,11 +5,12 @@ from fastapi import FastAPI, File, UploadFile, Response
 from fastapi.responses import JSONResponse
 import torch.nn.functional as F
 from PIL import Image
-from .load_model import load_main_model, load_simple_model
+from .load_model import load_main_model, get_model_path
 from recaptcha_classifier.detection_labels import DetectionLabels
 from recaptcha_classifier.constants import IMAGE_SIZE
 from pydantic import BaseModel
 from typing import Literal
+import os
 
 
 class PredictionResponse(BaseModel):
@@ -20,15 +21,29 @@ class PredictionResponse(BaseModel):
 
 app = FastAPI()
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model = None
 
 @app.on_event("startup")
 def load_models():
     """Load the models into memory at startup."""
     global model
-    model = load_simple_model(device)
+    model_path = get_model_path("main")
+    if os.path.exists(model_path):
+        model = load_main_model(device)
+    else:
+        print("Model file not found. API will return an error for predictions"
+            "until model is available.")
 
 @app.post("/predict", response_model=PredictionResponse)
-async def predict(response: Response, file: UploadFile = File(...)) -> PredictionResponse:
+async def predict(response: Response,
+                  file: UploadFile = File(...)
+                  ) -> PredictionResponse:
+    if model is None:
+        return JSONResponse(
+            status_code=503,
+            content={"error": "Model not loaded. Please train "
+                     "or download first."}
+        )
     try:
         data = await file.read()
         img = Image.open(io.BytesIO(data)).convert("RGB")

@@ -67,7 +67,7 @@ def train_simple_cnn():
 def train_main_classifier():
     from recaptcha_classifier.pipeline.main_model_pipeline import MainClassifierPipeline
 
-    pipeline = MainClassifierPipeline(epochs=1, k_folds=2)
+    pipeline = MainClassifierPipeline()
     pipeline.run(save_train_checkpoints=False)
     
 def open_api():

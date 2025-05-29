@@ -2,6 +2,8 @@ import streamlit as st
 import torch
 from typing import Literal
 import requests
+from recaptcha_classifier.pipeline.main_model_pipeline import MainClassifierPipeline
+from recaptcha_classifier.pipeline.simple_cnn_pipeline import SimpleClassifierPipeline
 
 
 class StreamlitApp:
@@ -46,7 +48,18 @@ class StreamlitApp:
                      help="CUDA is not available on this machine.")
             
         if st.button("Start Training"):
-            # logic here
+            if self.model_type == "Simple":
+                pipeline = SimpleClassifierPipeline(lr=self.lr,
+                                                    epochs=self.epochs,
+                                                    early_stopping=self.early_stopping,
+                                                    device=self.device)
+                pipeline.run()
+            else:
+                pipeline = MainClassifierPipeline(lr=self.lr,
+                                                  epochs=self.epochs,
+                                                  early_stopping=self.early_stopping,
+                                                  device=self.device)
+                pipeline.run()
             st.success(f"Started training {self.model_type} model with "
                        f"learning rate {self.lr}, epochs {self.epochs}, "
                        f"early stopping: {self.early_stopping}, on {self.device}.")

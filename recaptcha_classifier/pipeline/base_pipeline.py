@@ -14,7 +14,8 @@ class BasePipeline:
                  save_folder: str = "checkpoints",
                  model_file_name: str = "model.pt",
                  optimizer_file_name: str = "optimizer.pt",
-                 scheduler_file_name: str = "scheduler.pt"
+                 scheduler_file_name: str = "scheduler.pt",
+                 early_stopping: bool = True
                  ):
 
         self.lr = lr
@@ -24,7 +25,7 @@ class BasePipeline:
         self.model_file_name = model_file_name
         self.optimizer_file_name = optimizer_file_name
         self.scheduler_file_name = scheduler_file_name
-
+        self.early_stopping = early_stopping
         self._class_map = DetectionLabels
         self._loaders = None
         self._data = None
@@ -55,7 +56,8 @@ class BasePipeline:
                        model_file_name=self.model_file_name,
                        optimizer_file_name=self.optimizer_file_name,
                        scheduler_file_name=self.scheduler_file_name,
-                       device=self.device)
+                       device=self.device,
+                       early_stopping=self.early_stopping)
 
     @property
     def class_map_length(self):

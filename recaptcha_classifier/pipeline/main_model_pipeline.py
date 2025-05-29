@@ -55,11 +55,11 @@ class MainClassifierPipeline(BasePipeline):
             train_loader=self._loaders["train"],
             val_loader=self._loaders["val"],
             k_folds=self.k_folds,
-            hp_optimizer=self._hp_optimizer,
             device=self.device
         )
         
         best_hp = self._hp_optimizer.get_best_hp()
+        
         self._kfold.run_cross_validation(hp=best_hp)
 
         self.lr = best_hp[2]
