@@ -1,6 +1,7 @@
 import streamlit as st
 import torch
 from typing import Literal
+import requests
 
 
 class StreamlitApp:
@@ -54,10 +55,25 @@ class StreamlitApp:
         st.title("Inference")
         st.write("Please upload an image for inference.")
 
-        uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+        file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
         
-        if uploaded_file is not None:
-            # process and call api
-            st.image(uploaded_file, caption='Uploaded Image.', use_column_width=True)
+        if file is not None:
+            st.image(file, caption='Uploaded Image.', use_column_width=True)
             if st.button("Run Inference"):
-                pass
+                files = {"file": {file.getvalue()}}
+                
+                try:
+                    resp = requests.post("http://localhost:8000/predict", files=files)
+                    resp.raise_for_status()
+                    result = resp.json()
+                    
+                    st.success("Prediction successful!")
+                    st.write(f"Label: {result['label']}")
+                    st.write(f"Confidence: {result['confidence']:.2f}")
+                    st.write(f"Class ID: {result['class_id']}")
+                except Exception as e:
+                    st.error(f"Error during inference: {str(e)}")
+
+if __name__ == "__main__":
+    app = StreamlitApp()
+    app.render()

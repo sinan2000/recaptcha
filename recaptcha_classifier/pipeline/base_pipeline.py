@@ -66,7 +66,7 @@ class BasePipeline:
             model=self._model,
             test_loader=self._loaders['test'],
             device=self._trainer.device,
-            class_names=self._class_map.dataset_classnames,
+            class_names=self._class_map.dataset_classnames(),
             plot_cm=plot_cm
         )
         return eval_results

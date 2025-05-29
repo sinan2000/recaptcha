@@ -49,10 +49,14 @@ def handle_action(choice: str):
         handle_action(choice)
 
 def ui():
-    from recaptcha_classifier.server.app import StreamlitApp
+    import subprocess
+    import os
+    root_dir = os.path.dirname(os.path.abspath(__file__))
+    streamlit_file = os.path.join(root_dir, "recaptcha_classifier", "server", "app.py")
 
-    app = StreamlitApp()
-    app.render()
+    subprocess.Popen(["uvicorn", "recaptcha_classifier.server.api:app", "--reload"])
+    
+    subprocess.run(["streamlit", "run", streamlit_file])
 
 def train_simple_cnn():
     from recaptcha_classifier.pipeline.simple_cnn_pipeline import SimpleClassifierPipeline

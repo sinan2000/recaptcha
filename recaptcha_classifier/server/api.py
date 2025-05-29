@@ -4,7 +4,7 @@ import torch
 from fastapi import FastAPI, File, UploadFile, Response
 from fastapi.responses import JSONResponse
 from PIL import Image
-from .load_model import load_main_model
+from .load_model import load_main_model, load_simple_model
 from recaptcha_classifier.detection_labels import DetectionLabels
 from recaptcha_classifier.constants import IMAGE_SIZE
 from pydantic import BaseModel
@@ -24,15 +24,14 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 def load_models():
     """Load the models into memory at startup."""
     global model
-    model = load_main_model(device)
-    model.to(device)
+    model = load_simple_model(device)
 
 @app.post("/predict", response_model=PredictionResponse)
 async def predict(response: Response, file: UploadFile = File(...)) -> PredictionResponse:
     try:
         data = await file.read()
         img = Image.open(io.BytesIO(data)).convert("RGB")
-        result = predict(model, device, img)
+        result = inference(model, device, img)
         
         response.headers["Cache-Control"] = "max-age=3600"
         
@@ -43,7 +42,7 @@ async def predict(response: Response, file: UploadFile = File(...)) -> Predictio
             content={"error": str(e)}
         )
     
-def predict(model: torch.nn.Module, device: torch.device, image: Image.Image) -> dict:
+def inference(model: torch.nn.Module, device: torch.device, image: Image.Image) -> dict:
     """
     Handles the prediction logic for the uploaded image.
     """
@@ -58,7 +57,7 @@ def predict(model: torch.nn.Module, device: torch.device, image: Image.Image) ->
         label = DetectionLabels.from_id(id)
         
     return {
-        "label": label.name,
-        "confidence": float(output.max().item()),
+        "label": label,
+        "confidence": f"{float(output.max().item()) * 100:.2f}%",
         "class_id": id
     }
