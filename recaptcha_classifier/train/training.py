@@ -71,7 +71,7 @@ class Trainer(object):
 
     def train(self,
               model: nn.Module,
-              lr: float = 0.01,
+              lr: float = 0.001,
               load_checkpoint: bool = False,
               save_checkpoint: bool = True) -> None:
         """
@@ -82,11 +82,13 @@ class Trainer(object):
         :param load_checkpoint: If true, loads latest checkpoint if it exists.
         with the previous states of the model, optimizer, and scheduler.
         """
-        self.optimizer = optim.RAdam(model.parameters(), lr=lr)
-        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=1, gamma=0.5)
+        if not load_checkpoint:
+            self._reset_trainer_state(model, lr)
 
         os.makedirs(self.save_folder, exist_ok=True)
+        
         start_epoch = 0
+
         if load_checkpoint and os.path.exists(os.path.join(self.save_folder, self.model_file_name)):
             start_epoch = self.load_checkpoint_states(model)
 
@@ -94,8 +96,6 @@ class Trainer(object):
             self._loss_acc_history = []
 
         model.to(self.device)
-        model.train()
-
         print(f"Using device: {self.device}")
 
         for epoch in range(start_epoch, self.epochs):
@@ -123,19 +123,14 @@ class Trainer(object):
                                     val_progress_bar)
 
             val_acc = val_accuracy_counter.compute().item()
-            if val_acc > self._best_val_acc:
-                self._best_val_acc = val_acc
-                self._stagnation_counter = 0
-            else:
-                self._stagnation_counter += 1
-            
-            if self._stagnation_counter >= self._early_stop_threshold:
-                print(f"Early stopping at epoch {epoch + 1}. "
-                    f"Best validation accuracy: {self._best_val_acc:.4f}")
+            if self._early_stop(val_acc):
+                print(f"Early stopping at epoch {epoch + 1}.")
+                print(f"Best validation accuracy: {self._best_val_acc:.4f}")
                 break
 
 
     def _train_one_epoch(self, model, train_accuracy_counter, train_loss_counter, train_progress_bar):
+        model.train()
         for data, targets in train_progress_bar:
             data, targets = data.to(self.device), targets.to(self.device)
 
@@ -147,24 +142,29 @@ class Trainer(object):
 
             train_accuracy_counter.update(predictions, targets)
             train_loss_counter.update(loss, weight=data.size(0))
+            
+            batch_loss = loss.item()
+            batch_acc = (predictions.argmax(dim=1) == targets).float().mean().item()
 
-            loss_item = train_loss_counter.compute().item()
-            acc_item = train_accuracy_counter.compute().item()
             train_progress_bar.set_postfix(
-                loss=loss_item,
-                accuracy=acc_item
+                loss=batch_loss,
+                accuracy=batch_acc
             )
-            self._loss_acc_history.append([loss_item, acc_item])
+        
+        self._loss_acc_history.append([
+            train_loss_counter.compute().item(),
+            train_accuracy_counter.compute().item()
+        ])
 
         self.scheduler.step()
 
 
     def _val_one_epoch(self, model, val_accuracy_counter, val_loss_counter, val_progress_bar):
-        for data, targets in val_progress_bar:
-            data, targets = data.to(self.device), targets.to(self.device)
+        model.eval()
+        with torch.no_grad():
+            for data, targets in val_progress_bar:
+                data, targets = data.to(self.device), targets.to(self.device)
 
-            model.eval()
-            with torch.no_grad():
                 predictions = model(data)
                 loss = nn.functional.cross_entropy(predictions, targets)
 
@@ -217,3 +217,33 @@ class Trainer(object):
         if not os.listdir(self.save_folder): # make sure it's empty
           os.rmdir(self.save_folder)
           print(f"Deleted folder: {self.save_folder}")
+
+    def _reset_trainer_state(self, model: nn.Module, lr: float) -> None:
+        """
+        Resets the trainer state to prevent leakage between runs.
+        :param model: Model to reset.
+        :param lr: Learning rate for the optimizer.
+        """
+        self._loss_acc_history = []
+        self.optimizer = optim.RAdam(model.parameters(), lr=lr)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=1, gamma=0.5)
+        self._best_val_acc = 0.0
+        self._stagnation_counter = 0
+    
+    def _early_stop(self, val_acc: float) -> bool:
+        """
+        Checks if early stopping criteria are met.
+        :param val_acc: Current validation accuracy.
+        :return: True if early stopping criteria are met, False otherwise.
+        """
+        if val_acc > self._best_val_acc:
+            self._best_val_acc = val_acc
+            self._stagnation_counter = 0
+            return False
+        
+        self._stagnation_counter += 1
+        if self._stagnation_counter >= self._early_stop_threshold:
+            print(f"Early stopping triggered after {self._stagnation_counter} epochs without improvement.")
+            return True
+        
+        return False

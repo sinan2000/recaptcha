@@ -1,7 +1,6 @@
 import itertools
 
 import pandas as pd
-import torch
 
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.train.training import Trainer
@@ -81,3 +80,14 @@ class HPOptimizer(object):
     def _clear_history(self) -> None:
         for key in self._opt_data.keys():
             self._opt_data[key] = []
+
+    def get_best_hp(self) -> list:
+        """
+        Returns the best hyperparameters based on the loss.
+        :return: list of best hyperparameters.
+        """
+        df_opt_data = self.get_history()
+        if len(df_opt_data) == 0:
+            return []
+        row = df_opt_data.iloc[0]
+        return [int(row['layers']), int(row['kernel_sizes']), float(row['lr'])]

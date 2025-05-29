@@ -1,4 +1,3 @@
-import os
 from abc import abstractmethod
 import torch
 from recaptcha_classifier.detection_labels import DetectionLabels
@@ -67,11 +66,14 @@ class BasePipeline:
             model=self._model,
             test_loader=self._loaders['test'],
             device=self._trainer.device,
-            num_classes=len(self._class_map),
             class_names=list(self._class_map.keys()),
             plot_cm=plot_cm
         )
         return eval_results
-
+    
+    
+    @abstractmethod
     def save_model(self):
-        torch.save(self._model, os.path.join(self.save_folder, self.model_file_name))
+        # different for the two pipelines; we need to 
+        # save n_layers and kernel_size for the main model
+        pass

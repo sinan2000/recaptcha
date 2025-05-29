@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from recaptcha_classifier.constants import INPUT_SHAPE
 
 class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
 
@@ -8,7 +9,7 @@ class MainCNN(nn.Module): # should inherit BaseModel(nn.Module)
                  # n_heads: int,
                  kernel_size: int,
                  num_classes: int = 12,
-                 input_shape: tuple = (3, 224, 224),
+                 input_shape: tuple = INPUT_SHAPE,
                  base_channels: int = 32
                  ) -> None:
         super().__init__()

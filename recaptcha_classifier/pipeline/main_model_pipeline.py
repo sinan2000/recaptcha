@@ -1,3 +1,4 @@
+import os
 import torch
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
@@ -40,13 +41,14 @@ class MainClassifierPipeline(BasePipeline):
         Therefore, we skip k-fold and just train the model with the best hyperparameters.
         """
         hp_summary = self._hp_optimizer.optimize_hyperparameters()
-        best_hp = hp_summary.iloc[0]
-        self.lr = best_hp['lr']
+        best_hp = self._hp_optimizer.get_best_hp()
         
         self._model = self._initialize_model(
-            n_layers=int(best_hp['n_layers']),
-            kernel_size=int(best_hp['kernel_size'])
+            n_layers=best_hp[0],
+            kernel_size=best_hp[1]
         )
+        
+        self.lr = best_hp[2]
 
         self._trainer.train(self._model,
                             self.lr,
@@ -74,3 +76,12 @@ class MainClassifierPipeline(BasePipeline):
         return MainCNN(
             n_layers=n_layers, kernel_size=kernel_size,
             num_classes=self.class_map_length)
+    
+    def save_model(self):
+        torch.save({
+            "model_state_dict": self._model.state_dict(),
+            "config": {
+                "n_layers": self._model.n_layers,
+                "kernel_size": self._model.kernel_size,
+            }
+        }, os.path.join(self.save_folder, self.model_file_name))
