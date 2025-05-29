@@ -139,7 +139,6 @@ ReDoc documentation: http://localhost:8000/redoc
 These interfaces allow you to test predictions and inspect the request/response formats.
 
 
-
 ### Possible error Responses
 
 | Status code  |    Description
