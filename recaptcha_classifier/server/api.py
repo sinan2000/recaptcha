@@ -9,7 +9,6 @@ from .load_model import load_main_model, get_model_path
 from recaptcha_classifier.detection_labels import DetectionLabels
 from recaptcha_classifier.constants import IMAGE_SIZE
 from pydantic import BaseModel
-from typing import Literal
 import os
 
 
@@ -70,7 +69,7 @@ def inference(model: torch.nn.Module, device: torch.device, image: Image.Image) 
     with torch.no_grad():
         output = model(tensor)
         prob = F.softmax(output, dim=1)
-        conf = prob.argmax(dim=1).item()
+        conf = prob.max().item()
         id = output.argmax(dim=1).item()
         label = DetectionLabels.from_id(id)
         

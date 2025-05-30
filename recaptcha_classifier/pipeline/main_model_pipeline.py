@@ -22,7 +22,8 @@ class MainClassifierPipeline(BasePipeline):
                  save_folder: str = MODELS_FOLDER,
                  model_file_name: str = MAIN_MODEL_FILE_NAME,
                  optimizer_file_name: str = OPTIMIZER_FILE_NAME,
-                 scheduler_file_name: str = SCHEDULER_FILE_NAME
+                 scheduler_file_name: str = SCHEDULER_FILE_NAME,
+                 early_stopping: bool = True
                  ) -> None:
         """
         Constructor for MainClassifierPipeline class.
@@ -48,7 +49,7 @@ class MainClassifierPipeline(BasePipeline):
         """
         super().__init__(lr, epochs, device,
                          save_folder, model_file_name,
-                         optimizer_file_name, scheduler_file_name)
+                         optimizer_file_name, scheduler_file_name, early_stopping)
 
         self.k_folds = k_folds
         self._hp_optimizer = None
@@ -57,8 +58,8 @@ class MainClassifierPipeline(BasePipeline):
             save_train_checkpoints: bool = True,
             load_train_checkpoints: bool = False) -> None:
         """ Runs the pipeline."""
-        self.data_loader()
-        self._trainer = self._initialize_trainer(self._model)
+        self._data_loader()
+        self._trainer = self._initialize_trainer()
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
 
         print("~~ Hyperparameter optimization (Random Search) ~~")
@@ -72,6 +73,7 @@ class MainClassifierPipeline(BasePipeline):
                             self.lr,
                             save_checkpoint=save_train_checkpoints,
                             load_checkpoint=load_train_checkpoints)
+        self.save_model()
         self.evaluate(plot_cm=True)
 
     def _run_kfold_cross_validation(self) -> None:
@@ -91,6 +93,7 @@ class MainClassifierPipeline(BasePipeline):
         self._kfold = KFoldValidation(
             train_loader=self._loaders["train"],
             val_loader=self._loaders["val"],
+            epochs=self.epochs,
             k_folds=self.k_folds,
             device=self.device
         )
@@ -98,9 +101,6 @@ class MainClassifierPipeline(BasePipeline):
         best_hp = self._hp_optimizer.get_best_hp()
 
         self._kfold.run_cross_validation(hp=best_hp)
-
-        print("\n~~ Cross-Validation Summary ~~")
-        self._kfold.print_summary()
 
         self.lr = best_hp[2]
         self._model = self._initialize_model(

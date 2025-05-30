@@ -14,6 +14,7 @@ def main():
         choice = select_action()
         handle_action(choice)
 
+
 def select_action():
     """
     Displays a menu to select what to do with the app.
@@ -24,6 +25,7 @@ def select_action():
         "Train main CNN",
         "Expose API endpoint"
     ]).ask()
+
 
 def handle_action(choice: str):
     """
@@ -48,32 +50,43 @@ def handle_action(choice: str):
         choice = select_action()
         handle_action(choice)
 
+
 def ui():
     import subprocess
     import os
     root_dir = os.path.dirname(os.path.abspath(__file__))
-    streamlit_file = os.path.join(root_dir, "recaptcha_classifier", "server", "app.py")
+    streamlit_file = os.path.join(root_dir, "recaptcha_classifier",
+                                  "server", "app.py")
 
-    subprocess.Popen(["uvicorn", "recaptcha_classifier.server.api:app", "--reload"])
+    subprocess.Popen(["uvicorn", "recaptcha_classifier.server.api:app",
+                      "--reload"])
     
     subprocess.run(["streamlit", "run", streamlit_file])
 
+
 def train_simple_cnn():
-    from recaptcha_classifier.pipeline.simple_cnn_pipeline import SimpleClassifierPipeline
+    from recaptcha_classifier.pipeline.simple_cnn_pipeline import (
+        SimpleClassifierPipeline
+    )
 
     pipeline = SimpleClassifierPipeline()
-    pipeline.run(save_train_checkpoints=False)
+    pipeline.run()
+
 
 def train_main_classifier():
-    from recaptcha_classifier.pipeline.main_model_pipeline import MainClassifierPipeline
+    from recaptcha_classifier.pipeline.main_model_pipeline import (
+        MainClassifierPipeline
+    )
 
     pipeline = MainClassifierPipeline()
-    pipeline.run(save_train_checkpoints=False)
+    pipeline.run()
+
 
 def open_api():
     import uvicorn
     # opens endpoint at http://localhost:8000/
     uvicorn.run("recaptcha_classifier.server.api:app", reload=True)
+
 
 if __name__ == '__main__':
     main()

@@ -68,7 +68,7 @@ class BasePipeline:
         # different for the two pipelines
         pass
 
-    def data_loader(self) -> None:
+    def _data_loader(self) -> None:
         """ Load data using the DataPreprocessingPipeline.
 
         Returns:
@@ -98,8 +98,6 @@ class BasePipeline:
         return Trainer(train_loader=self._loaders["train"],
                        val_loader=self._loaders["val"],
                        epochs=self.epochs,
-                       optimizer=self.optimizer,
-                       scheduler=self.scheduler,
                        save_folder=self.save_folder,
                        model_file_name=self.model_file_name,
                        optimizer_file_name=self.optimizer_file_name,

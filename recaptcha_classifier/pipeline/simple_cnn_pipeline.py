@@ -2,6 +2,7 @@ import torch
 from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 import os
+from recaptcha_classifier.train.training import Trainer
 from recaptcha_classifier.constants import (
     MODELS_FOLDER, SIMPLE_MODEL_FILE_NAME,
     OPTIMIZER_FILE_NAME, SCHEDULER_FILE_NAME
@@ -17,7 +18,8 @@ class SimpleClassifierPipeline(BasePipeline):
                  save_folder: str = MODELS_FOLDER,
                  model_file_name: str = SIMPLE_MODEL_FILE_NAME,
                  optimizer_file_name: str = OPTIMIZER_FILE_NAME,
-                 scheduler_file_name: str = SCHEDULER_FILE_NAME
+                 scheduler_file_name: str = SCHEDULER_FILE_NAME,
+                 early_stopping: bool = True,
                  ) -> None:
         """
         Constructor for SimpleClassifierPipeline class.
@@ -44,7 +46,7 @@ class SimpleClassifierPipeline(BasePipeline):
         """
         super().__init__(lr, epochs, device,
                          save_folder, model_file_name,
-                         optimizer_file_name, scheduler_file_name)
+                         optimizer_file_name, scheduler_file_name, early_stopping)
 
     def run(self, save_train_checkpoints: bool = True,
             load_train_checkpoints: bool = False) -> None:
@@ -58,6 +60,7 @@ class SimpleClassifierPipeline(BasePipeline):
         self._trainer = self._initialize_trainer()
         print("Training:")
         self._trainer.train(model=self._model)
+        self.save_model()
         self.evaluate(plot_cm=True)
 
     def _initialize_model(self) -> SimpleCNN:
