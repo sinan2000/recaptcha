@@ -76,3 +76,41 @@ class SimpleClassifierPipeline(BasePipeline):
         """
         os.makedirs(self.save_folder, exist_ok=True)
         torch.save(self._model.state_dict(), os.path.join(self.save_folder, self.model_file_name))
+
+    def _initialize_trainer(self) -> Trainer:
+        """Initialize the trainer.
+
+        Returns:
+            Trainer: The initialized trainer.
+        """
+        return super()._initialize_trainer()
+
+    def train(
+        self, save_checkpoint: bool = True, load_checkpoint: bool = False
+    ) -> None:
+        """Train the model.
+
+        Args:
+            save_checkpoint (bool, optional): Whether to save the checkpoint.
+                Defaults to True.
+            load_checkpoint (bool, optional): Whether to load the checkpoint.
+                Defaults to False.
+
+        Returns:
+            None
+        """
+        self._trainer.train(self._model,
+                            load_checkpoint=load_checkpoint,
+                            save_checkpoint=save_checkpoint)
+
+    def evaluate(self, plot_cm: bool = False) -> dict:
+        """Evaluate the model.
+
+        Args:
+            plot_cm (bool): Whether to plot the confusion matrix.
+                Defaults to False.
+
+        Returns:
+            dict: A dictionary containing the evaluation results.
+        """
+        return super().evaluate(plot_cm)

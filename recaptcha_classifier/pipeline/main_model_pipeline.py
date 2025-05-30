@@ -25,13 +25,9 @@ class MainClassifierPipeline(BasePipeline):
                  scheduler_file_name: str = SCHEDULER_FILE_NAME
                  ) -> None:
         """
-        Constructor for SimpleClassifierPipeline class.
+        Constructor for MainClassifierPipeline class.
 
         Args:
-            step_size (int, optional): Step size for the learning rate
-                scheduler. Defaults to 5.
-            gamma (float, optional): Gamma value for the learning rate
-                scheduler. Defaults to 0.5.
             lr (float, optional): Learning rate for the optimizer.
                 Defaults to 0.001.
             epochs (int, optional): Number of epochs for training.
@@ -61,8 +57,8 @@ class MainClassifierPipeline(BasePipeline):
             save_train_checkpoints: bool = True,
             load_train_checkpoints: bool = False) -> None:
         """ Runs the pipeline."""
-        self._data_loader()
-        self._trainer = self._initialize_trainer()
+        self.data_loader()
+        self._trainer = self._initialize_trainer(self._model)
         self._hp_optimizer = HPOptimizer(trainer=self._trainer)
 
         print("~~ Hyperparameter optimization (Random Search) ~~")
@@ -103,6 +99,9 @@ class MainClassifierPipeline(BasePipeline):
 
         self._kfold.run_cross_validation(hp=best_hp)
 
+        print("\n~~ Cross-Validation Summary ~~")
+        self._kfold.print_summary()
+
         self.lr = best_hp[2]
         self._model = self._initialize_model(
             n_layers=best_hp[0],
@@ -122,7 +121,13 @@ class MainClassifierPipeline(BasePipeline):
             n_layers=n_layers, kernel_size=kernel_size,
             num_classes=self.class_map_length)
 
-    def save_model(self):
+    def save_model(self) -> None:
+        """
+        Saves the model.
+
+        Returns:
+            None
+        """
         os.makedirs(self.save_folder, exist_ok=True)
         torch.save({
             "model_state_dict": self._model.state_dict(),

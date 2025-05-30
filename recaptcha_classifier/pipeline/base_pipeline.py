@@ -59,6 +59,12 @@ class BasePipeline:
 
     @abstractmethod
     def run(self):
+        """
+        Run the pipeline.
+
+        Returns:
+            None
+        """
         # different for the two pipelines
         pass
 
@@ -92,6 +98,8 @@ class BasePipeline:
         return Trainer(train_loader=self._loaders["train"],
                        val_loader=self._loaders["val"],
                        epochs=self.epochs,
+                       optimizer=self.optimizer,
+                       scheduler=self.scheduler,
                        save_folder=self.save_folder,
                        model_file_name=self.model_file_name,
                        optimizer_file_name=self.optimizer_file_name,

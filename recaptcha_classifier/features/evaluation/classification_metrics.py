@@ -10,7 +10,9 @@ import matplotlib.pyplot as plt
 def evaluate_classification(y_pred: Tensor,
                             y_true: Tensor,
                             num_classes: int = len(DetectionLabels.all()),
-                            device: torch.device = torch.device("cuda" if torch.cuda.is_available() else "cpu"),
+                            device: torch.device = torch.device(
+                                "cuda" if torch.cuda.is_available()
+                                else "cpu"),
                             average: str = 'weighted',
                             cm_plot: bool = True,
                             class_names: Optional[list[str]] = None,
@@ -47,10 +49,13 @@ def evaluate_classification(y_pred: Tensor,
         raise ValueError("num_classes must be a positive integer")
 
     # Initialize Metrics
-    acc = Accuracy(task="multiclass", num_classes=num_classes).to(device=device)
-    f1 = F1Score(task="multiclass", num_classes=num_classes, average=average).to(device=device)
-    topk_acc = MulticlassAccuracy(num_classes=num_classes, top_k=3).to(device=device)
-    confmat = MulticlassConfusionMatrix(num_classes=num_classes).to(device=device)
+    acc = Accuracy(
+        task="multiclass", num_classes=num_classes).to(device=device)
+    f1 = F1Score(
+        task="multiclass", num_classes=num_classes, average=average).to(
+            device=device)
+    confmat = MulticlassConfusionMatrix(num_classes=num_classes).to(
+        device=device)
 
     # Compute metrics
     acc_val = acc(y_pred, y_true)

@@ -17,6 +17,9 @@ class Visualizer:
         Args:
             splits (DatasetSplitMap): the dataset splits
                 containing the items for each class.
+
+        Returns:
+            None
         """
         for split, cls_dict in splits.items():
             print(f"{split.upper()}:")

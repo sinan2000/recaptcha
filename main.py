@@ -1,4 +1,4 @@
-import sys 
+import sys
 import questionary
 
 
@@ -63,13 +63,13 @@ def train_simple_cnn():
 
     pipeline = SimpleClassifierPipeline()
     pipeline.run(save_train_checkpoints=False)
-    
+
 def train_main_classifier():
     from recaptcha_classifier.pipeline.main_model_pipeline import MainClassifierPipeline
 
     pipeline = MainClassifierPipeline()
     pipeline.run(save_train_checkpoints=False)
-    
+
 def open_api():
     import uvicorn
     # opens endpoint at http://localhost:8000/

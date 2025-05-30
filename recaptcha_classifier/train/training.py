@@ -18,7 +18,7 @@ class Trainer(object):
                  model_file_name: str ='model.pt',
                  optimizer_file_name: str ='optimizer.pt',
                  scheduler_file_name: str ='scheduler.pt',
-                 device: torch.device |None = None,
+                 device: torch.device | None = None,
                  early_stop_threshold: int = 5,
                  early_stopping: bool = True
                  ) -> None:
@@ -94,9 +94,10 @@ class Trainer(object):
               model: nn.Module,
               lr: float = 0.001,
               load_checkpoint: bool = False,
-              save_checkpoint: bool = True) -> None:
+              save_checkpoint: bool = True
+              ) -> None:
         """
-        Main training loop.
+        Main training loop. Uses RAdam as optimizer and StepLR as scheduler.
 
         Args:
             model (torch.nn.Module): Model for training.
@@ -113,8 +114,8 @@ class Trainer(object):
         os.makedirs(self.save_folder, exist_ok=True)
 
         start_epoch = 0
-
-        if load_checkpoint and os.path.exists(os.path.join(self.save_folder, self.model_file_name)):
+        if load_checkpoint and os.path.exists(os.path.join(
+                self.save_folder, self.model_file_name)):
             start_epoch = self.load_checkpoint_states(model)
 
         if start_epoch == 0:
@@ -159,7 +160,11 @@ class Trainer(object):
                 print(f"Best validation loss: {self._best_val_loss:.4f}")
                 break
 
-    def _train_one_epoch(self, model, train_accuracy_counter, train_loss_counter, train_progress_bar):
+
+    def _train_one_epoch(self, model: nn.Module,
+                         train_accuracy_counter: metrics.MulticlassAccuracy,
+                         train_loss_counter: metrics.Mean,
+                         train_progress_bar: tqdm) -> None:
         """
         Training loop for one epoch.
 
@@ -207,6 +212,7 @@ class Trainer(object):
                        tqdm) -> None:
         """
         Validation loop for one epoch.
+
         Args:
             model (torch.nn.Module): Model for validation.
             val_accuracy_counter (metrics.MulticlassAccuracy): Accuracy
@@ -217,7 +223,6 @@ class Trainer(object):
         Returns:
             None
         """
-    def _val_one_epoch(self, model, val_accuracy_counter, val_loss_counter, val_progress_bar):
         model.eval()
         with torch.no_grad():
             for data, targets in val_progress_bar:
@@ -262,7 +267,8 @@ class Trainer(object):
         Returns:
             int: Start epoch.
         """
-        if not os.path.exists(os.path.join(self.save_folder, self.model_file_name)):
+        if not os.path.exists(os.path.join(
+                self.save_folder, self.model_file_name)):
             raise FileNotFoundError("Checkpoint folder doesn't exist.")
 
         checkpoint_model = torch.load(os.path.join(self.save_folder, self.model_file_name))

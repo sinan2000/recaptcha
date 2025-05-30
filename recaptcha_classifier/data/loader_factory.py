@@ -42,7 +42,7 @@ class LoaderFactory:
         self._class_map = class_map
 
     def create_loaders(self,
-                       splits: DatasetSplitDict) -> Dict[str, DataLoader]:
+                       splits: DatasetSplitMap) -> Dict[str, DataLoader]:
         """
         Creates the DataLoader objects for each split of the dataset.
 
