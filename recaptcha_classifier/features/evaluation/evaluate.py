@@ -51,7 +51,6 @@ def evaluate_model(model: torch.nn.Module,
     )
     results.update(class_results)
 
-    # Print results
     print("\n--- Evaluation Results ---")
     for key, val in results.items():
         if isinstance(val, torch.Tensor):

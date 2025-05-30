@@ -18,6 +18,7 @@ class KFoldValidation:
                  train_loader: DataLoader,
                  val_loader: DataLoader,
                  k_folds: int,
+                 epochs: int,
                  device=None) -> None:
         """
         Initialize the cross-validation setup.
@@ -31,6 +32,7 @@ class KFoldValidation:
         self.train_loader = train_loader
         self.val_loader = val_loader
         self.k_folds = k_folds
+        self.epochs = epochs
         self.device = device
         if device is None:
             self.device = torch.device("cuda" if torch.cuda.is_available()
@@ -80,7 +82,7 @@ class KFoldValidation:
             model = MainCNN(n_layers=n_layers, kernel_size=kernel_sizes)
 
             trainer = Trainer(fold_train_loader, fold_val_loader,
-                              epochs=20, save_folder=MODELS_FOLDER,
+                              epochs=self.epochs, save_folder=MODELS_FOLDER,
                               device=self.device)
 
             trainer.train(model,

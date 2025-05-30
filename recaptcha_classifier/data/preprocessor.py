@@ -21,6 +21,9 @@ class ImagePrep:
         Args:
             target_size (Tuple[int, int]): Desired size for images in (width,
             height) format
+
+        Returns:
+            None
         """
         self._target_size: Tuple[int, int] = target_size
 

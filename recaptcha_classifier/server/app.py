@@ -2,9 +2,6 @@ import streamlit as st
 import torch
 from typing import Literal
 import requests
-from recaptcha_classifier.pipeline.main_model_pipeline import MainClassifierPipeline
-from recaptcha_classifier.pipeline.simple_cnn_pipeline import SimpleClassifierPipeline
-
 
 class StreamlitApp:
     """
@@ -49,12 +46,14 @@ class StreamlitApp:
             
         if st.button("Start Training"):
             if self.model_type == "Simple":
+                from recaptcha_classifier.pipeline.simple_cnn_pipeline import SimpleClassifierPipeline
                 pipeline = SimpleClassifierPipeline(lr=self.lr,
                                                     epochs=self.epochs,
                                                     early_stopping=self.early_stopping,
                                                     device=self.device)
                 pipeline.run()
             else:
+                from recaptcha_classifier.pipeline.main_model_pipeline import MainClassifierPipeline
                 pipeline = MainClassifierPipeline(lr=self.lr,
                                                   epochs=self.epochs,
                                                   early_stopping=self.early_stopping,
@@ -71,7 +70,7 @@ class StreamlitApp:
         file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
         
         if file is not None:
-            st.image(file, caption='Uploaded Image.', use_column_width=True)
+            st.image(file, caption='Uploaded Image.', use_container_width=True)
             if st.button("Run Inference"):
                 files = {"file": (file.name, file.getvalue(), file.type)}
                 
@@ -88,5 +87,8 @@ class StreamlitApp:
                     st.error(f"Error during inference: {str(e)}")
 
 if __name__ == "__main__":
+    import sys
+    import os
+    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
     app = StreamlitApp()
     app.render()

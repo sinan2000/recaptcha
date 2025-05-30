@@ -49,6 +49,9 @@ class DataPreprocessingPipeline:
             num_workers (int): Number of workers for DataLoader.
             balance (bool): Whether to balance the dataset.
             show_plots (bool): Whether to show plots.
+
+        Returns:
+            None
         """
         self._class_enum = class_enum
         self._downloader = DatasetDownloader(self._class_enum

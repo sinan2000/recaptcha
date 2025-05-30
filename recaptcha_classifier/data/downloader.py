@@ -25,6 +25,9 @@ class DatasetDownloader:
         Args:
             url (str): URL of the Kaggle dataset to download.
             dest (str): Destination directory to save the dataset.
+
+        Returns:
+            None
         """
         self._url: str = url
         self._dest: Path = Path(dest)
@@ -36,6 +39,9 @@ class DatasetDownloader:
         """
         Checks if dataset is already downloaded.
         If not, downloads and then unzips it.
+
+        Returns:
+            None
         """
         if self._is_downloaded():
             print("Dataset already exists, skipping download.")
@@ -67,6 +73,9 @@ class DatasetDownloader:
     def _prepare_dest(self) -> None:
         """
         Creates the destination directory if it doesn't exist.
+
+        Returns:
+            None
         """
         self._dest.mkdir(parents=True, exist_ok=True)
 
@@ -83,6 +92,9 @@ class DatasetDownloader:
         """
         Downloads the dataset zip file.
         This method handles the download process and shows a progress bar.
+
+        Returns:
+            None
         """
         resp = self._fetch_stream()
         resp.raise_for_status()
@@ -92,10 +104,18 @@ class DatasetDownloader:
             for chunk in resp.iter_content(chunk_size=8192):
                 f.write(chunk)
                 bar(len(chunk))
-    
+
     def _extract_zip(self) -> None:
         """
         Extracts the downloaded zip file to the destination directory.
+        Unzips the downloaded dataset.
+        Then it cleans up the zip file and its main extracted directory.
+
+        Note: this assumes that the downloaded dataset has exactly
+        the structure of our selected Kaggle dataset for simplicity.
+
+        Returns:
+            None
         """
         with zipfile.ZipFile(self._zip_path) as z:
             z.extractall(self._dest)
@@ -107,7 +127,7 @@ class DatasetDownloader:
         Finally, it removes the main extracted directory that is now empty.
         """
         root = next(p for p in self._dest.iterdir() if p.is_dir() and p.name not in self._expected_folder_names)
-        
+
         for sub in ("images", "labels"):
             source = root / sub
             if source.exists():
@@ -115,10 +135,10 @@ class DatasetDownloader:
                 if target.exists():
                     shutil.rmtree(target)
                 source.rename(target)
-        
+
         if root.exists() and root.is_dir():
             root.rmdir()
-    
+
     def _delete_labels(self) -> None:
         """
         Deletes the labels directory if it exists.
@@ -126,7 +146,7 @@ class DatasetDownloader:
         label_dir = self._dest / "labels"
         if label_dir.exists() and label_dir.is_dir():
             shutil.rmtree(label_dir)
-    
+
     def _flatten_images_folder(self) -> None:
         images_dir = self._dest / "images"
         if not images_dir.exists():
@@ -138,6 +158,6 @@ class DatasetDownloader:
                 if target_path.exists():
                     shutil.rmtree(target_path)
                 subfolder.rename(target_path)
-        
+
         if not any(images_dir.iterdir()):
             images_dir.rmdir()
