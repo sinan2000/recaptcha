@@ -8,3 +8,4 @@ venv/
 /models/
 /data/
 /private/
+/main_model.pt
