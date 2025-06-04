@@ -1,3 +1,5 @@
+from typing import LiteralString
+
 import torch
 import os
 from ..models.main_model.model_class import MainCNN
@@ -37,7 +39,7 @@ def load_main_model(device: torch.device = torch.device("cpu")):
     model.eval()
     return model
 
-def get_model_path(model_type: str) -> str:
+def get_model_path(model_type: str) -> LiteralString | str | bytes | None:
     """
     Get the path to the model file based on the model type.
     """

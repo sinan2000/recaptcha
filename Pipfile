@@ -30,6 +30,8 @@ streamlit = "*"
 uvicorn = "*"
 questionary = "*"
 pydantic = "*"
+quantus = "*"
+pytorch-gradcam = "*"
 
 [dev-packages]
 
