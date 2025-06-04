@@ -57,12 +57,6 @@ from recaptcha_classifier import MainCNN
 
 
 
-
-
-
-
-
-
 def gradcam_explain(model,
                     target_layers,
                     folder: str = '',
