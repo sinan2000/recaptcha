@@ -72,8 +72,13 @@ class Explainability(object):
         input_tensors = []
 
         for img_tensor, _ in self._dataset:
-            img_tensor = img_tensor.reshape(224, 224, 3)
-            rgb_img = img_tensor.cpu().numpy()
+            if img_tensor.shape[0] == 3:
+                rgb_img = img_tensor.permute(1, 2, 0).cpu().numpy()  # to (224, 224, 3)
+            else:
+                rgb_img = img_tensor.cpu().numpy()
+            # im = Image.fromarray(rgb_img)
+            # print(im)
+            #plt.show()
             # rgb_img = np.float32(image) / 255.0  # scaling pixels to [0,1]
             input_tensor = preprocess_image(rgb_img, mean=mean, std=stds)
             input_tensors.append(input_tensor)
@@ -138,7 +143,7 @@ class Explainability(object):
         return self.folder_explain, self.folder_vis
 
 
-    def overlay_image(self, index: int = 0, alpha: float = 0.4) -> None:
+    def overlay_image(self, index: int = 0) -> None:
         if not os.path.exists(self.folder_vis):
             print(f"{self.folder_vis} not found. Run gradcam_generate_explanations() first.")
             return
@@ -148,7 +153,16 @@ class Explainability(object):
         heatmap = cv2.imread(os.path.join(self.folder_vis, f'img_{index+1}.jpg'))  # Loaded as BGR by default
         # heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)  # Convert to RGB
 
+        heatmap = heatmap if heatmap.shape[0] == 224 else np.transpose(heatmap, (1, 2, 0))
+        original_img = np.transpose(original_img, (1, 2, 0)) if original_img.shape[0] == 3 else original_img
+
+        vis = show_cam_on_image(original_img, heatmap, use_rgb=True, image_weight=0.7)
+        plt.imshow(vis)
+        plt.axis('off')
+        plt.show()
+
         # Assume original_img is a NumPy array in RGB format, heatmap is single-channel float [0,1]
+        '''
         heatmap_hw3 = heatmap if heatmap.shape[0] == 224 else np.transpose(heatmap, (1, 2, 0))
         original_hw3 = np.transpose(original_img, (1, 2, 0)) if original_img.shape[0] == 3 else original_img
 
@@ -173,6 +187,7 @@ class Explainability(object):
         overlayed_img_rgb = cv2.cvtColor(overlayed_img, cv2.COLOR_BGR2RGB)
 
         plt.imshow(overlayed_img_rgb)
+        plt.show()'''
         # plt.colorbar()
 
 
@@ -192,7 +207,6 @@ class Explainability(object):
 
 
         metric = quantus.IROF(return_aggregate=False)
-        # print(metric.get_params)
 
         scores = metric(
             model=self.model,
@@ -204,5 +218,6 @@ class Explainability(object):
             explain_func=quantus.explain,
             explain_func_kwargs={"method": "Saliency"}
         )
-        print(len(scores))
+        scores = np.array(scores)
+        print(f"Overall Mean Explainability Evaluation: {scores.mean()}")
         np.savetxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"), scores, delimiter=",")
