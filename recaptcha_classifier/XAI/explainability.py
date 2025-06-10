@@ -143,7 +143,7 @@ class Explainability(object):
         return self.folder_explain, self.folder_vis
 
 
-    def overlay_image(self, index: int = 0) -> None:
+    def overlay_image(self, index: int = 0, img_opacity:int = 0.5) -> None:
         if not os.path.exists(self.folder_vis):
             print(f"{self.folder_vis} not found. Run gradcam_generate_explanations() first.")
             return
@@ -156,7 +156,7 @@ class Explainability(object):
         heatmap = heatmap if heatmap.shape[0] == 224 else np.transpose(heatmap, (1, 2, 0))
         original_img = np.transpose(original_img, (1, 2, 0)) if original_img.shape[0] == 3 else original_img
 
-        vis = show_cam_on_image(original_img, heatmap, use_rgb=True, image_weight=0.7)
+        vis = show_cam_on_image(original_img, heatmap, use_rgb=True, image_weight=img_opacity)
         plt.imshow(vis)
         plt.axis('off')
         plt.show()
