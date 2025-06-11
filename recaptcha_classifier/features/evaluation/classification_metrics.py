@@ -43,7 +43,7 @@ def evaluate_classification(y_pred: Tensor,
     """
     num_classes = len(class_names)
 
-    logits = y_pred
+    logits = y_pred.to(device)
 
     # Convert logits to predicted labels
     y_pred = torch.argmax(y_pred, dim=1)
