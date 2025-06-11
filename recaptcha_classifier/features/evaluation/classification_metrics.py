@@ -41,6 +41,8 @@ def evaluate_classification(y_pred: Tensor,
     Returns:
         dict: accuracy, f1, confusion_matrix
     """
+    num_classes = len(class_names)
+
     logits = y_pred
 
     # Convert logits to predicted labels
