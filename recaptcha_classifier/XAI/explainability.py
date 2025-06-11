@@ -17,10 +17,12 @@ from torch.utils.data import Subset, DataLoader
 from recaptcha_classifier import DetectionLabels, DataPreprocessingPipeline, MainCNN
 
 
+
 class Explainability(object):
     """ Class for generating and evaluating explanations. """
 
     def __init__(self, model: MainCNN, n_samples:int = 400):
+        self._scores = None
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = model
         self.model.to(self.device)
@@ -83,7 +85,6 @@ class Explainability(object):
             input_tensor = preprocess_image(rgb_img, mean=mean, std=stds)
             input_tensors.append(input_tensor)
 
-        # Concat all input tensors along batch dimension
         batch_tensor = torch.cat(input_tensors, dim=0)  # shape: (N, 3, H, W)
         return batch_tensor
 
@@ -106,24 +107,20 @@ class Explainability(object):
                 tensor = tensor.to(self.device)
                 expanded_tensor = tensor.unsqueeze(0)  # Add batch dimension
 
-                # Normalize for visualization (between 0 and 1)
+                # normalization for visualization (between 0 and 1)
                 img = tensor.permute(1, 2, 0).cpu().numpy()
                 img = (img - img.min()) / (img.max() - img.min())
 
-                # Automatically use top predicted class
                 outputs = self.model.forward(expanded_tensor)
                 pred_class = outputs.argmax(dim=1).item()
                 targets = [ClassifierOutputTarget(pred_class)]
 
-                # Generate CAM
                 cam_output = cam(input_tensor=expanded_tensor,
                                     targets=targets)[0, :]
                 explanations.append(cam_output)
 
-                # Overlay CAM on image
                 visualization = show_cam_on_image(img, cam_output, use_rgb=True)
 
-                # Save visualization
                 vis_name = f'img_{i+1}.jpg'
                 if vis_name not in os.listdir(self.folder_vis): # applicable to code above
                     vis_img = Image.fromarray(visualization)
@@ -143,14 +140,18 @@ class Explainability(object):
         return self.folder_explain, self.folder_vis
 
 
-    def overlay_image(self, index: int = 0, img_opacity:int = 0.5) -> None:
+
+    def overlay_image(self, index: int = 1, img_opacity:int = 0.5) -> None:
         if not os.path.exists(self.folder_vis):
             print(f"{self.folder_vis} not found. Run gradcam_generate_explanations() first.")
             return
 
-        original_img = self._dataset[index][0].cpu().numpy()
+        if index < 1:
+            raise ValueError("Index should be greater than 0.")
 
-        heatmap = cv2.imread(os.path.join(self.folder_vis, f'img_{index+1}.jpg'))  # Loaded as BGR by default
+        original_img = self._dataset[index-1][0].cpu().numpy()
+
+        heatmap = cv2.imread(os.path.join(self.folder_vis, f'img_{index}.jpg'))  # Loaded as BGR by default
         # heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)  # Convert to RGB
 
         heatmap = heatmap if heatmap.shape[0] == 224 else np.transpose(heatmap, (1, 2, 0))
@@ -159,39 +160,11 @@ class Explainability(object):
         vis = show_cam_on_image(original_img, heatmap, use_rgb=True, image_weight=img_opacity)
         plt.imshow(vis)
         plt.axis('off')
+        # plt.title(f"True Class: {DetectionLabels.from_id(self._dataset[index-1][1])}")
         plt.show()
 
-        # Assume original_img is a NumPy array in RGB format, heatmap is single-channel float [0,1]
-        '''
-        heatmap_hw3 = heatmap if heatmap.shape[0] == 224 else np.transpose(heatmap, (1, 2, 0))
-        original_hw3 = np.transpose(original_img, (1, 2, 0)) if original_img.shape[0] == 3 else original_img
 
-        heatmap_clipped = np.clip(heatmap_hw3, 0, 1)
-
-        # Scale to [0,255] and round before converting to uint8
-        heatmap_uint8 = (heatmap_clipped * 255).round().astype(np.uint8)
-
-        # Now apply colormap
-        heatmap_color = cv2.applyColorMap(heatmap_uint8, cv2.COLORMAP_JET)
-
-        # Convert original image to BGR if needed (OpenCV uses BGR)
-        original_bgr = cv2.cvtColor(original_hw3, cv2.COLOR_RGB2BGR)
-
-        if original_bgr.dtype == np.float32 or original_bgr.dtype == np.float64:
-            original_bgr = (original_bgr * 255).round().astype(np.uint8)
-
-        # Overlay heatmap with alpha transparency (e.g., alpha=0.4)
-        overlayed_img = cv2.addWeighted(original_bgr, 1 - alpha, heatmap_color, alpha, 0)
-
-        # Convert back to RGB if you want to display with matplotlib or PIL
-        overlayed_img_rgb = cv2.cvtColor(overlayed_img, cv2.COLOR_BGR2RGB)
-
-        plt.imshow(overlayed_img_rgb)
-        plt.show()'''
-        # plt.colorbar()
-
-
-    def evaluate_explanations(self):
+    def evaluate_explanations(self, n:int = 100):
         self.model.eval()
 
         if not os.path.exists(self.folder_explain):
@@ -199,9 +172,9 @@ class Explainability(object):
             return
 
         a_batch_saliency_ce_model = np.load(os.path.join(self.folder_explain,'explanations.npy'))
-        a_batch_test = a_batch_saliency_ce_model[:32]
+        a_batch_test = a_batch_saliency_ce_model[:n]
 
-        dataloader = DataLoader(dataset=self._dataset, batch_size=32, shuffle=False)
+        dataloader = DataLoader(dataset=self._dataset, batch_size=n, shuffle=False)
         x_batch, y_batch = next(iter(dataloader))
         x_batch, y_batch = x_batch.cpu().numpy(), y_batch.cpu().numpy()
 
@@ -218,6 +191,104 @@ class Explainability(object):
             explain_func=quantus.explain,
             explain_func_kwargs={"method": "Saliency"}
         )
-        scores = np.array(scores)
-        print(f"Overall Mean Explainability Evaluation: {scores.mean()}")
         np.savetxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"), scores, delimiter=",")
+
+    def aggregate_eval(self):
+        if self._scores is None:
+            try:
+                self._scores = np.loadtxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"))
+            except ValueError as e:
+                raise ValueError("No scores found. Run evaluate_explanations() first.")
+        self._scores = np.array(self._scores)
+        print("=== Explainability Evaluation Stats: ===")
+        print(f"Mean: {np.mean(self._scores)}")
+        print(f"STD: {self._scores.std()}")
+        print(f"Median: {np.median(self._scores)}")
+        print(f"Variance: {np.var(self._scores)}")
+
+    def evaluate_explanations_index(self, index: int):
+        """Evaluate explanations for a specific dataset index."""
+        self.model.eval()
+
+        if not os.path.exists(self.folder_explain):
+            print(f"{self.folder_explain} not found. Run gradcam_generate_explanations() first.")
+            return
+
+        explanations = np.load(os.path.join(self.folder_explain, 'explanations.npy'))
+        if index < 0 or index >= len(explanations):
+            print(f"Index {index} out of range [0-{len(explanations) - 1}]")
+            return
+
+        a_batch_test = explanations[index:index + 1]  # Shape: (1, H, W)
+
+        x_single, y_single = self._dataset[index]
+        x_batch = x_single.unsqueeze(0).cpu().numpy()  # Add batch dimension
+        y_batch = np.array([y_single])  # Create batch of size 1
+
+        x = x_single
+        explanation = a_batch_test[index] if a_batch_test.shape[0] > 1 else a_batch_test[0]
+        self.visualize_sample(x, explanation, title_prefix=f"Sample {index}: ")
+
+        metric = quantus.IROF(return_aggregate=False, abs=True)
+        scores = metric(
+            model=self.model,
+            channel_first=True,
+            x_batch=x_batch,
+            y_batch=y_batch,
+            a_batch=a_batch_test,
+            device=self.device.type,
+            explain_func=quantus.explain,
+            explain_func_kwargs={"method": "Saliency"}
+        )
+
+        print(f"Score for index {index}: {scores[0]}")
+        return scores[0]
+
+
+    def visualize_sample(self, x, explanation, title_prefix=""):
+        """
+        Visualize an input image and its corresponding explanation/saliency map.
+        Args:
+            x: Input image as a numpy array (shape: H x W x 3 or 3 x H x W)
+            explanation: Saliency map as a numpy array (shape: H x W)
+            title_prefix: Optional string for plot titles
+        """
+        # H x W x 3 format
+        if x.shape[0] == 3 and len(x.shape) == 3:
+            img = np.transpose(x, (1, 2, 0))
+        else:
+            img = x
+
+        if img.max() > 1.0:
+            img_disp = img / 255.0
+        else:
+            img_disp = img
+
+        exp_disp = explanation
+        if exp_disp.max() > 0:
+            exp_disp = exp_disp / exp_disp.max()
+
+        plt.figure(figsize=(12, 5))
+
+        plt.subplot(1, 3, 1)
+        plt.imshow(img_disp)
+        plt.title(f"{title_prefix}Input Image")
+        plt.axis('off')
+
+        plt.subplot(1, 3, 2)
+        plt.imshow(exp_disp, cmap='jet')
+        plt.title(f"{title_prefix}Saliency Map")
+        plt.axis('off')
+
+        plt.subplot(1, 3, 3)
+        # Overlay saliency map on image
+        plt.imshow(img_disp, alpha=0.6)
+        plt.imshow(exp_disp, cmap='jet', alpha=0.4)
+        plt.title(f"{title_prefix}Overlay")
+        plt.axis('off')
+
+        plt.tight_layout()
+        plt.show()
+
+
+
