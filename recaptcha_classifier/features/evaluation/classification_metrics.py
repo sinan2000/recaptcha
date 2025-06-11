@@ -1,4 +1,5 @@
 import torch
+import pandas as pd
 from torch import Tensor
 from torchmetrics import Accuracy, F1Score
 from torchmetrics.classification import (
@@ -19,6 +20,7 @@ def evaluate_classification(y_pred: Tensor,
                             average: str = 'weighted',
                             cm_plot: bool = True,
                             class_names: Optional[list[str]] = None,
+                            save_path: str = "predictions.csv"
                             ) -> dict:
     """
     Evaluate classification model using torchmetrics
@@ -71,6 +73,14 @@ def evaluate_classification(y_pred: Tensor,
     if cm_plot:
         fig_, ax_ = confmat.plot(labels=class_names if class_names else None)
         plt.show()
+        
+    if save_path:
+        df = pd.DataFrame({
+            "true": y_true.cpu().numpy(),
+            "predicted": y_pred.cpu().numpy()
+        })
+        df.to_csv(save_path, index=False)
+        print(f"Predictions saved to {save_path}")
 
     return {
         'Accuracy': acc_val.item(),

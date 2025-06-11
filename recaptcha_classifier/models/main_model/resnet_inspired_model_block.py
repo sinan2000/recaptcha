@@ -15,7 +15,7 @@ class ResidualBlock(nn.Module):
     https://www.digitalocean.com/community/tutorials/writing-resnet-from-scratch-in-pytorch
     """
     
-    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3):
+    def __init__(self, in_channels: int, out_channels: int, kernel_size: int = 3, stride: int = 1):
         """
         Initializes the ResidualBlock with two convolutional layers,
         batch normalization, and ReLU activation.
@@ -27,14 +27,14 @@ class ResidualBlock(nn.Module):
         super().__init__()
         padding = (kernel_size - 1) // 2
         
-        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, padding=padding)
+        self.conv1 = nn.Conv2d(in_channels, out_channels, kernel_size=kernel_size, stride=stride, padding=padding)
         self.bn1 = nn.BatchNorm2d(out_channels)
         self.relu = nn.ReLU()
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, padding=padding)
+        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=kernel_size, stride=1, padding=padding)
         self.bn2 = nn.BatchNorm2d(out_channels)
         self.downsample = None
-        if in_channels != out_channels:
-            self.downsample = nn.Conv2d(in_channels, out_channels, kernel_size=1)
+        if in_channels != out_channels or stride != 1:
+            self.downsample = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         """
@@ -72,8 +72,9 @@ class MainCNN(BaseModel):
         
         for l_idx in range(n_layers):
             out_channels = min(base_channels * (2 ** l_idx), 128)
+            stride = 2 if l_idx > 0 else 1 # to increase training speed
             self.res_blocks.append(
-                ResidualBlock(curr_channels, out_channels, kernel_size)
+                ResidualBlock(curr_channels, out_channels, kernel_size, stride)
             )
             curr_channels = out_channels
 

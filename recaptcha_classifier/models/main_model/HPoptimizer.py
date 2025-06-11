@@ -2,7 +2,7 @@ import itertools
 import random
 import pandas as pd
 from typing import List
-from recaptcha_classifier.models.main_model.model_class import MainCNN
+from recaptcha_classifier.models.main_model.resnet_inspired_model_block import MainCNN
 from recaptcha_classifier.train.training import Trainer
 
 
@@ -27,12 +27,12 @@ class HPOptimizer(object):
 
 
     def optimize_hyperparameters(self,
-                                 n_layers: list = [1, 2, 3],
+                                 n_layers: list = [2, 3, 4],
                                  kernel_sizes: list = [3, 5],
-                                 learning_rates: list = [1e-2, 1e-3, 1e-4],
+                                 learning_rates: list = [1e-2, 1e-3, 5e-3, 5e-4],
                                  save_checkpoints: bool = True,
                                  n_models: int = 1,
-                                 n_combos: int = 8,  # Number of random samples
+                                 n_combos: int = 12,  # Number of random samples
                                  ) -> pd.DataFrame:
         """
         Main loop for optimizing hyperparameters using Random Search.

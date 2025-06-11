@@ -6,7 +6,7 @@ from torch.utils.data import DataLoader, Subset
 import matplotlib.pyplot as plt
 from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.models.main_model.model_class import MainCNN
+from recaptcha_classifier.models.main_model.resnet_inspired_model_block import MainCNN
 from recaptcha_classifier.constants import MODELS_FOLDER
 
 
