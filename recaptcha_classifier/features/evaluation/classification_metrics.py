@@ -1,8 +1,9 @@
 import torch
 from torch import Tensor
+import torch.nn.functional as F
 from torchmetrics import Accuracy, F1Score
 from torchmetrics.classification import (
-    MulticlassConfusionMatrix, 
+    MulticlassConfusionMatrix,
     MulticlassAccuracy
 )
 from typing import Optional
@@ -62,6 +63,17 @@ def evaluate_classification(y_pred: Tensor,
     topk_acc = MulticlassAccuracy(
         top_k=3, num_classes=num_classes).to(device=device)
 
+    probs = F.softmax(logits, dim=1)
+    # Entropy per sample
+    entropy_vals = -torch.sum(probs * torch.log(probs + 1e-9), dim=1)
+    entropy_mean = entropy_vals.mean().item()
+    entropy_sem = entropy_vals.std(unbiased=True).item() / (len(entropy_vals) ** 0.5)
+    entropy_ci = 1.96 * entropy_sem
+
+    # Variance per sample
+    variance_vals = probs.var(dim=1)
+    variance_mean = variance_vals.mean().item()
+
     # Compute metrics
     acc_val = acc(y_pred, y_true)
     f1_val = f1(y_pred, y_true)
@@ -76,5 +88,10 @@ def evaluate_classification(y_pred: Tensor,
         'Accuracy': acc_val.item(),
         'F1-score': f1_val.item(),
         'Confusion Matrix': cm,
-        'Top-3 Accuracy': topk_acc_val.item()
+        'Top-3 Accuracy': topk_acc_val.item(),
+        'Mean Entropy': entropy_mean,
+        'Entropy SEM': entropy_sem,
+        'Entropy 95% CI': (
+            entropy_mean - entropy_ci, entropy_mean + entropy_ci),
+        'Mean Softmax Variance': variance_mean,
     }
