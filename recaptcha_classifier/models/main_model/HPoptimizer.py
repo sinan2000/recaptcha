@@ -77,6 +77,9 @@ class HPOptimizer(object):
 
         df_opt_data = pd.DataFrame(self._opt_data)
         df_opt_data.sort_values(by=['loss'], ascending=True, inplace=True, ignore_index=True)
+        self._save_history(df_opt_data)
+        if n_models < 1:
+            raise ValueError('n_models should be greater than 0.')
         return df_opt_data.copy()[:n_models]
 
 
@@ -103,3 +106,10 @@ class HPOptimizer(object):
             return []
         row = df_opt_data.iloc[0]
         return [int(row['layers']), int(row['kernel_sizes']), float(row['lr'])]
+    
+    def _save_history(self, history: pd.DataFrame) -> None:
+        """
+        Saves the history of hyperparameter optimization.
+        :param history: DataFrame with the history of hyperparameter optimization.
+        """
+        history.to_csv('hp_optimization_history.csv', index=False)
