@@ -15,7 +15,7 @@ from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from torch.utils.data import Subset, DataLoader
 
 from recaptcha_classifier import DetectionLabels, DataPreprocessingPipeline, MainCNN
-
+from recaptcha_classifier.XAI.utils_wrapped_model import WrappedModel
 
 
 class Explainability(object):
@@ -229,9 +229,11 @@ class Explainability(object):
         explanation = a_batch_test[index] if a_batch_test.shape[0] > 1 else a_batch_test[0]
         self.visualize_sample(x, explanation, title_prefix=f"Sample {index}: ")
 
-        metric = quantus.IROF(return_aggregate=False, abs=True)
+        wrapped_model = WrappedModel(self.model)
+        metric = quantus.IROF(return_aggregate=False)
+
         scores = metric(
-            model=self.model,
+            model=wrapped_model,
             channel_first=True,
             x_batch=x_batch,
             y_batch=y_batch,
