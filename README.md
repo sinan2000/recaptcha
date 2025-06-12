@@ -149,6 +149,9 @@ You will get a response in the following format:
  }
 ```
 
+> Note: In order to use the API, please have a model into the models/ folder. You can download our main one from the **[Releases](https://github.com/sinan2000/recaptcha/releases)** and place it in > the *models/* folder. This location can be changed by modifying the *MODELS_FOLDER* constant in constants.py. You can also use the API with the simple baseline CNN, just make sure to import and use the *load_simple_model* method instead of *load_main_model* into the src/server/api.py file.
+
+
 The API is stateless, initializing the model on launching, and caches responses for 1 hour.
 
 
