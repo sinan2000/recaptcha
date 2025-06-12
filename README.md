@@ -1,5 +1,21 @@
 # reCAPTCHA Solver 🛠️
 
+## Table of Contens
+
+- [Preequisites](#prerequisites)
+- [Getting Started](#getting-started)
+    - [Installing Dependencies](#installing-dependencies)
+    - [Testing](#testing)
+- [Repo Structure](#repository-structure)
+- [Usage Guide](#-usage-guide)
+- [API Docs](#api-documentation)
+    - [API Endpoints](#api-endpoints)
+    - [Example API call](#example-api-call-and-response-format)
+    - [Error Responses](#possible-error-responses)
+- [Docker](#getting-started-with-docker)
+
+---
+
 This project is part of the **[Applied Machine Learning](https://ocasys.rug.nl/current/catalog/course/WBAI065-05#WBAI065-05.2024-2025.1)** course at the **University of Groningen**, developed by **Group 23**. Our project goal is to build an AI system that is able to automatically solve reCAPTCHA tests through **image classification techniques**.
 
 ---
