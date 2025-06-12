@@ -15,7 +15,7 @@ class DataSplitter:
     def __init__(self,
                  ratios: Tuple[float, float, float] = (0.7, 0.2, 0.1),
                  shuffle: bool = True,
-                 seed: int = 23 # our group number
+                 seed: int = 23  # our group number
                  ) -> None:
         """
         Args:

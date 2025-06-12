@@ -5,10 +5,9 @@ from recaptcha_classifier.models.base_model import BaseModel
 
 
 class MainCNN(BaseModel):
-
+    """Main CNN model for image classification."""
     def __init__(self,
                  n_layers: int,
-                 # n_heads: int,
                  kernel_size: int,
                  num_classes: int = 12,
                  input_shape: tuple = INPUT_SHAPE,
@@ -23,18 +22,17 @@ class MainCNN(BaseModel):
         self.input_shape = input_shape
         current_channels = self.input_shape[0]
 
-
         for layer_idx in range(n_layers):
             output_channels = base_channels * (2 ** layer_idx)
 
             self.layers.append(
-                nn.Sequential(
-                    nn.Conv2d(in_channels=current_channels, out_channels=output_channels,
-                              kernel_size=kernel_size, stride=1, padding=(kernel_size-1)//2),
-                    nn.BatchNorm2d(output_channels),
-                    nn.ReLU(),
-                    nn.MaxPool2d(kernel_size=2, stride=2)
-                )
+                nn.Sequential(nn.Conv2d(in_channels=current_channels,
+                              out_channels=output_channels,
+                              kernel_size=kernel_size, stride=1,
+                              padding=(kernel_size-1)//2),
+                              nn.BatchNorm2d(output_channels),
+                              nn.ReLU(),
+                              nn.MaxPool2d(kernel_size=2, stride=2))
             )
             current_channels = output_channels
 
@@ -47,20 +45,32 @@ class MainCNN(BaseModel):
             nn.Linear(512, num_classes)
         )
 
-    def _get_conv_output(self, shape) -> int:
+    def _get_conv_output(self, shape: tuple) -> int:
         """Dynamically calculate conv layers' output size
-        :param shape: input shape
-        :return: output shape
+
+        Args:
+            shape (tuple): Input shape
+
+        Returns:
+            int: Output size
         """
-        dummy_input = torch.zeros(1, *shape)  # batch_size=1
+        dummy_input = torch.zeros(1, *shape)
         with torch.no_grad():
             for layer in self.layers:
                 dummy_input = layer(dummy_input)
         size = dummy_input.view(1, -1).size(1)
         return size
 
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Forward pass of the MainCNN model.
 
-    def forward(self, x) -> torch.Tensor:
+        Args:
+            x (torch.Tensor): Input tensor.
+
+        Returns:
+            torch.Tensor: Output tensor.
+        """
         for layer in self.layers:
             x = layer(x)
 

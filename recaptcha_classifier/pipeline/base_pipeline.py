@@ -58,7 +58,7 @@ class BasePipeline:
         self._trainer = None
 
     @abstractmethod
-    def run(self):
+    def run(self) -> None:
         """
         Run the pipeline.
 
@@ -128,7 +128,6 @@ class BasePipeline:
             plot_cm=plot_cm
         )
         return eval_results
-
 
     @abstractmethod
     def save_model(self):

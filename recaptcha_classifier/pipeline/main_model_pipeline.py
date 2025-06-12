@@ -11,6 +11,7 @@ from recaptcha_classifier.constants import (
     OPTIMIZER_FILE_NAME, SCHEDULER_FILE_NAME
 )
 
+
 class MainClassifierPipeline(BasePipeline):
     """Pipeline for training a simple classifier model."""
     def __init__(self,
@@ -48,7 +49,8 @@ class MainClassifierPipeline(BasePipeline):
         """
         super().__init__(lr, epochs, device,
                          save_folder, model_file_name,
-                         optimizer_file_name, scheduler_file_name, early_stopping)
+                         optimizer_file_name, scheduler_file_name,
+                         early_stopping)
 
         self.k_folds = k_folds
         self._hp_optimizer = None

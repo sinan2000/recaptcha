@@ -24,11 +24,11 @@ class KFoldValidation:
         """
         Initialize the cross-validation setup.
 
-        :param train_loader: DataLoader for training data
-        :param val_loader: DataLoader for validation data
-        :param k_folds: Number of folds
-        :param hp_optimizer: Instance of HPOptimizer
-        :param device: Optional torch device
+        Args:
+            train_loader (DataLoader): DataLoader for training data.
+            val_loader (DataLoader): DataLoader for validation data.
+            k_folds (int): Number of folds for cross-validation.
+            epochs (int): Number of epochs for training.
         """
         self.train_loader = train_loader
         self.val_loader = val_loader
@@ -47,10 +47,12 @@ class KFoldValidation:
         """
         Runs k-Fold Cross-Validation and hyperparameter optimization.
 
-        :param hp: list of hyperparameters to optimize
-        :param load_checkpoints: boolean to load checkpoints
-        :param batch_size: size of batches in fold data loaders
-        :param save_checkpoints: boolean flag to save checkpoints
+        Args:
+            hp (list): List of hyperparameters to optimize.
+            save_checkpoints (bool, optional): Whether to save checkpoints.
+                Defaults to True.
+            load_checkpoints (bool, optional): Whether to load checkpoints.
+                Defaults to False.
         """
 
         # Concatenating all data indices from both loaders
@@ -108,6 +110,10 @@ class KFoldValidation:
     def print_summary(results: pd.DataFrame) -> None:
         """
         Prints a summary of the cross-validation results.
+
+        Args:
+            results (pd.DataFrame): DataFrame containing the
+            cross-validation results.
         """
         print("\n~~ Cross-Validation Summary ~~")
         print(results.round(3))
@@ -135,6 +141,10 @@ class KFoldValidation:
     def plot_results(results: pd.DataFrame) -> None:
         """
         Plots the results of the cross-validation.
+
+        Args:
+            results (pd.DataFrame): DataFrame containing the
+            cross-validation results.
         """
         metrics = [col for col in results.columns if col != 'fold']
         mean_vals = results[metrics].mean()

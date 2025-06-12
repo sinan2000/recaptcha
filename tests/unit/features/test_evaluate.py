@@ -31,7 +31,7 @@ class TestEvaluateModel(unittest.TestCase):
             model=mock_model,
             test_loader=mock_loader,
             device=device,
-            num_classes=3,
+            #num_classes=3,
             class_names=["Class0", "Class1", "Class2"]
         )
 

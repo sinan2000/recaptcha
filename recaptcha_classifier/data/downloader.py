@@ -126,7 +126,9 @@ class DatasetDownloader:
         from the extracted directory to the destination directory.
         Finally, it removes the main extracted directory that is now empty.
         """
-        root = next(p for p in self._dest.iterdir() if p.is_dir() and p.name not in self._expected_folder_names)
+        root = next(
+            p for p in self._dest.iterdir() if p.is_dir(
+            ) and p.name not in self._expected_folder_names)
 
         for sub in ("images", "labels"):
             source = root / sub
