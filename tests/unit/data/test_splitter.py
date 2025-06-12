@@ -1,5 +1,5 @@
 import unittest
-from recaptcha_classifier.data.splitter import DataSplitter
+from src.data.splitter import DataSplitter
 
 
 class TestDataSplitter(unittest.TestCase):

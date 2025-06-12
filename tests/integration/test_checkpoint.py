@@ -1,10 +1,10 @@
 import unittest
 import torch
 import os
-from recaptcha_classifier.models.main_model import MainCNN
-from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.data.pipeline import DataPreprocessingPipeline
-from recaptcha_classifier.detection_labels import DetectionLabels
+from src.models.main_model import MainCNN
+from src.train.training import Trainer
+from src.data.pipeline import DataPreprocessingPipeline
+from src.detection_labels import DetectionLabels
 
 
 class TestCheckpointIntegration(unittest.TestCase):

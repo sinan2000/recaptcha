@@ -1,7 +1,7 @@
 import unittest
 
-from recaptcha_classifier.data.pipeline import DataPreprocessingPipeline
-from recaptcha_classifier.detection_labels import DetectionLabels
+from src.data.pipeline import DataPreprocessingPipeline
+from src.detection_labels import DetectionLabels
 
 
 class TestDataPipeline(unittest.TestCase):

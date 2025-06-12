@@ -55,17 +55,17 @@ def ui():
     import subprocess
     import os
     root_dir = os.path.dirname(os.path.abspath(__file__))
-    streamlit_file = os.path.join(root_dir, "recaptcha_classifier",
+    streamlit_file = os.path.join(root_dir, "src",
                                   "server", "app.py")
 
-    subprocess.Popen(["uvicorn", "recaptcha_classifier.server.api:app",
+    subprocess.Popen(["uvicorn", "src.server.api:app",
                       "--reload"])
     
     subprocess.run(["streamlit", "run", streamlit_file])
 
 
 def train_simple_cnn():
-    from recaptcha_classifier.pipeline.simple_cnn_pipeline import (
+    from src.pipeline.simple_cnn_pipeline import (
         SimpleClassifierPipeline
     )
 
@@ -74,7 +74,7 @@ def train_simple_cnn():
 
 
 def train_main_classifier():
-    from recaptcha_classifier.pipeline.main_model_pipeline import (
+    from src.pipeline.main_model_pipeline import (
         MainClassifierPipeline
     )
 
@@ -85,7 +85,7 @@ def train_main_classifier():
 def open_api():
     import uvicorn
     # opens endpoint at http://localhost:8000/
-    uvicorn.run("recaptcha_classifier.server.api:app", reload=True)
+    uvicorn.run("src.server.api:app", reload=True)
 
 
 if __name__ == '__main__':

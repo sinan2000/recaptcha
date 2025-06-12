@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from recaptcha_classifier.data.visualizer import Visualizer
+from src.data.visualizer import Visualizer
 
 
 class TestVisualizer(unittest.TestCase):
@@ -34,7 +34,7 @@ class TestVisualizer(unittest.TestCase):
             print_mock.assert_any_call("  class1: 1")
             print_mock.assert_any_call("  class2: 1")
 
-    @patch("recaptcha_classifier.data.visualizer.plt.show")
+    @patch("src.data.visualizer.plt.show")
     def test_plot_splits(self, show_mock):
         Visualizer.plot_splits(self.sample_splits)
         show_mock.assert_called_once()

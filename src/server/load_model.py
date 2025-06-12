@@ -2,7 +2,7 @@ import torch
 import os
 from ..models.main_model.resnet_inspired_model_block import MainCNN
 
-from recaptcha_classifier.constants import (
+from src.constants import (
     MODELS_FOLDER,
     MAIN_MODEL_FILE_NAME,
     SIMPLE_MODEL_FILE_NAME

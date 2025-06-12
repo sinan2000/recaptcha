@@ -4,7 +4,7 @@ import torch
 from numpy.ma.testutils import assert_equal
 from typing_extensions import override
 
-from recaptcha_classifier.train.training import Trainer
+from src.train.training import Trainer
 from tests.models.utils_training_hpo import initialize_dummy_components
 
 import torch
@@ -14,7 +14,7 @@ from torchvision.datasets import FakeData
 from torchvision.models import resnet18
 from typing_extensions import overload, override
 
-from recaptcha_classifier.train.training import Trainer
+from src.train.training import Trainer
 
 
 class TrainingUnitTests(unittest.TestCase):

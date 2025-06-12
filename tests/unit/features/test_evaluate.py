@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 import torch
-from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
+from src.features.evaluation.evaluate import evaluate_model
 
 
 class TestEvaluateModel(unittest.TestCase):

@@ -1,4 +1,4 @@
-from recaptcha_classifier.data.pipeline import DataPreprocessingPipeline
+from src.data.pipeline import DataPreprocessingPipeline
 
 
 def get_real_dataloaders(batch_size=4):

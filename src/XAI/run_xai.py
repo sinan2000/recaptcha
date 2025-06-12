@@ -1,5 +1,5 @@
-from recaptcha_classifier.XAI.explainability import Explainability
-from recaptcha_classifier.server.load_model import load_main_model
+from src.XAI.explainability import Explainability
+from src.server.load_model import load_main_model
 
 
 if __name__ == '__main__':

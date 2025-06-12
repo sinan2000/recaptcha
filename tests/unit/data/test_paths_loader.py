@@ -2,14 +2,14 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from recaptcha_classifier.data.paths_loader import ImagePathsLoader
+from src.data.paths_loader import ImagePathsLoader
 
 
 class TestImagePathsLoader(unittest.TestCase):
-    @patch("recaptcha_classifier.data.paths_loader.Path.glob")
-    @patch("recaptcha_classifier.data.paths_loader.Path.exists",
+    @patch("src.data.paths_loader.Path.glob")
+    @patch("src.data.paths_loader.Path.exists",
            return_value=True)
-    @patch("recaptcha_classifier.data.paths_loader.Path.is_dir",
+    @patch("src.data.paths_loader.Path.is_dir",
            return_value=True)
     def test_load_paths(self,
                                         is_dir_mock,
