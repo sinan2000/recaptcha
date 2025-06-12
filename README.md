@@ -1,8 +1,8 @@
 # reCAPTCHA Solver 🛠️
 
-## Table of Contens
+## Table of Contents
 
-- [Preequisites](#prerequisites)
+- [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
     - [Installing Dependencies](#installing-dependencies)
     - [Testing](#testing)
@@ -183,7 +183,7 @@ It may take a minute or two, depending on your internet speed.
 3. Now, you just have to run it by opening 2 ports, for API and Streamlit access, by simply running this command:
 
 ```bash
-docker run -it -p 8501:8501 -p 8000:8000 recaptcha-app
+docker run -it --shm-size=2g -p 8501:8501 -p 8000:8000 recaptcha-app
 ```
 
 > Note: The docker image runs on linux, not having cuda support. Therefore only CPU torch will be available.
