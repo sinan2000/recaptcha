@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import torch
+import csv
 from torch.utils.data import DataLoader
 from torcheval import metrics
 from tqdm import tqdm
@@ -159,6 +160,8 @@ class Trainer(object):
                 print(f"Early stopping at epoch {epoch + 1}.")
                 print(f"Best validation loss: {self._best_val_loss:.4f}")
                 break
+        
+        self._save_history_to_csv()
 
 
     def _train_one_epoch(self, model: nn.Module,
@@ -326,3 +329,16 @@ class Trainer(object):
             return True
 
         return False
+
+    def _save_history_to_csv(self, file_path: str = "train_history.csv") -> None:
+        """
+        Saves the loss and accuracy history to a CSV file.
+        :param file_path: Path to the CSV file.
+        """
+        path = os.path.join(self.save_folder, file_path)
+        with open(path, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Epoch', 'Loss', 'Accuracy'])
+            for epoch, (loss, acc) in enumerate(self._loss_acc_history):
+                writer.writerow([epoch + 1, loss, acc])
+        print(f"History saved to {path}.")

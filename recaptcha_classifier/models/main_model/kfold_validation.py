@@ -1,11 +1,12 @@
 import pandas as pd
 from sklearn.model_selection import KFold
 from sympy.printing.pytorch import torch
+import os
 from torch.utils.data import DataLoader, Subset
 import matplotlib.pyplot as plt
 from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
 from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.models.main_model.model_class import MainCNN
+from recaptcha_classifier.models.main_model.resnet_inspired_model_block import MainCNN
 from recaptcha_classifier.constants import MODELS_FOLDER
 
 
@@ -76,10 +77,10 @@ class KFoldValidation:
 
             fold_train_loader = DataLoader(train_subset,
                                            batch_size=batch_size,
-                                           shuffle=False)
+                                           shuffle=True)
             fold_val_loader = DataLoader(val_subset,
                                          batch_size=batch_size,
-                                         shuffle=False)
+                                         shuffle=True)
 
             model = MainCNN(n_layers=n_layers, kernel_size=kernel_sizes)
 
@@ -102,6 +103,7 @@ class KFoldValidation:
 
         df_results.to_csv(f"{MODELS_FOLDER}/kfold_results.csv", index=False)
         self.print_summary(df_results)
+        self.save_summary(df_results)
         self.plot_results(df_results)
 
     @staticmethod
@@ -125,6 +127,15 @@ class KFoldValidation:
         stds = res.std()
         print("\nStandard Deviation Across Folds:")
         print(stds.round(3))
+    
+    def save_summary(self, results: pd.DataFrame, file: str = "kfold_summary.csv") -> None:
+        """
+        Saves the summary of the cross-validation results to a CSV file.
+        """
+        summary = results.drop(columns=["fold"]).describe().T
+        path = os.path.join(MODELS_FOLDER, file)
+        summary.to_csv(path, index=True)
+        print(f"Summary saved to {path}")
 
     @staticmethod
     def plot_results(results: pd.DataFrame) -> None:

@@ -1,6 +1,6 @@
 import os
 import torch
-from recaptcha_classifier.models.main_model.model_class import MainCNN
+from recaptcha_classifier.models.main_model.resnet_inspired_model_block import MainCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
 from recaptcha_classifier.models.main_model.kfold_validation import (
@@ -17,7 +17,7 @@ class MainClassifierPipeline(BasePipeline):
     def __init__(self,
                  lr: float = 0.001,
                  k_folds: int = 5,
-                 epochs: int = 15,
+                 epochs: int = 20,
                  device: torch.device | None = None,
                  save_folder: str = MODELS_FOLDER,
                  model_file_name: str = MAIN_MODEL_FILE_NAME,
