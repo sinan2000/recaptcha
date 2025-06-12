@@ -1,6 +1,6 @@
 import os
 import torch
-from recaptcha_classifier.models.main_model.model_class import MainCNN
+from recaptcha_classifier.models.main_model.resnet_inspired_model_block import MainCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
 from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
 from recaptcha_classifier.models.main_model.kfold_validation import (

@@ -1,6 +1,6 @@
 import torch
 import os
-from ..models.main_model.model_class import MainCNN
+from ..models.main_model.resnet_inspired_model_block import MainCNN
 
 from recaptcha_classifier.constants import (
     MODELS_FOLDER,
