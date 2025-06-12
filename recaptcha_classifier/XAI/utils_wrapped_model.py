@@ -14,10 +14,10 @@ class WrappedModel(torch.nn.Module):
         return self.model.forward(x)
 
     def predict(self, x):
-        # Convert to torch tensor if needed
 
         if isinstance(x, np.ndarray):
-            x = torch.tensor(x, dtype=torch.float32).to(next(self.model.parameters()).device)
+            x = torch.tensor(x, dtype=torch.float32).to(
+                next(self.model.parameters()).device)
 
         with torch.no_grad():
             logits = self.model(x)
