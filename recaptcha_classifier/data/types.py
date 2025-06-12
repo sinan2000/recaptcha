@@ -17,7 +17,8 @@ DatasetSplitMap = Dict[str, ClassToImgPaths]
 # A dataset item, where the image is now loaded from disk
 LoadedImg = Image.Image
 
-# A final dataset item, that now contains the image tensor, and the class id; ready for model training
+# A final dataset item, that now contains the image tensor,
+# and the class id; ready for model training
 DataItem = Tuple[Tensor, Tensor]
 
 # Output of the dataloader, a batch of data items
