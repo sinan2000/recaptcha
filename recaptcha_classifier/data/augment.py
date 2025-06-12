@@ -1,7 +1,6 @@
 import random
 from typing import List
 from .types import LoadedImg
-from torchvision import transforms
 
 
 class AugmentationPipeline:

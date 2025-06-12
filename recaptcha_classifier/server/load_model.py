@@ -9,9 +9,16 @@ from recaptcha_classifier.constants import (
 )
 
 
-def load_simple_model(device: torch.device = torch.device("cpu")):
+def load_simple_model(
+     device: torch.device = torch.device("cpu")) -> torch.nn.Module:
     """
     Load the simple CNN model for image classification.
+
+    Args:
+        device (torch.device): The device to load the model on.
+
+    Returns:
+        torch.nn.Module: The loaded simple CNN model.
     """
     from ..models.simple_classifier_model import SimpleCNN
     model = SimpleCNN()
@@ -20,10 +27,18 @@ def load_simple_model(device: torch.device = torch.device("cpu")):
     model.to(device)
     model.eval()
     return model
-    
-def load_main_model(device: torch.device = torch.device("cpu")):
+
+
+def load_main_model(
+     device: torch.device = torch.device("cpu")) -> torch.nn.Module:
     """
     Load the main CNN model for image classification.
+
+    Args:
+        device (torch.device): The device to load the model on.
+
+    Returns:
+        torch.nn.Module: The loaded main CNN model.
     """
     path = get_model_path("main")
     checkpoint = torch.load(path, map_location=device)
@@ -37,9 +52,16 @@ def load_main_model(device: torch.device = torch.device("cpu")):
     model.eval()
     return model
 
-def get_model_path(model_type: str) ->  str | None:
+
+def get_model_path(model_type: str) -> str | None:
     """
     Get the path to the model file based on the model type.
+
+    Args:
+        model_type (str): The type of model to load.
+
+    Returns:
+        str: The path to the model file.
     """
     if model_type == "simple":
         return os.path.join(MODELS_FOLDER, SIMPLE_MODEL_FILE_NAME)

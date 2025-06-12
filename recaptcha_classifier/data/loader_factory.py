@@ -58,12 +58,13 @@ class LoaderFactory:
 
         for split_name, cls_dict in splits.items():
             # flatten nested dict of image_paths
-            flat_image_paths: ImagePathList = [image_path
-                                        # traversing over classes
-                                        for image_paths in cls_dict.values()
-                                        # traversing over image_paths
-                                        for image_path in image_paths
-                                        ]
+            flat_image_paths: ImagePathList = [
+                image_path
+                # traversing over classes
+                for image_paths in cls_dict.values()
+                # traversing over image_paths
+                for image_path in image_paths
+                ]
 
             # augmentatr only for training set
             augmentator = self._aug if split_name == 'train' else None
@@ -91,12 +92,13 @@ class LoaderFactory:
 
         return loaders
 
-    def _build_sampler(self, image_paths)-> WeightedRandomSampler:
+    def _build_sampler(
+         self, image_paths: ImagePathList) -> WeightedRandomSampler:
         """
         Builds a sampler for the dataset to balance the classes.
 
         Args:
-            pairs (FilePairList): A list of file pairs.
+            image_paths (ImagePathList): A list of image paths.
 
         Returns:
             WeightedRandomSampler: A sampler for the dataset.
