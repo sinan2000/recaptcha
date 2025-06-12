@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 
 def evaluate_classification(y_pred: Tensor,
                             y_true: Tensor,
-                            num_classes: int = len(DetectionLabels.all()),
+                            # num_classes: int = len(DetectionLabels.all()),
                             device: torch.device = torch.device(
                                 "cuda" if torch.cuda.is_available()
                                 else "cpu"),
