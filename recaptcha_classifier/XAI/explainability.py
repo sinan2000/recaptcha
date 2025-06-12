@@ -1,28 +1,32 @@
 import os
 import cv2
-
 import numpy as np
 import quantus
 import torch
 from PIL import Image
 from matplotlib import pyplot as plt
-
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image, preprocess_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
 from torch import Tensor
 from torch.utils.data import Subset, DataLoader
-
-from recaptcha_classifier import DetectionLabels, DataPreprocessingPipeline, MainCNN
+from recaptcha_classifier import (
+    DetectionLabels, DataPreprocessingPipeline, MainCNN)
 from recaptcha_classifier.XAI.utils_wrapped_model import WrappedModel
 
 
 class Explainability(object):
     """ Class for generating and evaluating explanations. """
 
-    def __init__(self, model: MainCNN, n_samples:int = 400):
+    def __init__(self, model: MainCNN, n_samples: int = 400):
+        """ Constructor for Explainability class.
+        Args:
+            model (MainCNN): Main CNN model for image classification.
+            n_samples (int): Number of samples to evaluate.
+        """
         self._scores = None
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device(
+            "cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = model
         self.model.to(self.device)
 
@@ -42,7 +46,8 @@ class Explainability(object):
         if eval_percent_samples < 0 or eval_percent_samples > 1:
             raise ValueError("eval_percent_samples should be between 0 and 1")
         self.gradcam_generate_explanations()
-        self.evaluate_explanations(n=int(eval_percent_samples * self.n_samples))
+        self.evaluate_explanations(n=int(
+            eval_percent_samples * self.n_samples))
         self.aggregate_eval()
 
     def gradcam_generate_explanations(self) -> None:
@@ -53,7 +58,8 @@ class Explainability(object):
         explanations = []
         input_tensors = self._get_input_tensors()
 
-        with GradCAM(model=self.model, target_layers=self._target_layers) as cam:
+        with GradCAM(
+             model=self.model, target_layers=self._target_layers) as cam:
             for i, tensor in enumerate(input_tensors):
                 if (i + 1) % 25 == 0:
                     print(f'Processing image {i + 1}/{len(input_tensors)}')
@@ -71,7 +77,7 @@ class Explainability(object):
                 targets = [ClassifierOutputTarget(pred_class)]
 
                 cam_output = cam(input_tensor=expanded_tensor,
-                                    targets=targets)[0, :]
+                                 targets=targets)[0, :]
                 explanations.append(cam_output)
 
                 visualization = show_cam_on_image(img, cam_output,
@@ -82,11 +88,12 @@ class Explainability(object):
                     vis_img = Image.fromarray(visualization)
                     vis_img.save(os.path.join(self.folder_vis, vis_name))
 
-        np.save(os.path.join(self.folder_explain, 'explanations.npy'), np.asarray(explanations))
-        print(f"Saved {len(explanations)} GradCAM visualizations to {self.folder_vis}")
+        np.save(os.path.join(self.folder_explain, 'explanations.npy'),
+                np.asarray(explanations))
+        print(f"Saved {len(explanations)} GradCAM visualizations to {
+            self.folder_vis}")
 
-
-    def evaluate_explanations(self, n:int = 100) -> list | None:
+    def evaluate_explanations(self, n: int = 100) -> list | None:
         """Evaluate explanations of a specific amount.
         Args:
             n: number of explanations to evaluate
@@ -102,7 +109,7 @@ class Explainability(object):
             return None
 
         a_batch_saliency_ce_model = np.load(os.path.join(
-            self.folder_explain,'explanations.npy'))
+            self.folder_explain, 'explanations.npy'))
         a_batch_test = a_batch_saliency_ce_model[:n]
 
         dataloader = DataLoader(dataset=self._dataset,
@@ -116,13 +123,12 @@ class Explainability(object):
         if scores:
             np.savetxt(os.path.join(self.folder,
                                     "mainCNN_eval_scores.csv"),
-                                    scores,
-                                    delimiter=",")
+                       scores,
+                       delimiter=",")
             print(f"Saved {len(scores)} valid evaluation scores.")
         else:
             print("No valid scores to save.")
         return scores
-
 
     def evaluate_explanations_index(self, index: int) -> None:
         """Evaluate explanations for a specific dataset index.
@@ -153,8 +159,10 @@ class Explainability(object):
         y_batch = np.array([y_single])
 
         x = x_single
-        explanation = a_batch_test[index] if a_batch_test.shape[0] > 1 else a_batch_test[0]
-        self._visualize_sample(x, explanation, title_prefix=f"Sample {index}: ")
+        explanation = a_batch_test[
+            index] if a_batch_test.shape[0] > 1 else a_batch_test[0]
+        self._visualize_sample(x, explanation, title_prefix=f"Sample {
+            index}: ")
 
         scores = self._run_evaluation_irof(a_batch_test, n, x_batch, y_batch)
 
@@ -166,11 +174,14 @@ class Explainability(object):
         mean, std, median, and variance."""
         if self._scores is None:
             try:
-                self._scores = np.loadtxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"))
-            except ValueError as e:
-                raise ValueError("No scores found. Run evaluate_explanations() first.")
+                self._scores = np.loadtxt(os.path.join(
+                    self.folder, "mainCNN_eval_scores.csv"))
+            except ValueError:
+                raise ValueError(
+                    "No scores found. Run evaluate_explanations() first.")
         self._scores = np.array(self._scores)
-        print(f"=== Explainability Evaluation Stats ({len(self._scores)} samples): ===")
+        print(f"=== Explainability Evaluation Stats ({
+            len(self._scores)} samples): ===")
         print(f"Mean: {np.mean(self._scores)}")
         print(f"STD: {self._scores.std()}")
         print(f"Median: {np.median(self._scores)}")
@@ -197,7 +208,8 @@ class Explainability(object):
         heatmap = cv2.imread(os.path.join(self.folder_vis, f'img_{index}.jpg'))
         # heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)  # Convert to RGB
 
-        self._visualize_sample(original_img, heatmap, title_prefix=f"Sample {index}: ")
+        self._visualize_sample(
+            original_img, heatmap, title_prefix=f"Sample {index}: ")
 
     def _get_test_dataset(self) -> None:
         """ Getting test dataset from DataPreprocessingPipeline. """
@@ -205,7 +217,6 @@ class Explainability(object):
             data = DataPreprocessingPipeline(
                 DetectionLabels, balance=True)
             self._test_dataloader = data.run()['test']
-          # number of images
         self._dataset = Subset(self._test_dataloader.dataset,
                                indices=list(range(self.n_samples)))
         self._test_dataloader = DataLoader(self._dataset, batch_size=1)
@@ -238,7 +249,6 @@ class Explainability(object):
 
         return mean_tensor.cpu().numpy(), std_tensor.cpu().numpy()
 
-
     def _get_input_tensors(self) -> Tensor:
         """
         Gets input tensors. GradCam preprocessing.
@@ -251,10 +261,10 @@ class Explainability(object):
 
         for img_tensor, _ in self._dataset:
             if img_tensor.shape[0] == 3:
-                rgb_img = img_tensor.permute(1, 2, 0).cpu().numpy()  # to (224, 224, 3)
+                rgb_img = img_tensor.permute(
+                    1, 2, 0).cpu().numpy()  # to (224, 224, 3)
             else:
                 rgb_img = img_tensor.cpu().numpy()
-            # rgb_img = np.float32(image) / 255.0  # scaling pixels to [0,1]
             input_tensor = preprocess_image(rgb_img, mean=mean, std=stds)
             input_tensors.append(input_tensor)
 
@@ -288,7 +298,7 @@ class Explainability(object):
             x_batch: array of x data
             y_batch: array of y data
         Returns:
-
+            list: list of scores
         """
         wrapped_model = WrappedModel(self.model)
         metric = quantus.IROF(return_aggregate=False)
@@ -324,7 +334,9 @@ class Explainability(object):
 
     def _visualize_sample(self, x, explanation, title_prefix="") -> None:
         """
-        Visualize an input image and its corresponding explanation/saliency map.
+        Visualize an input image and its corresponding
+        explanation/saliency map.
+
         Args:
             x: Input image as a numpy array (shape: H x W x 3 or 3 x H x W)
             explanation: Saliency map as a numpy array (shape: H x W)

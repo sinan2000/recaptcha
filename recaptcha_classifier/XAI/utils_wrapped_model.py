@@ -4,7 +4,13 @@ import torch.nn.functional as F
 
 
 class WrappedModel(torch.nn.Module):
-    def __init__(self, model):
+    """ Wrapper class to make model compatible with captum """
+    def __init__(self, model: torch.nn.Module) -> None:
+        """ Constructor for WrappedModel class.
+
+        Args:
+            model (torch.nn.Module): Main CNN model for image classification.
+        """
         super().__init__()
         self.model = model
         self.eval()
