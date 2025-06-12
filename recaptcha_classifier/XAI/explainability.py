@@ -10,6 +10,7 @@ from matplotlib import pyplot as plt
 from pytorch_grad_cam import GradCAM
 from pytorch_grad_cam.utils.image import show_cam_on_image, preprocess_image
 from pytorch_grad_cam.utils.model_targets import ClassifierOutputTarget
+from torch import Tensor
 from torch.utils.data import Subset, DataLoader
 
 from recaptcha_classifier import DetectionLabels, DataPreprocessingPipeline, MainCNN
@@ -33,8 +34,11 @@ class Explainability(object):
         self._get_test_dataset()
         self._config_folders()
 
-
     def run(self, eval_percent_samples: float = 0.5) -> None:
+        """Runs the main class methods (pipeline method).
+        Args:
+            eval_percent_samples (float): fraction of explanations to evaluate
+        """
         if eval_percent_samples < 0 or eval_percent_samples > 1:
             raise ValueError("eval_percent_samples should be between 0 and 1")
         self.gradcam_generate_explanations()
@@ -42,12 +46,12 @@ class Explainability(object):
         self.aggregate_eval()
 
     def gradcam_generate_explanations(self) -> None:
-
-        explanations = []
-        input_tensors = self._get_input_tensors()
-
+        """Generates GradCam explanations (rgb).
+        Results saved in Explainability folder."""
         self.model.eval()
         self.model.to(self.device)
+        explanations = []
+        input_tensors = self._get_input_tensors()
 
         with GradCAM(model=self.model, target_layers=self._target_layers) as cam:
             for i, tensor in enumerate(input_tensors):
@@ -55,7 +59,8 @@ class Explainability(object):
                     print(f'Processing image {i + 1}/{len(input_tensors)}')
 
                 tensor = tensor.to(self.device)
-                expanded_tensor = tensor.unsqueeze(0)  # Add batch dimension
+                # Add batch dimension
+                expanded_tensor = tensor.unsqueeze(0)
 
                 # normalization for visualization (between 0 and 1)
                 img = tensor.permute(1, 2, 0).cpu().numpy()
@@ -69,14 +74,14 @@ class Explainability(object):
                                     targets=targets)[0, :]
                 explanations.append(cam_output)
 
-                visualization = show_cam_on_image(img, cam_output, use_rgb=True)
+                visualization = show_cam_on_image(img, cam_output,
+                                                  use_rgb=True)
 
                 vis_name = f'img_{i+1}.jpg'
-                if vis_name not in os.listdir(self.folder_vis): # applicable to code above
+                if vis_name not in os.listdir(self.folder_vis):
                     vis_img = Image.fromarray(visualization)
                     vis_img.save(os.path.join(self.folder_vis, vis_name))
 
-        # Save all raw explanations
         np.save(os.path.join(self.folder_explain, 'explanations.npy'), np.asarray(explanations))
         print(f"Saved {len(explanations)} GradCAM visualizations to {self.folder_vis}")
 
@@ -109,7 +114,10 @@ class Explainability(object):
         scores = self._run_evaluation_irof(a_batch_test, n, x_batch, y_batch)
 
         if scores:
-            np.savetxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"), scores, delimiter=",")
+            np.savetxt(os.path.join(self.folder,
+                                    "mainCNN_eval_scores.csv"),
+                                    scores,
+                                    delimiter=",")
             print(f"Saved {len(scores)} valid evaluation scores.")
         else:
             print("No valid scores to save.")
@@ -153,7 +161,9 @@ class Explainability(object):
         if not len(scores) == 0:
             print(f"Score for index {index}: {scores[0]}")
 
-    def aggregate_eval(self):
+    def aggregate_eval(self) -> None:
+        """Aggregating all saved evaluation scores by
+        mean, std, median, and variance."""
         if self._scores is None:
             try:
                 self._scores = np.loadtxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"))
@@ -168,9 +178,10 @@ class Explainability(object):
 
     def overlay_image(self, index: int = 1) -> None:
         """
-        Visualize an input image and its corresponding explanation/saliency map.
+        Visualize an input image and its corresponding
+        explanation/saliency map.
         Args:
-            index: Index of preexisting image & saliency map. (from 1)
+            index: Index of preexisting image & saliency map. (From 1)
         """
         if not os.path.exists(self.folder_vis):
             print(f"{self.folder_vis} not found. "
@@ -201,6 +212,12 @@ class Explainability(object):
         print(f"Test subset len: {len(self._dataset)}")
 
     def _calculate_mean_std(self) -> tuple[np.ndarray, np.ndarray]:
+        """
+        Calculates mean and standard deviation of the image channels.
+        GradCam preprocessing.
+        Returns:
+             tuple[np.ndarray, np.ndarray]: mean and std arrays
+        """
         psum = torch.tensor([0.0, 0.0, 0.0])
         psum_sq = torch.tensor([0.0, 0.0, 0.0])
         nb_samples = 0
@@ -209,7 +226,8 @@ class Explainability(object):
             # inputs shape: (batch_size, 3, height, width)
             psum += inputs.sum(dim=[0, 2, 3])  # Sum over batch, height, width
             psum_sq += (inputs ** 2).sum(dim=[0, 2, 3])
-            nb_samples += inputs.shape[0] * inputs.shape[2] * inputs.shape[3]  # batch * height * width
+            # batch * height * width:
+            nb_samples += inputs.shape[0] * inputs.shape[2] * inputs.shape[3]
 
         mean = psum / nb_samples
         var = (psum_sq / nb_samples) - (mean ** 2)
@@ -221,9 +239,14 @@ class Explainability(object):
         return mean_tensor.cpu().numpy(), std_tensor.cpu().numpy()
 
 
-    def _get_input_tensors(self):
-        mean, stds = self._calculate_mean_std()
+    def _get_input_tensors(self) -> Tensor:
+        """
+        Gets input tensors. GradCam preprocessing.
+        Returns:
+             Tensor: a batch of input image tensors. (shape: (N, 3, H, W))
+        """
 
+        mean, stds = self._calculate_mean_std()
         input_tensors = []
 
         for img_tensor, _ in self._dataset:
@@ -238,7 +261,12 @@ class Explainability(object):
         batch_tensor = torch.cat(input_tensors, dim=0)  # shape: (N, 3, H, W)
         return batch_tensor
 
-    def _config_folders(self):
+    def _config_folders(self) -> tuple[str, str]:
+        """
+        Folder/File path handling.
+        Returns:
+             tuple[str, str]: Folder path and file path.
+        """
         os.makedirs(self.folder, exist_ok=True)
         save_folder = os.path.join(self.folder, 'outputs')
         self.folder_vis = os.path.join(save_folder, 'visualizations')
@@ -247,7 +275,21 @@ class Explainability(object):
         os.makedirs(self.folder_explain, exist_ok=True)
         return self.folder_explain, self.folder_vis
 
-    def _run_evaluation_irof(self, a_batch_test, n, x_batch, y_batch):
+    def _run_evaluation_irof(self,
+                             a_batch_test: np.ndarray,
+                             n: int,
+                             x_batch: np.ndarray,
+                             y_batch: np.ndarray) -> list:
+        """
+        Runs quantus IROF evaluation loop.
+        Args:
+            a_batch_test: explanations batch
+            n: number of explanations to evaluate
+            x_batch: array of x data
+            y_batch: array of y data
+        Returns:
+
+        """
         wrapped_model = WrappedModel(self.model)
         metric = quantus.IROF(return_aggregate=False)
         scores = []
