@@ -68,7 +68,7 @@ class MainCNN(BaseModel):
         self.input_shape = input_shape
         
         curr_channels = self.input_shape[0]
-        self.res_blocks = nn.ModuleList()
+        self.res_blocks = nn.Sequential()
         
         for l_idx in range(n_layers):
             out_channels = min(base_channels * (2 ** l_idx), 128)

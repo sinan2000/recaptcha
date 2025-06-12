@@ -31,7 +31,13 @@ class Explainability(object):
         self.model.to(self.device)
 
         # -1 gets last block; 0 gets the conv2d layer specifically:
-        self._target_layers = [self.model.layers[-1][0]]
+        try:
+            self._target_layers = [self.model.layers[-1][0]]
+        except AttributeError:
+            try:
+                self._target_layers = [self.model.res_blocks[-1]]
+            except ModuleNotFoundError:
+                raise ModuleNotFoundError("Model's last layers were not found.")
         self.folder = "Explanations"
         self.n_samples = n_samples
         self._test_dataloader = None

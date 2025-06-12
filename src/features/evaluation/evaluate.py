@@ -8,7 +8,7 @@ from src.detection_labels import DetectionLabels
 def evaluate_model(model: torch.nn.Module,
                    test_loader: torch.utils.data.DataLoader,
                    device: torch.device,
-                   class_names: list[str] = len(DetectionLabels.all()),
+                   class_names: list[str] = DetectionLabels.all(),
                    plot_cm: bool = False) -> dict:
     """
     Evaluation function for classification models.
