@@ -152,3 +152,22 @@ These interfaces allow you to test predictions and inspect the request/response 
 |    422       |  Validation error (eg. file not provided or malformed request) |
 |    500       |  Internal server error                                         |
 |    503       |  Model was not loaded - ensure you either trained or downloaded|
+
+## Getting Started with Docker
+
+1. Make sure [Docker](https://docs.docker.com/get-docker/) is installed on your machine and running.
+
+2. Build the docker image by running the following command:
+```bash
+docker build -t recaptcha-app .
+```
+
+It may take a minute or two, depending on your internet speed.
+
+3. Now, you just have to run it by opening 2 ports, for API and Streamlit access, by simply running this command:
+
+```bash
+docker run -it -p 8501:8501 -p 8000:8000 recaptcha-app
+```
+
+> Note: The docker image runs on linux, not having cuda support. Therefore only CPU torch will be available.
