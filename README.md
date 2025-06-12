@@ -125,6 +125,15 @@ Available list of options:
 >
 > Note: In order to use our trained model for predictions, please download it from the **[Releases](https://github.com/sinan2000/recaptcha/releases)** and place it in > the *models/* folder. This location can be changed by modifying the *MODELS_FOLDER* constant in constants.py
 
+3. The dataset can be found at [Kaggle](https://www.kaggle.com/datasets/mikhailma/test-dataset/code), although it is not recommended to download it yourself. This is because we have a specific folder structure that the program follows. Therefore, it is better to just run the app, and briefly select to train either of the models: the first step will be to download the dataset. After that, you can simply cancel the app, and you will find the data under the *data/* folder.
+
+> If you really want to download it yourself, please unzip it, delete the labels directory, and move all the directories within the *images/* folder as such:
+
+```bash
+├───data
+├─────Bridge/
+├─────Bicycle/
+```
 
 ## API Documentation
 
