@@ -29,8 +29,6 @@ class Trainer(object):
             train_loader (DataLoader): DataLoader for training data.
             val_loader (DataLoader): DataLoader for validation data.
             epochs (int): Number of epochs for training.
-            optimizer (torch.optim.Optimizer): Optimizer for training.
-            scheduler (torch.optim.lr_scheduler): Scheduler for learning rate.
             save_folder (str): Folder for saving checkpoint files.
             model_file_name (str, optional): Name of the model checkpoint
                 file. Defaults to "model.pt".
