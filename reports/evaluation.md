@@ -6,25 +6,25 @@ The results are:
 
 | Number of targets (M) | Probability of solving the grid (P_solve) |
 |-----------------------|-------------------------------------------|
-|         0             |                  61.84%                   |
-|         1             |                  28.18%                   |
-|         2             |                  12.84%                   |
-|         3             |                  5.85%                    |
-|         4             |                  2.67%                    |
-|         5             |                  1.22%                    |
+|         0             |                  66.70%                   |
+|         1             |                  35.86%                   |
+|         2             |                  19.28%                   |
+|         3             |                  10.37%                   |
+|         4             |                  5.57%                    |
+|         5             |                  3.00%                    |
 
 
 These results were obtained by first getting the overall True Positive Rate and True Negative Rate of the model, from the tpr_tnr.py script, and then plugging them in the functions that computed these probabilities in the recaptcha_success.py script.
 
 **Interpretation:**
 
-M = 0: When there are no target images, the model has a 61.84% chance of correctly identifying this by selecting no images at all (not making any false positives).
+M = 0: When there are no target images, the model has a 66.70% chance of correctly identifying this by selecting no images at all (not making any false positives).
 
-M = 1: When there is exactly one target image, the model has a 28.18% chance of selecting the correct image while avoiding false positives.
+M = 1: When there is exactly one target image, the model has a 35.86% chance of selecting the correct image while avoiding false positives.
 
-M = 2-5: As the number of target images increases, the probability that the model correctly selects all targets (without selecting any incorrect images) decreases sharply. For instance, with 3 targets, the probability drops to just 5.85%.
+M = 2-5: As the number of target images increases, the probability that the model correctly selects all targets (without selecting any incorrect images) decreases sharply. For instance, with 3 targets, the probability drops to 10.37%.
 
-Overall, when considering the distribution of different target counts in typical reCAPTCHA grids, the expected solve rate is **17.46%**. This means that, on average, the model will successfully pass the reCAPTCHA test only about 1 in every 6 attempts.
+Overall, when considering the distribution of different target counts in typical reCAPTCHA grids, the expected solve rate is **22.925**. This means that, on average, the model will successfully pass the reCAPTCHA test 1 in every 4.36 attempts.
 
 **Key Takeaways:**
 
