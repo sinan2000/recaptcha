@@ -1,16 +1,17 @@
 import os
 
+from recaptcha_classifier import MainCNN
 from recaptcha_classifier.XAI.explainability import Explainability
 from recaptcha_classifier.server.load_model import load_main_model
 
 
 if __name__ == '__main__':
+    # Trained:
     model = load_main_model()
+    # Random:
+    # model = MainCNN(n_layers=1, kernel_size=1)
+
+    # XAI
     e = Explainability(model, n_samples=400)
-    #e.gradcam_generate_explanations()
-    e.evaluate_explanations_index(240)
-    #e.overlay_image(index=241, img_opacity=0.75)
-    # e.overlay_image(index=90, img_opacity=0.6)
-    # e.overlay_image(index=218, img_opacity=0.7)
-    # e.evaluate_explanations(n=400)
-    # e.aggregate_eval()
+    # e.run(eval_percent_samples=...)
+    # e.evaluate_explanations_index(241)    # low confidence example

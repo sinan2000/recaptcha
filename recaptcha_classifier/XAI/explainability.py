@@ -1,12 +1,10 @@
 import os
-import pickle
-
 import cv2
+
 import numpy as np
 import quantus
 import torch
 from PIL import Image
-from gradcam.utils import visualize_cam
 from matplotlib import pyplot as plt
 
 from pytorch_grad_cam import GradCAM
@@ -26,6 +24,7 @@ class Explainability(object):
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
         self.model = model
         self.model.to(self.device)
+
         # -1 gets last block; 0 gets the conv2d layer specifically:
         self._target_layers = [self.model.layers[-1][0]]
         self.folder = "Explanations"
@@ -34,6 +33,160 @@ class Explainability(object):
         self._get_test_dataset()
         self._config_folders()
 
+
+    def run(self, eval_percent_samples: float = 0.5) -> None:
+        if eval_percent_samples < 0 or eval_percent_samples > 1:
+            raise ValueError("eval_percent_samples should be between 0 and 1")
+        self.gradcam_generate_explanations()
+        self.evaluate_explanations(n=int(eval_percent_samples * self.n_samples))
+        self.aggregate_eval()
+
+    def gradcam_generate_explanations(self) -> None:
+
+        explanations = []
+        input_tensors = self._get_input_tensors()
+
+        self.model.eval()
+        self.model.to(self.device)
+
+        with GradCAM(model=self.model, target_layers=self._target_layers) as cam:
+            for i, tensor in enumerate(input_tensors):
+                if (i + 1) % 25 == 0:
+                    print(f'Processing image {i + 1}/{len(input_tensors)}')
+
+                tensor = tensor.to(self.device)
+                expanded_tensor = tensor.unsqueeze(0)  # Add batch dimension
+
+                # normalization for visualization (between 0 and 1)
+                img = tensor.permute(1, 2, 0).cpu().numpy()
+                img = (img - img.min()) / (img.max() - img.min())
+
+                outputs = self.model.forward(expanded_tensor)
+                pred_class = outputs.argmax(dim=1).item()
+                targets = [ClassifierOutputTarget(pred_class)]
+
+                cam_output = cam(input_tensor=expanded_tensor,
+                                    targets=targets)[0, :]
+                explanations.append(cam_output)
+
+                visualization = show_cam_on_image(img, cam_output, use_rgb=True)
+
+                vis_name = f'img_{i+1}.jpg'
+                if vis_name not in os.listdir(self.folder_vis): # applicable to code above
+                    vis_img = Image.fromarray(visualization)
+                    vis_img.save(os.path.join(self.folder_vis, vis_name))
+
+        # Save all raw explanations
+        np.save(os.path.join(self.folder_explain, 'explanations.npy'), np.asarray(explanations))
+        print(f"Saved {len(explanations)} GradCAM visualizations to {self.folder_vis}")
+
+
+    def evaluate_explanations(self, n:int = 100) -> list | None:
+        """Evaluate explanations of a specific amount.
+        Args:
+            n: number of explanations to evaluate
+        Returns:
+            None if explanations path is not found.
+            List of scores for each explanation otherwise.
+        """
+        self.model.eval()
+
+        if not os.path.exists(self.folder_explain):
+            print(f"{self.folder_explain} not found. "
+                  f"Run gradcam_generate_explanations() first.")
+            return None
+
+        a_batch_saliency_ce_model = np.load(os.path.join(
+            self.folder_explain,'explanations.npy'))
+        a_batch_test = a_batch_saliency_ce_model[:n]
+
+        dataloader = DataLoader(dataset=self._dataset,
+                                batch_size=n,
+                                shuffle=False)
+        x_batch, y_batch = next(iter(dataloader))
+        x_batch, y_batch = x_batch.cpu().numpy(), y_batch.cpu().numpy()
+
+        scores = self._run_evaluation_irof(a_batch_test, n, x_batch, y_batch)
+
+        if scores:
+            np.savetxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"), scores, delimiter=",")
+            print(f"Saved {len(scores)} valid evaluation scores.")
+        else:
+            print("No valid scores to save.")
+        return scores
+
+
+    def evaluate_explanations_index(self, index: int) -> None:
+        """Evaluate explanations for a specific dataset index.
+        Args:
+            index: Index of preexisting image & saliency map. (From 1)
+        """
+        self.model.eval()
+        n = 1
+        index = index - 1
+
+        if not os.path.exists(self.folder_explain):
+            print(f"{self.folder_explain} not found. "
+                  f"Run gradcam_generate_explanations() first.")
+            return
+
+        explanations = np.load(os.path.join(self.folder_explain,
+                                            'explanations.npy'))
+        if index < 0 or index >= len(explanations):
+            print(f"Index {index} out of range [0-{len(explanations) - 1}]")
+            return
+
+        a_batch_test = explanations[index:index + 1]  # Shape: (1, H, W)
+        x_single, y_single = self._dataset[index]
+
+        # batch dimension:
+        x_batch = x_single.unsqueeze(0).cpu().numpy()
+        # batch of size 1
+        y_batch = np.array([y_single])
+
+        x = x_single
+        explanation = a_batch_test[index] if a_batch_test.shape[0] > 1 else a_batch_test[0]
+        self._visualize_sample(x, explanation, title_prefix=f"Sample {index}: ")
+
+        scores = self._run_evaluation_irof(a_batch_test, n, x_batch, y_batch)
+
+        if not len(scores) == 0:
+            print(f"Score for index {index}: {scores[0]}")
+
+    def aggregate_eval(self):
+        if self._scores is None:
+            try:
+                self._scores = np.loadtxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"))
+            except ValueError as e:
+                raise ValueError("No scores found. Run evaluate_explanations() first.")
+        self._scores = np.array(self._scores)
+        print(f"=== Explainability Evaluation Stats ({len(self._scores)} samples): ===")
+        print(f"Mean: {np.mean(self._scores)}")
+        print(f"STD: {self._scores.std()}")
+        print(f"Median: {np.median(self._scores)}")
+        print(f"Variance: {np.var(self._scores)}")
+
+    def overlay_image(self, index: int = 1) -> None:
+        """
+        Visualize an input image and its corresponding explanation/saliency map.
+        Args:
+            index: Index of preexisting image & saliency map. (from 1)
+        """
+        if not os.path.exists(self.folder_vis):
+            print(f"{self.folder_vis} not found. "
+                  f"Run gradcam_generate_explanations() first.")
+            return
+
+        if index < 1:
+            raise ValueError("Index should be greater than 0.")
+
+        original_img = self._dataset[index - 1][0].cpu().numpy()
+
+        # Loaded as BGR by default:
+        heatmap = cv2.imread(os.path.join(self.folder_vis, f'img_{index}.jpg'))
+        # heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)  # Convert to RGB
+
+        self._visualize_sample(original_img, heatmap, title_prefix=f"Sample {index}: ")
 
     def _get_test_dataset(self) -> None:
         """ Getting test dataset from DataPreprocessingPipeline. """
@@ -78,57 +231,12 @@ class Explainability(object):
                 rgb_img = img_tensor.permute(1, 2, 0).cpu().numpy()  # to (224, 224, 3)
             else:
                 rgb_img = img_tensor.cpu().numpy()
-            # im = Image.fromarray(rgb_img)
-            # print(im)
-            #plt.show()
             # rgb_img = np.float32(image) / 255.0  # scaling pixels to [0,1]
             input_tensor = preprocess_image(rgb_img, mean=mean, std=stds)
             input_tensors.append(input_tensor)
 
         batch_tensor = torch.cat(input_tensors, dim=0)  # shape: (N, 3, H, W)
         return batch_tensor
-
-
-
-    def gradcam_generate_explanations(self):
-
-        explanations = []
-        input_tensors = self._get_input_tensors()
-
-        self.model.eval()
-
-        self.model.to(self.device)
-
-        with GradCAM(model=self.model, target_layers=self._target_layers) as cam:
-            for i, tensor in enumerate(input_tensors):
-                if (i + 1) % 25 == 0:
-                    print(f'Processing image {i + 1}/{len(input_tensors)}')
-
-                tensor = tensor.to(self.device)
-                expanded_tensor = tensor.unsqueeze(0)  # Add batch dimension
-
-                # normalization for visualization (between 0 and 1)
-                img = tensor.permute(1, 2, 0).cpu().numpy()
-                img = (img - img.min()) / (img.max() - img.min())
-
-                outputs = self.model.forward(expanded_tensor)
-                pred_class = outputs.argmax(dim=1).item()
-                targets = [ClassifierOutputTarget(pred_class)]
-
-                cam_output = cam(input_tensor=expanded_tensor,
-                                    targets=targets)[0, :]
-                explanations.append(cam_output)
-
-                visualization = show_cam_on_image(img, cam_output, use_rgb=True)
-
-                vis_name = f'img_{i+1}.jpg'
-                if vis_name not in os.listdir(self.folder_vis): # applicable to code above
-                    vis_img = Image.fromarray(visualization)
-                    vis_img.save(os.path.join(self.folder_vis, vis_name))
-
-        # Save all raw explanations
-        np.save(os.path.join(self.folder_explain, 'explanations.npy'), np.asarray(explanations))
-        print(f"Saved {len(explanations)} GradCAM visualizations to {self.folder_vis}")
 
     def _config_folders(self):
         os.makedirs(self.folder, exist_ok=True)
@@ -139,115 +247,40 @@ class Explainability(object):
         os.makedirs(self.folder_explain, exist_ok=True)
         return self.folder_explain, self.folder_vis
 
-
-
-    def overlay_image(self, index: int = 1, img_opacity:int = 0.5) -> None:
-        if not os.path.exists(self.folder_vis):
-            print(f"{self.folder_vis} not found. Run gradcam_generate_explanations() first.")
-            return
-
-        if index < 1:
-            raise ValueError("Index should be greater than 0.")
-
-        original_img = self._dataset[index-1][0].cpu().numpy()
-
-        heatmap = cv2.imread(os.path.join(self.folder_vis, f'img_{index}.jpg'))  # Loaded as BGR by default
-        # heatmap = cv2.cvtColor(heatmap, cv2.COLOR_BGR2RGB)  # Convert to RGB
-
-        heatmap = heatmap if heatmap.shape[0] == 224 else np.transpose(heatmap, (1, 2, 0))
-        original_img = np.transpose(original_img, (1, 2, 0)) if original_img.shape[0] == 3 else original_img
-
-        vis = show_cam_on_image(original_img, heatmap, use_rgb=True, image_weight=img_opacity)
-        plt.imshow(vis)
-        plt.axis('off')
-        # plt.title(f"True Class: {DetectionLabels.from_id(self._dataset[index-1][1])}")
-        plt.show()
-
-
-    def evaluate_explanations(self, n:int = 100):
-        self.model.eval()
-
-        if not os.path.exists(self.folder_explain):
-            print(f"{self.folder_explain} not found. Run gradcam_generate_explanations() first.")
-            return
-
-        a_batch_saliency_ce_model = np.load(os.path.join(self.folder_explain,'explanations.npy'))
-        a_batch_test = a_batch_saliency_ce_model[:n]
-
-        dataloader = DataLoader(dataset=self._dataset, batch_size=n, shuffle=False)
-        x_batch, y_batch = next(iter(dataloader))
-        x_batch, y_batch = x_batch.cpu().numpy(), y_batch.cpu().numpy()
-
-
-        metric = quantus.IROF(return_aggregate=False)
-
-        scores = metric(
-            model=self.model,
-            channel_first=True,
-            x_batch=x_batch,
-            y_batch=y_batch,
-            a_batch=a_batch_test,
-            device=self.device.type,
-            explain_func=quantus.explain,
-            explain_func_kwargs={"method": "Saliency"}
-        )
-        np.savetxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"), scores, delimiter=",")
-
-    def aggregate_eval(self):
-        if self._scores is None:
-            try:
-                self._scores = np.loadtxt(os.path.join(self.folder, "mainCNN_eval_scores.csv"))
-            except ValueError as e:
-                raise ValueError("No scores found. Run evaluate_explanations() first.")
-        self._scores = np.array(self._scores)
-        print("=== Explainability Evaluation Stats: ===")
-        print(f"Mean: {np.mean(self._scores)}")
-        print(f"STD: {self._scores.std()}")
-        print(f"Median: {np.median(self._scores)}")
-        print(f"Variance: {np.var(self._scores)}")
-
-    def evaluate_explanations_index(self, index: int):
-        """Evaluate explanations for a specific dataset index."""
-        self.model.eval()
-
-        if not os.path.exists(self.folder_explain):
-            print(f"{self.folder_explain} not found. Run gradcam_generate_explanations() first.")
-            return
-
-        explanations = np.load(os.path.join(self.folder_explain, 'explanations.npy'))
-        if index < 0 or index >= len(explanations):
-            print(f"Index {index} out of range [0-{len(explanations) - 1}]")
-            return
-
-        a_batch_test = explanations[index:index + 1]  # Shape: (1, H, W)
-
-        x_single, y_single = self._dataset[index]
-        x_batch = x_single.unsqueeze(0).cpu().numpy()  # Add batch dimension
-        y_batch = np.array([y_single])  # Create batch of size 1
-
-        x = x_single
-        explanation = a_batch_test[index] if a_batch_test.shape[0] > 1 else a_batch_test[0]
-        self.visualize_sample(x, explanation, title_prefix=f"Sample {index}: ")
-
+    def _run_evaluation_irof(self, a_batch_test, n, x_batch, y_batch):
         wrapped_model = WrappedModel(self.model)
         metric = quantus.IROF(return_aggregate=False)
+        scores = []
+        for i in range(n):
+            x = x_batch[i:i + 1]
+            y = y_batch[i]
+            a = a_batch_test[i:i + 1]
 
-        scores = metric(
-            model=wrapped_model,
-            channel_first=True,
-            x_batch=x_batch,
-            y_batch=y_batch,
-            a_batch=a_batch_test,
-            device=self.device.type,
-            explain_func=quantus.explain,
-            explain_func_kwargs={"method": "Saliency"}
-        )
+            # checking prediction confidence before evaluation
+            probs = wrapped_model.predict(x)
+            y_pred = probs[0, y]
 
-        print(f"Score for index {index}: {scores[0]}")
-        return scores[0]
+            if y_pred < 0.01:
+                print(f"Skipping index {i}: model confidence for "
+                      f"true label {y} is too low ({y_pred:.6f})")
+                continue
 
+            score = metric(
+                model=wrapped_model,
+                channel_first=True,
+                x_batch=x,
+                y_batch=np.array([y]),
+                a_batch=a,
+                device=self.device.type,
+                explain_func=quantus.explain,
+                explain_func_kwargs={"method": "Saliency"}
+            )[0]
 
-    def visualize_sample(self, x, explanation, title_prefix=""):
+            print(f"Score for index {i}: {score}")
+            scores.append(score)
+        return scores
+
+    def _visualize_sample(self, x, explanation, title_prefix="") -> None:
         """
         Visualize an input image and its corresponding explanation/saliency map.
         Args:
@@ -291,6 +324,3 @@ class Explainability(object):
 
         plt.tight_layout()
         plt.show()
-
-
-
