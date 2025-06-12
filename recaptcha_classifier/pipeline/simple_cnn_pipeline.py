@@ -46,14 +46,18 @@ class SimpleClassifierPipeline(BasePipeline):
         """
         super().__init__(lr, epochs, device,
                          save_folder, model_file_name,
-                         optimizer_file_name, scheduler_file_name, early_stopping)
+                         optimizer_file_name, scheduler_file_name,
+                         early_stopping)
 
     def run(self, save_train_checkpoints: bool = True,
             load_train_checkpoints: bool = False) -> None:
         """
         Runs the whole pipeline. Default saving of the training checkpoints.
-        :param save_train_checkpoints: boolean to save the training checkpoints during training.
-        :param load_train_checkpoints: boolean to load the training checkpoints during training.
+        Args:
+            save_train_checkpoints (bool, optional): Whether to save the
+                training checkpoints. Defaults to True.
+            load_train_checkpoints (bool, optional): Whether to load the
+                training checkpoints. Defaults to False.
         """
         self._data_loader()
         self._model = self._initialize_model()
@@ -78,7 +82,8 @@ class SimpleClassifierPipeline(BasePipeline):
             None
         """
         os.makedirs(self.save_folder, exist_ok=True)
-        torch.save(self._model.state_dict(), os.path.join(self.save_folder, self.model_file_name))
+        torch.save(self._model.state_dict(), os.path.join(
+            self.save_folder, self.model_file_name))
 
     def _initialize_trainer(self) -> Trainer:
         """Initialize the trainer.

@@ -2,7 +2,6 @@ import os
 import torch
 from recaptcha_classifier.models.main_model.model_class import MainCNN
 from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
-from recaptcha_classifier.train.training import Trainer
 from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
 from recaptcha_classifier.models.main_model.kfold_validation import (
     KFoldValidation
@@ -11,6 +10,7 @@ from recaptcha_classifier.constants import (
     MODELS_FOLDER, MAIN_MODEL_FILE_NAME,
     OPTIMIZER_FILE_NAME, SCHEDULER_FILE_NAME
 )
+
 
 class MainClassifierPipeline(BasePipeline):
     """Pipeline for training a simple classifier model."""
@@ -49,7 +49,8 @@ class MainClassifierPipeline(BasePipeline):
         """
         super().__init__(lr, epochs, device,
                          save_folder, model_file_name,
-                         optimizer_file_name, scheduler_file_name, early_stopping)
+                         optimizer_file_name, scheduler_file_name,
+                         early_stopping)
 
         self.k_folds = k_folds
         self._hp_optimizer = None
