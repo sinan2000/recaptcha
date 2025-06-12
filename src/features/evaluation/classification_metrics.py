@@ -8,7 +8,7 @@ from torchmetrics.classification import (
     MulticlassAccuracy
 )
 from typing import Optional
-from recaptcha_classifier.detection_labels import DetectionLabels
+from src.detection_labels import DetectionLabels
 import matplotlib.pyplot as plt
 
 

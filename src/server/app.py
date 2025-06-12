@@ -52,7 +52,7 @@ class StreamlitApp:
 
         if st.button("Start Training"):
             if self.model_type == "Simple":
-                from recaptcha_classifier.pipeline.simple_cnn_pipeline import (
+                from src.pipeline.simple_cnn_pipeline import (
                     SimpleClassifierPipeline)
                 pipeline = SimpleClassifierPipeline(
                     lr=self.lr,
@@ -61,7 +61,7 @@ class StreamlitApp:
                     device=self.device)
                 pipeline.run()
             else:
-                from recaptcha_classifier.pipeline.main_model_pipeline import (
+                from src.pipeline.main_model_pipeline import (
                     MainClassifierPipeline)
                 pipeline = MainClassifierPipeline(
                     lr=self.lr,

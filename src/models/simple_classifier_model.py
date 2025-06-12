@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as f
-from recaptcha_classifier.models.base_model import BaseModel
+from src.models.base_model import BaseModel
 
 
 class SimpleCNN(BaseModel):

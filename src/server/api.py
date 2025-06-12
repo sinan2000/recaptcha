@@ -6,8 +6,8 @@ from fastapi.responses import JSONResponse
 import torch.nn.functional as F
 from PIL import Image
 from .load_model import load_main_model, get_model_path
-from recaptcha_classifier.detection_labels import DetectionLabels
-from recaptcha_classifier.constants import IMAGE_SIZE
+from src.detection_labels import DetectionLabels
+from src.constants import IMAGE_SIZE
 from pydantic import BaseModel
 import os
 

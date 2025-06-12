@@ -81,7 +81,7 @@ To make navigating through the repository easier, you can find its structure bel
 ├───data  # Stores the .csv dataset
 ├───models  # Stores the .pkl models
 ├───notebooks  # Empty
-├───recaptcha_classifier
+├───src
 │   ├───data  # Data processing
 │   ├───features # Evaluation class
 │   └───models  # Model classes
