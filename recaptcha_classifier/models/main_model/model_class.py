@@ -66,5 +66,4 @@ class MainCNN(BaseModel):
 
         x = x.view(x.size(0), -1)
         x = self.classifier(x)
-        return x  # ! return logits, torch.softmax(x, dim=1) if needed for uncertainty
-
+        return x
