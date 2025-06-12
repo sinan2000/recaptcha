@@ -1,6 +1,6 @@
 import unittest
 import torch
-from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
+from src.models.simple_classifier_model import SimpleCNN
 
 
 class TestSimpleCNNModel(unittest.TestCase):

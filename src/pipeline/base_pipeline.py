@@ -1,10 +1,10 @@
 from abc import abstractmethod
 import torch
 from torch import nn
-from recaptcha_classifier.detection_labels import DetectionLabels
-from recaptcha_classifier.data.pipeline import DataPreprocessingPipeline
-from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
+from src.detection_labels import DetectionLabels
+from src.data.pipeline import DataPreprocessingPipeline
+from src.train.training import Trainer
+from src.features.evaluation.evaluate import evaluate_model
 
 
 class BasePipeline:

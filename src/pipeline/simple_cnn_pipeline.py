@@ -1,9 +1,9 @@
 import torch
-from recaptcha_classifier.models.simple_classifier_model import SimpleCNN
-from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
+from src.models.simple_classifier_model import SimpleCNN
+from src.pipeline.base_pipeline import BasePipeline
 import os
-from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.constants import (
+from src.train.training import Trainer
+from src.constants import (
     MODELS_FOLDER, SIMPLE_MODEL_FILE_NAME,
     OPTIMIZER_FILE_NAME, SCHEDULER_FILE_NAME
 )

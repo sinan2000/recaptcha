@@ -3,9 +3,9 @@ from unittest.mock import MagicMock, patch
 from pathlib import Path
 import torch
 import numpy as np
-from recaptcha_classifier.data.dataset import ImageDataset
-from recaptcha_classifier.data.preprocessor import ImagePrep
-from recaptcha_classifier.data.augment import AugmentationPipeline
+from src.data.dataset import ImageDataset
+from src.data.preprocessor import ImagePrep
+from src.data.augment import AugmentationPipeline
 
 
 class TestImageDataset(unittest.TestCase):

@@ -3,7 +3,7 @@ import torch
 from unittest.mock import MagicMock, patch
 from pathlib import Path
 from PIL import Image
-from recaptcha_classifier.data.preprocessor import ImagePrep
+from src.data.preprocessor import ImagePrep
 
 
 class TestImagePrep(unittest.TestCase):

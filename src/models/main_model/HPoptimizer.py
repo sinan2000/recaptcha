@@ -2,8 +2,8 @@ import itertools
 import random
 import pandas as pd
 from typing import List
-from recaptcha_classifier.models.main_model.resnet_inspired_model_block import MainCNN
-from recaptcha_classifier.train.training import Trainer
+from src.models.main_model.resnet_inspired_model_block import MainCNN
+from src.train.training import Trainer
 
 
 class HPOptimizer(object):

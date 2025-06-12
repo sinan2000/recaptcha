@@ -1,8 +1,8 @@
 import torch
 import torch
 import torch.nn as nn
-from recaptcha_classifier.constants import INPUT_SHAPE
-from recaptcha_classifier.models.base_model import BaseModel
+from src.constants import INPUT_SHAPE
+from src.models.base_model import BaseModel
 
 
 class ResidualBlock(nn.Module):

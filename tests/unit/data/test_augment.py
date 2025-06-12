@@ -2,7 +2,7 @@ import unittest
 import numpy as np
 from unittest.mock import patch
 from PIL import Image
-from recaptcha_classifier.data.augment import AugmentationPipeline
+from src.data.augment import AugmentationPipeline
 from torchvision import transforms
 
 

@@ -1,7 +1,7 @@
 from .classification_metrics import evaluate_classification
 import torch
 from tqdm import tqdm
-from recaptcha_classifier.detection_labels import DetectionLabels
+from src.detection_labels import DetectionLabels
 
 
 @torch.no_grad()

@@ -1,6 +1,6 @@
 import unittest
 import torch
-import recaptcha_classifier.features.evaluation.classification_metrics as cm
+import src.features.evaluation.classification_metrics as cm
 
 
 class TestEvaluateClassification(unittest.TestCase):

@@ -4,8 +4,8 @@ from typing import override
 
 import torch
 
-from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
-from recaptcha_classifier.train.training import Trainer
+from src.models.main_model.HPoptimizer import HPOptimizer
+from src.train.training import Trainer
 from tests.models.utils_training_hpo import initialize_dummy_components
 
 

@@ -10,10 +10,10 @@ import uuid
 import gc
 from torch.utils.data import Subset, DataLoader
 
-from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.models.main_model.model_class import MainCNN
-from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
-from recaptcha_classifier.models.main_model.kfold_validation import KFoldValidation
+from src.train.training import Trainer
+from src.models.main_model.model_class import MainCNN
+from src.models.main_model.HPoptimizer import HPOptimizer
+from src.models.main_model.kfold_validation import KFoldValidation
 from tests.integration.get_real_data import get_real_dataloaders
 
 

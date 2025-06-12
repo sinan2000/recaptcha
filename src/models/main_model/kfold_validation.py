@@ -4,10 +4,10 @@ from sympy.printing.pytorch import torch
 import os
 from torch.utils.data import DataLoader, Subset
 import matplotlib.pyplot as plt
-from recaptcha_classifier.features.evaluation.evaluate import evaluate_model
-from recaptcha_classifier.train.training import Trainer
-from recaptcha_classifier.models.main_model.resnet_inspired_model_block import MainCNN
-from recaptcha_classifier.constants import MODELS_FOLDER
+from src.features.evaluation.evaluate import evaluate_model
+from src.train.training import Trainer
+from src.models.main_model.resnet_inspired_model_block import MainCNN
+from src.constants import MODELS_FOLDER
 
 
 class KFoldValidation:

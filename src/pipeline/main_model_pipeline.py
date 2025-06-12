@@ -1,12 +1,12 @@
 import os
 import torch
-from recaptcha_classifier.models.main_model.resnet_inspired_model_block import MainCNN
-from recaptcha_classifier.pipeline.base_pipeline import BasePipeline
-from recaptcha_classifier.models.main_model.HPoptimizer import HPOptimizer
-from recaptcha_classifier.models.main_model.kfold_validation import (
+from src.models.main_model.resnet_inspired_model_block import MainCNN
+from src.pipeline.base_pipeline import BasePipeline
+from src.models.main_model.HPoptimizer import HPOptimizer
+from src.models.main_model.kfold_validation import (
     KFoldValidation
 )
-from recaptcha_classifier.constants import (
+from src.constants import (
     MODELS_FOLDER, MAIN_MODEL_FILE_NAME,
     OPTIMIZER_FILE_NAME, SCHEDULER_FILE_NAME
 )
