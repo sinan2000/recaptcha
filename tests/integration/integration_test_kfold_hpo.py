@@ -26,7 +26,8 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         Setting up.
         """
         self.temp_dir = tempfile.mkdtemp()
-        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.device = torch.device("cuda" if torch.cuda
+                                   .is_available() else "cpu")
 
         # Data loading
         loaders = get_real_dataloaders()
@@ -40,7 +41,7 @@ class TestKFoldHPOIntegration(unittest.TestCase):
             all_indices, test_size=0.2, shuffle=True, random_state=42
         )
 
-        # reducing the number of samples for speed (e.g., only 10% of each split)
+        # reducing the number of samples for speed (only 10% of each split)
         small_train_indices = train_indices[:int(0.1 * len(train_indices))]
         small_val_indices = val_indices[:int(0.1 * len(val_indices))]
 
@@ -52,15 +53,13 @@ class TestKFoldHPOIntegration(unittest.TestCase):
         train_loader = DataLoader(small_train_set, batch_size=2, shuffle=True)
         val_loader = DataLoader(small_val_set, batch_size=2, shuffle=False)
 
-
-
         # Model
         model = MainCNN(n_layers=1, kernel_size=3, num_classes=12)
         optimizer = RAdam(model.parameters(), lr=0.01)
         scheduler = StepLR(optimizer, step_size=1, gamma=0.1)
 
         unique_folder = os.path.join(self.temp_dir, str(uuid.uuid4()))
-        os.makedirs(unique_folder, exist_ok=True)   
+        os.makedirs(unique_folder, exist_ok=True)
 
         self.trainer = Trainer(
             train_loader=train_loader,
@@ -94,8 +93,10 @@ class TestKFoldHPOIntegration(unittest.TestCase):
 
         # Check result structure
         self.assertEqual((self.folds, 8), results.shape,
-                         f"Should return ({self.folds}, 8) shape results for {self.folds} folds")
-        self.assertEqual((8,), best.shape, "Should return top 1 model row with (1,8) shape.")
+                         f"Should return ({self.folds}, 8) shape results "
+                         f"for {self.folds} folds")
+        self.assertEqual((8,), best.shape, "Should return top 1 model row with "
+                         "(1,8) shape.")
 
     def tearDown(self):
         """

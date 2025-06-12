@@ -127,8 +127,9 @@ class KFoldValidation:
         stds = res.std()
         print("\nStandard Deviation Across Folds:")
         print(stds.round(3))
-    
-    def save_summary(self, results: pd.DataFrame, file: str = "kfold_summary.csv") -> None:
+
+    def save_summary(self, results: pd.DataFrame, file: str =
+                     "kfold_summary.csv") -> None:
         """
         Saves the summary of the cross-validation results to a CSV file.
         """

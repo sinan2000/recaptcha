@@ -60,7 +60,7 @@ def ui():
 
     subprocess.Popen(["uvicorn", "src.server.api:app",
                       "--reload"])
-    
+
     subprocess.run(["streamlit", "run", streamlit_file])
 
 

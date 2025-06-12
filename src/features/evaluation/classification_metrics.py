@@ -88,7 +88,7 @@ def evaluate_classification(y_pred: Tensor,
     if cm_plot:
         fig_, ax_ = confmat.plot(labels=class_names if class_names else None)
         plt.show()
-        
+
     if save_path:
         df = pd.DataFrame({
             "true": y_true.cpu().numpy(),

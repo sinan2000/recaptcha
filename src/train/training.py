@@ -16,9 +16,9 @@ class Trainer(object):
                  val_loader: DataLoader,
                  epochs: int,
                  save_folder: str,
-                 model_file_name: str ='model.pt',
-                 optimizer_file_name: str ='optimizer.pt',
-                 scheduler_file_name: str ='scheduler.pt',
+                 model_file_name: str = 'model.pt',
+                 optimizer_file_name: str = 'optimizer.pt',
+                 scheduler_file_name: str = 'scheduler.pt',
                  device: torch.device | None = None,
                  early_stop_threshold: int = 5,
                  early_stopping: bool = True
@@ -90,7 +90,6 @@ class Trainer(object):
             self.device = torch.device('cuda' if torch.cuda.is_available(
             ) else 'cpu')
 
-
     def train(self,
               model: nn.Module,
               lr: float = 0.001,
@@ -154,15 +153,15 @@ class Trainer(object):
 
             val_loss = val_loss_counter.compute().item()
             val_acc = val_accuracy_counter.compute().item()
-            print(f"Epoch {epoch+1} - Val loss: {val_loss:.4f}, Val accuracy: {val_acc:.4f}")
+            print(f"Epoch {epoch+1} - Val loss: {val_loss:.4f}, "
+                  f"Val accuracy: {val_acc:.4f}")
 
             if self._does_early_stop and self._early_stop(val_loss):
                 print(f"Early stopping at epoch {epoch + 1}.")
                 print(f"Best validation loss: {self._best_val_loss:.4f}")
                 break
-        
-        self._save_history_to_csv()
 
+        self._save_history_to_csv()
 
     def _train_one_epoch(self, model: nn.Module,
                          train_accuracy_counter: metrics.MulticlassAccuracy,
@@ -195,7 +194,8 @@ class Trainer(object):
             train_loss_counter.update(loss, weight=data.size(0))
 
             batch_loss = loss.item()
-            batch_acc = (predictions.argmax(dim=1) == targets).float().mean().item()
+            batch_acc = ((predictions.argmax(dim=1) == targets).float()
+                         .mean().item())
 
             train_progress_bar.set_postfix(
                 loss=batch_loss,
@@ -274,7 +274,8 @@ class Trainer(object):
                 self.save_folder, self.model_file_name)):
             raise FileNotFoundError("Checkpoint folder doesn't exist.")
 
-        checkpoint_model = torch.load(os.path.join(self.save_folder, self.model_file_name))
+        checkpoint_model = torch.load(os.path.join(self.save_folder,
+                                                   self.model_file_name))
         model.load_state_dict(checkpoint_model)
         checkpoint_optimizer = torch.load(os.path.join(
             self.save_folder, self.optimizer_file_name))
@@ -308,7 +309,9 @@ class Trainer(object):
         """
         self._loss_acc_history = []
         self.optimizer = optim.RAdam(model.parameters(), lr=lr)
-        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer, step_size=1, gamma=0.5)
+        self.scheduler = torch.optim.lr_scheduler.StepLR(self.optimizer,
+                                                         step_size=1,
+                                                         gamma=0.5)
         self._best_val_loss = float('inf')
         self._stagnation_counter = 0
 
@@ -325,12 +328,14 @@ class Trainer(object):
 
         self._stagnation_counter += 1
         if self._stagnation_counter >= self._early_stop_threshold:
-            print(f"Early stopping triggered after {self._stagnation_counter} epochs without improvement.")
+            print(f"Early stopping triggered after {self._stagnation_counter}"
+                  " epochs without improvement.")
             return True
 
         return False
 
-    def _save_history_to_csv(self, file_path: str = "train_history.csv") -> None:
+    def _save_history_to_csv(self,
+                             file_path: str = "train_history.csv") -> None:
         """
         Saves the loss and accuracy history to a CSV file.
         :param file_path: Path to the CSV file.
