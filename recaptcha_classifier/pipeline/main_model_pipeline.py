@@ -17,7 +17,7 @@ class MainClassifierPipeline(BasePipeline):
     def __init__(self,
                  lr: float = 0.001,
                  k_folds: int = 5,
-                 epochs: int = 15,
+                 epochs: int = 20,
                  device: torch.device | None = None,
                  save_folder: str = MODELS_FOLDER,
                  model_file_name: str = MAIN_MODEL_FILE_NAME,

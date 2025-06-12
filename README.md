@@ -100,14 +100,20 @@ python main.py [OPTION]
 ```
 
 Available list of options:
---streamlit - Launches Streamlit UI
---api - starts the FastAPI backend
---train-simple-cnn - Trains the simple baseline model
---train-main-cnn - Trains our main model
+- --streamlit - Launches Streamlit UI
+- --api - starts the FastAPI backend
+- --train-simple-cnn - Trains the simple baseline model
+- --train-main-cnn - Trains our main model
 
-If no argument has been passed, an interactive menu will appear to let you choose the action.
+> If no argument has been passed, an interactive menu will appear to let you choose the action.
+>
+> Note: In order to use our trained model for predictions, please download it from the **[Releases](https://github.com/sinan2000/recaptcha/releases)** and place it in > the *models/* folder. This location can be changed by modifying the *MODELS_FOLDER* constant in constants.py
+
 
 ## API Documentation
+
+### API Endpoints
+- POST /predict: returns the predicted class id, name and probability of the class.
 
 ### Example API call and response format
 
@@ -138,10 +144,11 @@ ReDoc documentation: http://localhost:8000/redoc
 
 These interfaces allow you to test predictions and inspect the request/response formats.
 
-
 ### Possible error Responses
 
 | Status code  |    Description
 |--------------|----------------------------------------------------------------|
 |    200       |  Succesful Prediction                                          |
 |    422       |  Validation error (eg. file not provided or malformed request) |
+|    500       |  Internal server error                                         |
+|    503       |  Model was not loaded - ensure you either trained or downloaded|
