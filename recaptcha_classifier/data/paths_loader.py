@@ -70,7 +70,8 @@ class ImagePathsLoader:
             Dict[str, int]: Dictionary with class names as keys and
             counts as values.
         """
-        return {cls: len(pairs) for cls, pairs in self.find_image_paths().items()}
+        return {cls: len(
+            pairs) for cls, pairs in self.find_image_paths().items()}
 
     def _load_pairs(self) -> None:
         """

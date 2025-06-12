@@ -85,7 +85,8 @@ class DataPreprocessingPipeline:
             # rotates image randomly within +-15 degrees
             transforms.RandomRotation(degrees=15),
             # randomly changes brightness, contrast and saturation
-            transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3),
+            transforms.ColorJitter(
+                brightness=0.3, contrast=0.3, saturation=0.3),
             # Translates/ shifts image up to 10% of its size
             # in both x and y directions
             transforms.RandomAffine(degrees=0, translate=(0.1, 0.1)),
