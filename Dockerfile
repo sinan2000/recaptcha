@@ -16,11 +16,13 @@ WORKDIR /app
 # copy the Pipfile and Pipfile.lock
 COPY Pipfile Pipfile.lock /app/
 
-# install dependencies directly in python, not with venv
-RUN pipenv install --deploy --ignore-pipfile --system
+# install dependencies, ensuring torch is used from the cpu version (no CUDA)
+RUN pipenv install --deploy --ignore-pipfile && \
+    pipenv run pip uninstall -y torch torchvision torchaudio && \
+    pipenv run pip install torch torchvision torchaudio --no-deps --index-url https://download.pytorch.org/whl/cpu
 
 # copy the rest of the application code
 COPY . /app/
 
 # set the entrypoint
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["pipenv", "run", "python", "main.py"]
