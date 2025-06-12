@@ -69,7 +69,8 @@ def evaluate_classification(y_pred: Tensor,
     # Entropy per sample
     entropy_vals = -torch.sum(probs * torch.log(probs + 1e-9), dim=1)
     entropy_mean = entropy_vals.mean().item()
-    entropy_sem = entropy_vals.std(unbiased=True).item() / (len(entropy_vals) ** 0.5)
+    entropy_sem = entropy_vals.std(unbiased=True).item() / (
+        len(entropy_vals) ** 0.5)
     entropy_ci = 1.96 * entropy_sem
 
     # Variance per sample
