@@ -18,18 +18,16 @@ class TestCheckpointIntegration(unittest.TestCase):
         loaders = pipeline.run()
         
         model = MainCNN(n_layers=1, kernel_size=3, num_classes=len(DetectionLabels))
-        optimizer = torch.optim.Adam(model.parameters())
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1)
-        device = torch.device("cpu")
+        # optimizer = torch.optim.Adam(model.parameters())
+        # scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=1)
+        device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
         trainer = Trainer(
             train_loader=loaders["train"],
             val_loader=loaders["val"],
-            optimizer=optimizer,
-            model=model,
-            scheduler=scheduler,
             device=device,
             epochs=1,
+            save_folder="checkpoints"
         )
         
         trainer.train(model)
